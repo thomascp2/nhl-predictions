@@ -19,17 +19,23 @@ def run_picks_generator():
     print(f"\n{'='*80}")
     print(f"Running picks generator at {datetime.now().strftime('%I:%M %p')}")
     print('='*80)
+    print("This may take 1-5 minutes depending on data freshness...")
+    print()
 
+    # No timeout - let it complete even if slow
     result = subprocess.run(
         [sys.executable, "generate_picks_to_file.py"],
         capture_output=False,
-        text=True
+        text=True,
+        timeout=None  # No timeout limit
     )
 
+    print()
     if result.returncode == 0:
-        print("\nPicks generator completed successfully!")
+        print("[SUCCESS] Picks generator completed successfully!")
     else:
-        print("\nPicks generator had some issues, but picks may still be available")
+        print("[WARNING] Picks generator had some issues, but picks may still be available")
+        print("Check the output above for details")
 
 def main():
     print("=" * 80)

@@ -1,12 +1,16 @@
 """
-Simple NHL Picks Generator - Outputs to Text File + Auto-Push to GitHub
-Run this anytime you want fresh picks saved to a file and pushed to cloud
+Smart NHL Picks Generator - Auto-Refreshes Data + Outputs to GitHub
+- Checks data freshness (only fetches if >2 hours old)
+- Handles failures gracefully (uses cached data if API fails)
+- Always generates predictions (never fails completely)
+- Auto-pushes to GitHub for remote access
 """
 
 import sqlite3
 import subprocess
 import sys
 from datetime import datetime
+from smart_data_refresh import smart_refresh
 
 DB_PATH = "database/nhl_predictions.db"
 
@@ -68,10 +72,38 @@ def get_todays_picks():
 
 def format_picks_to_file(picks, filename):
     """Format picks and save to text file"""
+    # Get data freshness
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT MAX(last_updated) FROM player_stats WHERE season = '2025-2026'")
+        result = cursor.fetchone()
+        conn.close()
+
+        if result and result[0]:
+            from datetime import datetime as dt
+            last_update = dt.fromisoformat(result[0])
+            hours_old = (dt.now() - last_update).total_seconds() / 3600
+            data_status = f"Data Age: {hours_old:.1f} hours old (Updated: {last_update.strftime('%I:%M %p')})"
+
+            if hours_old < 1:
+                freshness = "[VERY FRESH]"
+            elif hours_old < 3:
+                freshness = "[FRESH]"
+            else:
+                freshness = "[STALE]"
+        else:
+            data_status = "Data Age: Unknown"
+            freshness = "[UNKNOWN]"
+    except:
+        data_status = "Data Age: Unknown"
+        freshness = "[UNKNOWN]"
+
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("=" * 80 + "\n")
         f.write("NHL PREDICTIONS - T1-ELITE PICKS ONLY\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %I:%M %p')}\n")
+        f.write(f"{data_status} - {freshness}\n")
         f.write("=" * 80 + "\n\n")
 
         if not picks:
@@ -125,10 +157,29 @@ def push_to_github(timestamped_file):
         return False
 
 def main():
-    print("Starting NHL Picks Generator...")
+    print("\n")
     print("=" * 80)
+    print("SMART NHL PICKS GENERATOR")
+    print("=" * 80)
+    print()
 
-    # Generate fresh predictions
+    # Step 1: Smart data refresh (only if stale)
+    try:
+        success_count, total_count, skipped = smart_refresh()
+
+        if not skipped and success_count == 0:
+            print("[WARNING] All data fetches failed, but continuing with cached data")
+            print("Predictions may be based on outdated information")
+            print()
+    except Exception as e:
+        print(f"[WARNING] Data refresh had issues: {e}")
+        print("Continuing with cached data...")
+        print()
+
+    # Step 2: Generate fresh predictions
+    print("=" * 80)
+    print("GENERATING PREDICTIONS")
+    print("=" * 80)
     success = generate_predictions()
 
     if not success:
