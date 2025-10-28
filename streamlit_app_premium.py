@@ -278,48 +278,78 @@ st.markdown("""
 st.markdown('<div class="main-header">🏒 NHL PREDICTIONS</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">73-75% Accuracy Ensemble Model • Powered by ML</div>', unsafe_allow_html=True)
 
-# Mobile-friendly generate button (visible on main page)
-if st.button("🔄 GENERATE PREDICTIONS", key="mobile_generate", type="primary", use_container_width=True):
-    with st.spinner("Generating predictions..."):
-        progress_bar = st.progress(0)
+# Mobile-friendly controls (visible on main page for mobile users)
+with st.expander("📱 MOBILE CONTROLS", expanded=False):
+    st.markdown("**Use these controls if sidebar is not accessible on your device**")
 
-        try:
-            # Statistical predictions
-            st.info("Running statistical model...")
-            result1 = subprocess.run(
-                [sys.executable, "fresh_clean_predictions.py"],
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
-            progress_bar.progress(50)
+    # Mobile generate button
+    if st.button("🔄 GENERATE PREDICTIONS", key="mobile_generate", type="primary", use_container_width=True):
+        with st.spinner("Generating predictions..."):
+            progress_bar = st.progress(0)
 
-            if result1.returncode == 0:
-                st.success("✓ Statistical complete")
-            else:
-                st.warning("⚠ Statistical warnings")
+            try:
+                # Statistical predictions
+                st.info("Running statistical model...")
+                result1 = subprocess.run(
+                    [sys.executable, "fresh_clean_predictions.py"],
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                )
+                progress_bar.progress(50)
 
-            # Ensemble predictions
-            st.info("Running ensemble model...")
-            result2 = subprocess.run(
-                [sys.executable, "ensemble_predictions.py"],
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
-            progress_bar.progress(100)
+                if result1.returncode == 0:
+                    st.success("✓ Statistical complete")
+                else:
+                    st.warning("⚠ Statistical warnings")
 
-            if result2.returncode == 0:
-                st.success("✓ Ensemble complete")
-                st.balloons()
-            else:
-                st.warning("⚠ Ensemble warnings")
+                # Ensemble predictions
+                st.info("Running ensemble model...")
+                result2 = subprocess.run(
+                    [sys.executable, "ensemble_predictions.py"],
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                )
+                progress_bar.progress(100)
 
-            st.success("🎉 Predictions ready!")
-            st.rerun()
+                if result2.returncode == 0:
+                    st.success("✓ Ensemble complete")
+                    st.balloons()
+                else:
+                    st.warning("⚠ Ensemble warnings")
 
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
+                st.success("🎉 Predictions ready!")
+                st.rerun()
+
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+    st.markdown("---")
+
+    # Mobile date selector
+    today_mobile = datetime.now().date()
+    selected_date_mobile = st.date_input(
+        "📅 Select Date",
+        value=today_mobile,
+        max_value=today_mobile + timedelta(days=7),
+        key="mobile_date"
+    )
+
+    # Mobile tier filter
+    tier_filter_mobile = st.multiselect(
+        "🎯 Filter by Tier",
+        options=["T1-ELITE", "T2-STRONG", "T3-MARGINAL"],
+        default=["T1-ELITE", "T2-STRONG"],
+        key="mobile_tier"
+    )
+
+    # Mobile model filter
+    model_filter_mobile = st.selectbox(
+        "🤖 Model Version",
+        options=["All", "ensemble_v1", "statistical", "ml_v3"],
+        key="mobile_model"
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -399,6 +429,16 @@ with st.sidebar:
     st.caption("**Accuracy:** 73-75%")
     st.caption("**Database:** nhl_predictions.db")
 
+# Use mobile filters if they exist in session state, otherwise use sidebar filters
+if 'mobile_date' in st.session_state:
+    active_date = selected_date_mobile
+    active_tier_filter = tier_filter_mobile
+    active_model_filter = model_filter_mobile
+else:
+    active_date = selected_date
+    active_tier_filter = tier_filter
+    active_model_filter = model_filter
+
 # Main content
 tab1, tab2, tab3 = st.tabs(["📊 PREDICTIONS", "📈 STATISTICS", "ℹ️ ABOUT"])
 
@@ -423,16 +463,16 @@ with tab1:
             WHERE game_date = ?
         """
 
-        params = [selected_date.strftime('%Y-%m-%d')]
+        params = [active_date.strftime('%Y-%m-%d')]
 
-        if tier_filter:
-            placeholders = ','.join(['?' for _ in tier_filter])
+        if active_tier_filter:
+            placeholders = ','.join(['?' for _ in active_tier_filter])
             query += f" AND confidence_tier IN ({placeholders})"
-            params.extend(tier_filter)
+            params.extend(active_tier_filter)
 
-        if model_filter != "All":
+        if active_model_filter != "All":
             query += " AND model_version = ?"
-            params.append(model_filter)
+            params.append(active_model_filter)
 
         query += " ORDER BY probability DESC"
 
@@ -440,7 +480,7 @@ with tab1:
         conn.close()
 
         if len(df) == 0:
-            st.warning(f"No predictions found for {selected_date}")
+            st.warning(f"No predictions found for {active_date}")
             st.info("👈 Click 'GENERATE PREDICTIONS' in the sidebar")
         else:
             # Summary Metrics - Robinhood style cards
