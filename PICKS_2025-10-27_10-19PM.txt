@@ -1,0 +1,89 @@
+================================================================================
+NHL PREDICTIONS - T1-ELITE PICKS ONLY
+Generated: 2025-10-27 10:19 PM
+================================================================================
+
+TOTAL T1-ELITE PICKS: 9
+Accuracy Target: 73-75%
+
+--------------------------------------------------------------------------------
+
+PICK #1
+Player: Evgeni Malkin (PIT vs STL)
+Prop: points - Line: 0.5
+Probability: 0.9% | EV: 1.63
+Model: None
+Reasoning: 1.56 PPG
+--------------------------------------------------------------------------------
+
+PICK #2
+Player: Sidney Crosby (PIT vs STL)
+Prop: points - Line: 0.5
+Probability: 0.8% | EV: 1.28
+Model: None
+Reasoning: 1.22 PPG
+--------------------------------------------------------------------------------
+
+PICK #3
+Player: David Pastrnak (BOS vs OTT)
+Prop: points - Line: 0.5
+Probability: 0.8% | EV: 1.23
+Model: None
+Reasoning: 1.30 PPG
+--------------------------------------------------------------------------------
+
+PICK #4
+Player: Drake Batherson (OTT vs BOS)
+Prop: points - Line: 0.5
+Probability: 0.8% | EV: 1.23
+Model: None
+Reasoning: 1.17 PPG
+--------------------------------------------------------------------------------
+
+PICK #5
+Player: David Pastrnak (BOS vs OTT)
+Prop: shots - Line: 2.5
+Probability: 0.8% | EV: 3.52
+Model: None
+Reasoning: 3.7 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #6
+Player: Shane Pinto (OTT vs BOS)
+Prop: shots - Line: 2.5
+Probability: 0.8% | EV: 3.50
+Model: None
+Reasoning: 3.3 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #7
+Player: Dylan Cozens (OTT vs BOS)
+Prop: points - Line: 0.5
+Probability: 0.7% | EV: 1.05
+Model: None
+Reasoning: 1.00 PPG
+--------------------------------------------------------------------------------
+
+PICK #8
+Player: Shane Pinto (OTT vs BOS)
+Prop: points - Line: 0.5
+Probability: 0.7% | EV: 1.05
+Model: None
+Reasoning: 1.00 PPG
+--------------------------------------------------------------------------------
+
+PICK #9
+Player: Justin Brazeau (PIT vs STL)
+Prop: points - Line: 0.5
+Probability: 0.7% | EV: 1.05
+Model: None
+Reasoning: 1.00 PPG
+--------------------------------------------------------------------------------
+
+
+================================================================================
+BETTING STRATEGY:
+- Focus on picks with 65%+ probability
+- Positive EV (Expected Value) is best
+- T1-ELITE tier = highest confidence
+================================================================================
