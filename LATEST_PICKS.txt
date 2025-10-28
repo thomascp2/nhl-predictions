@@ -1,60 +1,60 @@
 ================================================================================
 NHL PREDICTIONS - T1-ELITE PICKS ONLY
 Generated: 2025-10-27 10:37 PM
-Data Age: 4.5 hours old (Updated: 06:07 PM) - 🟠 STALE
+Data Age: 0.0 hours old (Updated: 10:37 PM) - [VERY FRESH]
 ================================================================================
 
-TOTAL T1-ELITE PICKS: 9
+TOTAL T1-ELITE PICKS: 11
 Accuracy Target: 73-75%
 
 --------------------------------------------------------------------------------
 
 PICK #1
-Player: Evgeni Malkin (PIT vs STL)
+Player: Drake Batherson (OTT vs BOS)
 Prop: points - Line: 0.5
-Probability: 0.9% | EV: 1.63
+Probability: 0.9% | EV: 1.50
 Model: None
-Reasoning: 1.56 PPG
+Reasoning: 1.43 PPG
 --------------------------------------------------------------------------------
 
 PICK #2
-Player: Sidney Crosby (PIT vs STL)
+Player: Evgeni Malkin (PIT vs STL)
 Prop: points - Line: 0.5
-Probability: 0.8% | EV: 1.28
+Probability: 0.9% | EV: 1.68
 Model: None
-Reasoning: 1.22 PPG
+Reasoning: 1.60 PPG
 --------------------------------------------------------------------------------
 
 PICK #3
-Player: David Pastrnak (BOS vs OTT)
+Player: Sidney Crosby (PIT vs STL)
 Prop: points - Line: 0.5
-Probability: 0.8% | EV: 1.23
+Probability: 0.9% | EV: 1.47
 Model: None
-Reasoning: 1.30 PPG
+Reasoning: 1.40 PPG
 --------------------------------------------------------------------------------
 
 PICK #4
-Player: Drake Batherson (OTT vs BOS)
+Player: Justin Brazeau (PIT vs STL)
 Prop: points - Line: 0.5
-Probability: 0.8% | EV: 1.23
+Probability: 0.8% | EV: 1.16
 Model: None
-Reasoning: 1.17 PPG
+Reasoning: 1.10 PPG
 --------------------------------------------------------------------------------
 
 PICK #5
 Player: David Pastrnak (BOS vs OTT)
-Prop: shots - Line: 2.5
-Probability: 0.8% | EV: 3.52
+Prop: points - Line: 0.5
+Probability: 0.8% | EV: 1.12
 Model: None
-Reasoning: 3.7 SOG/G
+Reasoning: 1.18 PPG
 --------------------------------------------------------------------------------
 
 PICK #6
 Player: Shane Pinto (OTT vs BOS)
 Prop: shots - Line: 2.5
-Probability: 0.8% | EV: 3.50
+Probability: 0.7% | EV: 3.36
 Model: None
-Reasoning: 3.3 SOG/G
+Reasoning: 3.2 SOG/G
 --------------------------------------------------------------------------------
 
 PICK #7
@@ -66,7 +66,7 @@ Reasoning: 1.00 PPG
 --------------------------------------------------------------------------------
 
 PICK #8
-Player: Shane Pinto (OTT vs BOS)
+Player: Tim Stützle (OTT vs BOS)
 Prop: points - Line: 0.5
 Probability: 0.7% | EV: 1.05
 Model: None
@@ -74,11 +74,27 @@ Reasoning: 1.00 PPG
 --------------------------------------------------------------------------------
 
 PICK #9
-Player: Justin Brazeau (PIT vs STL)
+Player: Shane Pinto (OTT vs BOS)
 Prop: points - Line: 0.5
 Probability: 0.7% | EV: 1.05
 Model: None
 Reasoning: 1.00 PPG
+--------------------------------------------------------------------------------
+
+PICK #10
+Player: David Pastrnak (BOS vs OTT)
+Prop: shots - Line: 2.5
+Probability: 0.7% | EV: 3.28
+Model: None
+Reasoning: 3.5 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #11
+Player: Tim Stützle (OTT vs BOS)
+Prop: shots - Line: 2.5
+Probability: 0.7% | EV: 3.26
+Model: None
+Reasoning: 3.1 SOG/G
 --------------------------------------------------------------------------------
 
 
