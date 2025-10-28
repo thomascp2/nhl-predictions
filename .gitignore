@@ -4,9 +4,10 @@
 discord_token.txt
 
 # Database files (large, can regenerate)
-database/*.db
-*.db
-predictions.db
+# Commented out - we need the database for Streamlit Cloud
+# database/*.db
+# *.db
+# predictions.db
 
 # Python cache
 __pycache__/
@@ -36,9 +37,10 @@ logs/
 *.log
 
 # Model files (large)
-models/*.pkl
-*.pkl
-*.joblib
+# Commented out - we need models for Streamlit Cloud
+# models/*.pkl
+# *.pkl
+# *.joblib
 
 # Backup files
 Backups/
