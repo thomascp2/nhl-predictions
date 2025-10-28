@@ -1,0 +1,60 @@
+# Secrets and credentials
+.env
+*.env
+discord_token.txt
+
+# Database files (large, can regenerate)
+database/*.db
+*.db
+predictions.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Model files (large)
+models/*.pkl
+*.pkl
+*.joblib
+
+# Backup files
+Backups/
+*_OLD.py
+*_BACKUP.py
+
+# Temporary files
+*.tmp
+*.bak
+temp/
+tmp/
+
+# Node modules (if any)
+node_modules/
+
+# Distribution
+dist/
+build/
+*.egg-info/
