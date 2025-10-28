@@ -20,11 +20,12 @@ cd /d "C:\Users\thoma\PrizePicks-Research-Lab"
 REM Set Python to use UTF-8 encoding
 set PYTHONIOENCODING=utf-8
 
-python run_picks_throughout_day.py
+REM Use full Python path (Task Scheduler doesn't use PATH)
+"C:\Users\thoma\AppData\Local\Programs\Python\Python313\python.exe" run_picks_throughout_day.py
 
 echo.
 echo ================================================================================
 echo Daily picks generation complete
 echo Window will close in 30 seconds...
 echo ================================================================================
-timeout /t 30
+ping 127.0.0.1 -n 31 > nul
