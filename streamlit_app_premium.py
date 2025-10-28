@@ -278,6 +278,51 @@ st.markdown("""
 st.markdown('<div class="main-header">🏒 NHL PREDICTIONS</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">73-75% Accuracy Ensemble Model • Powered by ML</div>', unsafe_allow_html=True)
 
+# Mobile-friendly generate button (visible on main page)
+if st.button("🔄 GENERATE PREDICTIONS", key="mobile_generate", type="primary", use_container_width=True):
+    with st.spinner("Generating predictions..."):
+        progress_bar = st.progress(0)
+
+        try:
+            # Statistical predictions
+            st.info("Running statistical model...")
+            result1 = subprocess.run(
+                [sys.executable, "fresh_clean_predictions.py"],
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            progress_bar.progress(50)
+
+            if result1.returncode == 0:
+                st.success("✓ Statistical complete")
+            else:
+                st.warning("⚠ Statistical warnings")
+
+            # Ensemble predictions
+            st.info("Running ensemble model...")
+            result2 = subprocess.run(
+                [sys.executable, "ensemble_predictions.py"],
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            progress_bar.progress(100)
+
+            if result2.returncode == 0:
+                st.success("✓ Ensemble complete")
+                st.balloons()
+            else:
+                st.warning("⚠ Ensemble warnings")
+
+            st.success("🎉 Predictions ready!")
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 # Sidebar
 with st.sidebar:
     st.markdown("### 🎯 Controls")
