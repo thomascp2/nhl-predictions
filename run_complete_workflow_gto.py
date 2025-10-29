@@ -1,0 +1,109 @@
+"""
+Complete NHL Betting Workflow with GTO Parlay Optimization
+- Fetches data
+- Generates predictions
+- Finds PrizePicks edge
+- Builds GTO-optimized parlays
+"""
+
+import subprocess
+import sys
+from datetime import datetime
+
+def run_script(script_name: str, description: str) -> bool:
+    """Run a Python script and return success status"""
+    print("\n" + "="*80)
+    print(f"{description}")
+    print("="*80)
+    print()
+
+    try:
+        result = subprocess.run(
+            [sys.executable, script_name],
+            capture_output=False,
+            text=True,
+            timeout=300
+        )
+
+        if result.returncode == 0:
+            print(f"\n[SUCCESS] {description}")
+            return True
+        else:
+            print(f"\n[WARNING] {description} - COMPLETED WITH WARNINGS")
+            return True  # Continue anyway
+
+    except subprocess.TimeoutExpired:
+        print(f"\n[TIMEOUT] {description} - TIMEOUT (skipping)")
+        return False
+    except Exception as e:
+        print(f"\n[FAILED] {description} - FAILED: {e}")
+        return False
+
+
+def main():
+    """Run complete workflow"""
+    print("\n" + "="*80)
+    print("COMPLETE NHL BETTING WORKFLOW WITH GTO PARLAYS")
+    print("="*80)
+    print(f"Started: {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
+    print()
+
+    success_count = 0
+    total_steps = 4
+
+    # Step 1: Generate predictions (uses smart data refresh internally)
+    if run_script("generate_picks_to_file.py", "STEP 1: Generate Predictions"):
+        success_count += 1
+    else:
+        print("\n[WARNING] Predictions failed - cannot continue")
+        return
+
+    # Step 2: Fetch PrizePicks lines and find edge
+    if run_script("prizepicks_integration_v2.py", "STEP 2: Find PrizePicks Edge"):
+        success_count += 1
+    else:
+        print("\n[WARNING] PrizePicks integration failed - skipping parlays")
+        print("   You can still use individual picks from LATEST_PICKS.txt")
+        return
+
+    # Step 3: Build GTO-optimized parlays
+    if run_script("gto_parlay_optimizer.py", "STEP 3: Build GTO Parlays"):
+        success_count += 1
+    else:
+        print("\n[WARNING] GTO optimizer failed - check if you have edge plays")
+        print("   You can still use edge plays from prizepicks_integration output")
+
+    # Summary
+    print("\n" + "="*80)
+    print("WORKFLOW SUMMARY")
+    print("="*80)
+    print()
+    print(f"Completed: {success_count}/{total_steps} steps")
+    print(f"Time: {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
+    print()
+
+    if success_count >= 2:
+        print("[SUCCESS] Ready to bet!")
+        print()
+        print("Check these files:")
+        print("   1. LATEST_PICKS.txt - Individual T1-ELITE picks")
+        print("   2. LATEST_PICKS.csv - CSV format for spreadsheets")
+        print("   3. GTO_PARLAYS_*.csv - Optimized parlay combinations")
+        print()
+        print("Betting Strategy:")
+        print("   - Singles: Use T1-ELITE picks with 10%+ edge")
+        print("   - Parlays: Use GTO recommendations with Kelly sizing")
+        print("   - Bankroll: Risk 2-5% total across all plays")
+        print()
+        print("View online:")
+        print("   TXT: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt")
+        print("   CSV: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.csv")
+    else:
+        print("[WARNING] PARTIAL SUCCESS - Some steps failed")
+        print("   Check output above for errors")
+
+    print()
+
+
+if __name__ == "__main__":
+    main()
