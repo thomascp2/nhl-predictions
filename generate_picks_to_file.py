@@ -171,20 +171,27 @@ def push_to_github(timestamped_file, timestamped_csv):
     """Auto-commit and push picks to GitHub"""
     print("\nPushing to GitHub...")
 
+    # Use full git path for Task Scheduler (doesn't have PATH)
+    git_exe = "C:\\Program Files\\Git\\cmd\\git.exe"
+
     try:
         # Add files
-        subprocess.run(["git", "add", timestamped_file, timestamped_csv, "LATEST_PICKS.txt", "LATEST_PICKS.csv"], check=True)
+        subprocess.run([git_exe, "add", timestamped_file, timestamped_csv, "LATEST_PICKS.txt", "LATEST_PICKS.csv"], check=True)
 
         # Commit with timestamp
         commit_msg = f"Auto-update picks - {datetime.now().strftime('%Y-%m-%d %I:%M %p')}"
-        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+        subprocess.run([git_exe, "commit", "-m", commit_msg], check=True)
 
         # Push
-        subprocess.run(["git", "push"], check=True)
+        subprocess.run([git_exe, "push"], check=True)
 
         print("Successfully pushed to GitHub!")
         return True
 
+    except FileNotFoundError:
+        print("Git not found - picks saved locally only")
+        print("Files saved: LATEST_PICKS.txt, LATEST_PICKS.csv")
+        return False
     except subprocess.CalledProcessError as e:
         print(f"GitHub push failed: {e}")
         print("Picks are still saved locally in the files")
