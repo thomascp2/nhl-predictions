@@ -1,0 +1,8 @@
+Player,Team,Opponent,Prop Type,Line,Probability (%),Expected Value,Confidence Tier,Model,Reasoning
+William Nylander,TOR,CBJ,POINTS,0.5,0.9,1.82,T1-ELITE,Statistical,1.67 PPG
+Matthew Knies,TOR,CBJ,POINTS,0.5,0.9,1.42,T1-ELITE,Statistical,1.30 PPG
+John Tavares,TOR,CBJ,POINTS,0.5,0.9,1.42,T1-ELITE,Statistical,1.30 PPG
+Kirill Marchenko,CBJ,TOR,SHOTS,2.5,0.9,5.10,T1-ELITE,Statistical,4.2 SOG/G
+Auston Matthews,TOR,CBJ,SHOTS,2.5,0.9,4.48,T1-ELITE,Statistical,4.1 SOG/G
+Kirill Marchenko,CBJ,TOR,POINTS,0.5,0.8,1.21,T1-ELITE,Statistical,1.00 PPG
+Dmitri Voronkov,CBJ,TOR,POINTS,0.5,0.8,1.21,T1-ELITE,Statistical,1.00 PPG
