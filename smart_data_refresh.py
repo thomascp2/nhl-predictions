@@ -98,6 +98,10 @@ def smart_refresh():
     # Fetch data with retry logic
     success_count = 0
 
+    # Update game totals first (quick operation)
+    if run_fetch_script("fetch_game_totals.py", "Game O/U Totals", retry=1):
+        success_count += 1
+
     # Critical fetches (needed for predictions)
     fetches = [
         ("fetch_2025_26_stats.py", "Player Stats (2025-26)"),
