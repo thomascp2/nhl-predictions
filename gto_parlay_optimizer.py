@@ -2,6 +2,7 @@
 GTO-Style Parlay Optimizer for NHL PrizePicks
 Builds +EV parlays using frequency allocation similar to poker solvers.
 Ensures proper bankroll distribution and avoids correlated picks.
+Uses real PrizePicks payouts based on odds_type.
 """
 
 import sqlite3
@@ -11,6 +12,7 @@ from itertools import combinations
 from typing import List, Tuple, Dict
 from collections import defaultdict
 from datetime import datetime
+from prizepicks_payouts import PrizePicksPayoutCalculator
 
 DB_PATH = "database/nhl_predictions.db"
 
@@ -112,21 +114,16 @@ class GTOParleyOptimizer:
 
     def calculate_parlay_payout(self, pick_indices: List[int]) -> float:
         """
-        Calculate total payout multiplier for a parlay.
-        For PrizePicks: 2-leg = 3x, 3-leg = 5x, 4-leg = 10x, 5-leg = 20x
+        Calculate total payout multiplier for a parlay using real PrizePicks payouts.
+        Accounts for standard, goblin, and demon odds_types.
         """
-        num_legs = len(pick_indices)
+        picks = self.picks_df.iloc[list(pick_indices)]
+        odds_types = picks['odds_type'].tolist()
 
-        # PrizePicks payout structure
-        prizepicks_payouts = {
-            2: 3.0,
-            3: 5.0,
-            4: 10.0,
-            5: 20.0,
-            6: 25.0
-        }
+        # Use PrizePicks payout calculator with actual odds_types
+        payout = PrizePicksPayoutCalculator.calculate_parlay_payout(odds_types)
 
-        return prizepicks_payouts.get(num_legs, 3.0)
+        return payout
 
     def calculate_parlay_ev(self, pick_indices: List[int]) -> float:
         """Calculate expected value for a parlay."""
@@ -490,7 +487,8 @@ class GTOParleyOptimizer:
 
             for j, idx in enumerate(parlay['picks'], 1):
                 pick = self.picks_df.iloc[idx]
-                print(f"  Leg {j}: {pick['player_name']:20} {pick['prop_type'].upper():7} O{pick['line']:.1f}")
+                odds_label = f"[{pick['odds_type']}]" if pick['odds_type'] != 'standard' else ""
+                print(f"  Leg {j}: {pick['player_name']:20} {pick['prop_type'].upper():7} O{pick['line']:.1f} {odds_label}")
 
             print(f"\n  Probability: {parlay['probability']:.1%}")
             print(f"  Payout:      {parlay['actual_payout']:.1f}x")
@@ -559,6 +557,7 @@ def load_picks_from_database(date: str = None, min_edge: float = 0.07) -> pd.Dat
             e.our_probability as model_probability,
             e.expected_value as ev_score,
             e.edge,
+            e.odds_type,
             p.game_id
         FROM prizepicks_edges e
         LEFT JOIN predictions p ON (
@@ -582,6 +581,12 @@ def load_picks_from_database(date: str = None, min_edge: float = 0.07) -> pd.Dat
         )
     else:
         df['game_id'] = df.apply(lambda row: f"{row['team']}_{row['opponent']}", axis=1)
+
+    # Fill missing odds_type with 'standard'
+    if 'odds_type' in df.columns:
+        df['odds_type'] = df['odds_type'].fillna('standard')
+    else:
+        df['odds_type'] = 'standard'
 
     # Add dummy odds (PrizePicks uses fixed payouts, not individual odds)
     df['odds_american'] = -110  # Standard juice
