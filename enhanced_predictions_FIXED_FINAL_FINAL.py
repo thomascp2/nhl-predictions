@@ -168,6 +168,12 @@ class EnhancedPredictionEngine:
                         'reasoning': f"{features['sog_season']:.1f} SOG/G"
                     })
 
+                    # QUALITY FILTER: Skip points props in low-scoring games (O/U <= 5.5)
+                    # Defensive battles = limited scoring, even for elite players
+                    if game_ou and game_ou <= 5.5:
+                        # Skip points prop for this player
+                        continue
+
                     point_pred = self.predict_points(features)
                     predictions.append({
                         'player': player_name,
