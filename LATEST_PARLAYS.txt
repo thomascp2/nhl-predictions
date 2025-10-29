@@ -1,0 +1,318 @@
+================================================================================
+2-LEG PARLAYS (65% SHOTS / 35% POINTS WEIGHTED)
+================================================================================
+
+PARLAY #1
+Combined Probability: 83.3% | EV: +1.50 | Payout: 3.0x
+Mix: 1 Shots + 1 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+
+  $10 bet = $30.00 payout if all legs hit
+================================================================================
+
+PARLAY #2
+Combined Probability: 83.3% | EV: +1.50 | Payout: 3.0x
+Mix: 1 Shots + 1 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Jack Eichel (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 1.78 PPG
+
+  $10 bet = $30.00 payout if all legs hit
+================================================================================
+
+PARLAY #3
+Combined Probability: 83.3% | EV: +1.50 | Payout: 3.0x
+Mix: 1 Shots + 1 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Shayne Gostisbehere (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $30.00 payout if all legs hit
+================================================================================
+
+PARLAY #4
+Combined Probability: 83.3% | EV: +1.50 | Payout: 3.0x
+Mix: 1 Shots + 1 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Seth Jarvis (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.38 PPG
+
+  $10 bet = $30.00 payout if all legs hit
+================================================================================
+
+PARLAY #5
+Combined Probability: 83.3% | EV: +1.50 | Payout: 3.0x
+Mix: 1 Shots + 1 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Kirill Kaprizov (MIN vs WPG)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $30.00 payout if all legs hit
+================================================================================
+
+
+================================================================================
+3-LEG PARLAYS (65% SHOTS / 35% POINTS WEIGHTED)
+================================================================================
+
+PARLAY #1
+Combined Probability: 79.1% | EV: +3.75 | Payout: 6.0x
+Mix: 1 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 3: Shayne Gostisbehere (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $60.00 payout if all legs hit
+================================================================================
+
+PARLAY #2
+Combined Probability: 79.1% | EV: +3.75 | Payout: 6.0x
+Mix: 1 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 3: Seth Jarvis (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.38 PPG
+
+  $10 bet = $60.00 payout if all legs hit
+================================================================================
+
+PARLAY #3
+Combined Probability: 79.1% | EV: +3.75 | Payout: 6.0x
+Mix: 1 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 3: Kirill Kaprizov (MIN vs WPG)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $60.00 payout if all legs hit
+================================================================================
+
+PARLAY #4
+Combined Probability: 79.1% | EV: +3.75 | Payout: 6.0x
+Mix: 1 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 3: Evgeni Malkin (PIT vs PHI)
+         POINTS 0.5 - 95.0% prob | 1.60 PPG
+
+  $10 bet = $60.00 payout if all legs hit
+================================================================================
+
+PARLAY #5
+Combined Probability: 79.1% | EV: +3.75 | Payout: 6.0x
+Mix: 1 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 3: Macklin Celebrini (SJS vs LAK)
+         POINTS 0.5 - 95.0% prob | 1.67 PPG
+
+  $10 bet = $60.00 payout if all legs hit
+================================================================================
+
+
+================================================================================
+4-LEG PARLAYS (65% SHOTS / 35% POINTS WEIGHTED)
+================================================================================
+
+PARLAY #1
+Combined Probability: 69.2% | EV: +5.92 | Payout: 10.0x
+Mix: 2 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 3: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 4: Shayne Gostisbehere (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $100.00 payout if all legs hit
+================================================================================
+
+PARLAY #2
+Combined Probability: 69.2% | EV: +5.92 | Payout: 10.0x
+Mix: 2 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 3: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 4: Seth Jarvis (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.38 PPG
+
+  $10 bet = $100.00 payout if all legs hit
+================================================================================
+
+PARLAY #3
+Combined Probability: 69.2% | EV: +5.92 | Payout: 10.0x
+Mix: 2 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 3: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 4: Kirill Kaprizov (MIN vs WPG)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $100.00 payout if all legs hit
+================================================================================
+
+PARLAY #4
+Combined Probability: 69.2% | EV: +5.92 | Payout: 10.0x
+Mix: 2 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 3: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 4: Evgeni Malkin (PIT vs PHI)
+         POINTS 0.5 - 95.0% prob | 1.60 PPG
+
+  $10 bet = $100.00 payout if all legs hit
+================================================================================
+
+PARLAY #5
+Combined Probability: 69.2% | EV: +5.92 | Payout: 10.0x
+Mix: 2 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Tage Thompson (BUF vs CBJ)
+         SHOTS 2.5 - 87.7% prob | 4.1 SOG/G
+  Leg 2: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 3: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 4: Macklin Celebrini (SJS vs LAK)
+         POINTS 0.5 - 95.0% prob | 1.67 PPG
+
+  $10 bet = $100.00 payout if all legs hit
+================================================================================
+
+
+================================================================================
+5-LEG PARLAYS (65% SHOTS / 35% POINTS WEIGHTED)
+================================================================================
+
+PARLAY #1
+Combined Probability: 59.7% | EV: +10.93 | Payout: 20.0x
+Mix: 3 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 2: Jason Robertson (DAL vs WSH)
+         SHOTS 2.5 - 87.0% prob | 4.3 SOG/G
+  Leg 3: Matt Boldy (MIN vs WPG)
+         SHOTS 2.5 - 86.9% prob | 4.0 SOG/G
+  Leg 4: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 5: Shayne Gostisbehere (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.40 PPG
+
+  $10 bet = $200.00 payout if all legs hit
+================================================================================
+
+PARLAY #2
+Combined Probability: 59.7% | EV: +10.93 | Payout: 20.0x
+Mix: 3 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 2: Jason Robertson (DAL vs WSH)
+         SHOTS 2.5 - 87.0% prob | 4.3 SOG/G
+  Leg 3: Matt Boldy (MIN vs WPG)
+         SHOTS 2.5 - 86.9% prob | 4.0 SOG/G
+  Leg 4: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 5: Seth Jarvis (CAR vs VGK)
+         POINTS 0.5 - 95.0% prob | 1.38 PPG
+
+  $10 bet = $200.00 payout if all legs hit
+================================================================================
+
+PARLAY #3
+Combined Probability: 59.7% | EV: +10.93 | Payout: 20.0x
+Mix: 3 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 2: Jason Robertson (DAL vs WSH)
+         SHOTS 2.5 - 87.0% prob | 4.3 SOG/G
+  Leg 3: Matt Boldy (MIN vs WPG)
+         SHOTS 2.5 - 86.9% prob | 4.0 SOG/G
+  Leg 4: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 5: Evgeni Malkin (PIT vs PHI)
+         POINTS 0.5 - 95.0% prob | 1.60 PPG
+
+  $10 bet = $200.00 payout if all legs hit
+================================================================================
+
+PARLAY #4
+Combined Probability: 59.7% | EV: +10.93 | Payout: 20.0x
+Mix: 3 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 2: Jason Robertson (DAL vs WSH)
+         SHOTS 2.5 - 87.0% prob | 4.3 SOG/G
+  Leg 3: Matt Boldy (MIN vs WPG)
+         SHOTS 2.5 - 86.9% prob | 4.0 SOG/G
+  Leg 4: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 5: Macklin Celebrini (SJS vs LAK)
+         POINTS 0.5 - 95.0% prob | 1.67 PPG
+
+  $10 bet = $200.00 payout if all legs hit
+================================================================================
+
+PARLAY #5
+Combined Probability: 59.7% | EV: +10.93 | Payout: 20.0x
+Mix: 3 Shots + 2 Points
+--------------------------------------------------------------------------------
+  Leg 1: Nathan MacKinnon (COL vs NJD)
+         SHOTS 2.5 - 87.4% prob | 4.4 SOG/G
+  Leg 2: Jason Robertson (DAL vs WSH)
+         SHOTS 2.5 - 87.0% prob | 4.3 SOG/G
+  Leg 3: Matt Boldy (MIN vs WPG)
+         SHOTS 2.5 - 86.9% prob | 4.0 SOG/G
+  Leg 4: Mark Stone (VGK vs CAR)
+         POINTS 0.5 - 95.0% prob | 2.17 PPG
+  Leg 5: Dylan Larkin (DET vs STL)
+         POINTS 0.5 - 95.0% prob | 1.44 PPG
+
+  $10 bet = $200.00 payout if all legs hit
+================================================================================
