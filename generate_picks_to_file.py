@@ -133,13 +133,47 @@ def format_picks_to_file(picks, filename):
         f.write("- T1-ELITE tier = highest confidence\n")
         f.write("=" * 80 + "\n")
 
-def push_to_github(timestamped_file):
+def format_picks_to_csv(picks, filename):
+    """Format picks and save to CSV file"""
+    import csv
+
+    with open(filename, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+
+        # Header
+        writer.writerow([
+            'Player', 'Team', 'Opponent', 'Prop Type', 'Line',
+            'Probability (%)', 'Expected Value', 'Confidence Tier',
+            'Model', 'Reasoning'
+        ])
+
+        # Data rows
+        for pick in picks:
+            player, team, opp, prop, line, prob, ev, tier, model, reason = pick
+
+            writer.writerow([
+                player,
+                team,
+                opp,
+                prop.upper(),
+                line,
+                f"{prob:.1f}",
+                f"{ev:.2f}",
+                tier,
+                model if model else "Statistical",
+                reason
+            ])
+
+    print(f"CSV saved with {len(picks)} picks")
+
+
+def push_to_github(timestamped_file, timestamped_csv):
     """Auto-commit and push picks to GitHub"""
     print("\nPushing to GitHub...")
 
     try:
         # Add files
-        subprocess.run(["git", "add", timestamped_file, "LATEST_PICKS.txt"], check=True)
+        subprocess.run(["git", "add", timestamped_file, timestamped_csv, "LATEST_PICKS.txt", "LATEST_PICKS.csv"], check=True)
 
         # Commit with timestamp
         commit_msg = f"Auto-update picks - {datetime.now().strftime('%Y-%m-%d %I:%M %p')}"
@@ -190,20 +224,27 @@ def main():
     print("\nFetching T1-ELITE picks from database...")
     picks = get_todays_picks()
 
-    # Create timestamped filename
+    # Create timestamped filenames
     timestamp = datetime.now().strftime('%Y-%m-%d_%I-%M%p')
     timestamped_file = f"PICKS_{timestamp}.txt"
+    timestamped_csv = f"PICKS_{timestamp}.csv"
 
-    # Save to timestamped file
+    # Save to timestamped files
     print(f"Writing picks to {timestamped_file}...")
     format_picks_to_file(picks, timestamped_file)
 
-    # Also save to LATEST_PICKS.txt for easy access
+    print(f"Writing picks to {timestamped_csv}...")
+    format_picks_to_csv(picks, timestamped_csv)
+
+    # Also save to LATEST_PICKS.txt and LATEST_PICKS.csv for easy access
     print("Writing picks to LATEST_PICKS.txt...")
     format_picks_to_file(picks, "LATEST_PICKS.txt")
 
+    print("Writing picks to LATEST_PICKS.csv...")
+    format_picks_to_csv(picks, "LATEST_PICKS.csv")
+
     # Push to GitHub
-    github_success = push_to_github(timestamped_file)
+    github_success = push_to_github(timestamped_file, timestamped_csv)
 
     print("\n" + "=" * 80)
     print("DONE!")
@@ -216,8 +257,11 @@ def main():
 
     if github_success:
         print("\nView picks online at:")
-        print("https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt")
-        print(f"https://github.com/thomascp2/nhl-predictions/blob/main/{timestamped_file}")
+        print("TXT: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt")
+        print("CSV: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.csv")
+        print(f"\nTimestamped:")
+        print(f"TXT: https://github.com/thomascp2/nhl-predictions/blob/main/{timestamped_file}")
+        print(f"CSV: https://github.com/thomascp2/nhl-predictions/blob/main/{timestamped_csv}")
     else:
         print("\nPicks saved locally but not pushed to GitHub")
 
