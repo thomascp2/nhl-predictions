@@ -121,7 +121,7 @@ def format_picks_to_file(picks, filename):
             f.write(f"PICK #{idx}\n")
             f.write(f"Player: {player} ({team} vs {opp})\n")
             f.write(f"Prop: {prop} - Line: {line}\n")
-            f.write(f"Probability: {prob:.1f}% | EV: {ev:.2f}\n")
+            f.write(f"Probability: {prob*100:.1f}% | EV: {ev:.2f}\n")
             f.write(f"Model: {model}\n")
             f.write(f"Reasoning: {reason}\n")
             f.write("-" * 80 + "\n\n")
@@ -157,7 +157,7 @@ def format_picks_to_csv(picks, filename):
                 opp,
                 prop.upper(),
                 line,
-                f"{prob:.1f}",
+                f"{prob*100:.1f}",
                 f"{ev:.2f}",
                 tier,
                 model if model else "Statistical",

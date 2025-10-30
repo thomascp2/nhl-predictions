@@ -198,15 +198,17 @@ class GTOParleyOptimizer:
                                    num_2leg: int = 100,
                                    num_3leg: int = 100,
                                    num_4leg: int = 50,
-                                   min_parlay_ev: float = 0.0):
+                                   min_parlay_ev: float = 0.0,
+                                   max_combinations: int = 50000):
         """
-        Generate candidate parlays.
+        Generate candidate parlays with combination limits.
 
         Args:
             num_2leg: Max number of 2-leg parlays to consider
             num_3leg: Max number of 3-leg parlays to consider
             num_4leg: Max number of 4-leg parlays to consider
             min_parlay_ev: Minimum EV threshold for parlay inclusion
+            max_combinations: Maximum combinations to process per leg size (prevents hanging)
         """
         n_picks = len(self.picks_df)
 
@@ -216,9 +218,23 @@ class GTOParleyOptimizer:
 
         # Generate 2-leg parlays
         print(f"\n[*] Generating 2-leg parlay candidates...")
+        print(f"    Possible combinations: {n_picks * (n_picks - 1) // 2}")
         profitable_count = 0
+        processed_count = 0
 
         for combo in combinations(range(n_picks), 2):
+            processed_count += 1
+
+            # Early stop if we have enough profitable parlays
+            if len(self.filtered_parlays_2leg) >= num_2leg * 3:
+                print(f"    Early stop: Found {len(self.filtered_parlays_2leg)} profitable parlays")
+                break
+
+            # Hard limit to prevent infinite loops
+            if processed_count >= max_combinations:
+                print(f"    Hit max combination limit ({max_combinations})")
+                break
+
             if self.is_correlated(combo):
                 continue  # Skip correlated picks
 
@@ -247,15 +263,34 @@ class GTOParleyOptimizer:
                 self.filtered_parlays_2leg.append(parlay_data)
                 profitable_count += 1
 
-        print(f"  Total 2-leg combinations: {len(self.parlays_2leg)}")
+        print(f"  Processed {processed_count} combinations")
+        print(f"  Total 2-leg saved: {len(self.parlays_2leg)}")
         print(f"  Profitable (EV > {min_parlay_ev:.1%}): {profitable_count}")
 
         # Generate 3-leg parlays (if enough picks)
         if n_picks >= 3:
             print(f"\n[*] Generating 3-leg parlay candidates...")
+            print(f"    Possible combinations: {n_picks * (n_picks - 1) * (n_picks - 2) // 6}")
             profitable_count = 0
+            processed_count = 0
 
             for combo in combinations(range(n_picks), 3):
+                processed_count += 1
+
+                # Early stop if we have enough profitable parlays
+                if len(self.filtered_parlays_3leg) >= num_3leg * 3:
+                    print(f"    Early stop: Found {len(self.filtered_parlays_3leg)} profitable parlays")
+                    break
+
+                # Hard limit to prevent infinite loops
+                if processed_count >= max_combinations:
+                    print(f"    Hit max combination limit ({max_combinations})")
+                    break
+
+                # Progress update for large datasets
+                if processed_count % 10000 == 0:
+                    print(f"    Processed {processed_count} combos, found {profitable_count} profitable...")
+
                 if self.is_correlated(combo):
                     continue
 
@@ -284,15 +319,34 @@ class GTOParleyOptimizer:
                     self.filtered_parlays_3leg.append(parlay_data)
                     profitable_count += 1
 
-            print(f"  Total 3-leg combinations: {len(self.parlays_3leg)}")
+            print(f"  Processed {processed_count} combinations")
+            print(f"  Total 3-leg saved: {len(self.parlays_3leg)}")
             print(f"  Profitable (EV > {min_parlay_ev:.1%}): {profitable_count}")
 
         # Generate 4-leg parlays (if enough picks)
         if n_picks >= 4:
             print(f"\n[*] Generating 4-leg parlay candidates...")
+            print(f"    Possible combinations: {n_picks * (n_picks - 1) * (n_picks - 2) * (n_picks - 3) // 24}")
             profitable_count = 0
+            processed_count = 0
 
             for combo in combinations(range(n_picks), 4):
+                processed_count += 1
+
+                # Early stop if we have enough profitable parlays
+                if len(self.filtered_parlays_4leg) >= num_4leg * 3:
+                    print(f"    Early stop: Found {len(self.filtered_parlays_4leg)} profitable parlays")
+                    break
+
+                # Hard limit to prevent infinite loops (reduced for 4-leg due to exponential growth)
+                if processed_count >= max_combinations:
+                    print(f"    Hit max combination limit ({max_combinations})")
+                    break
+
+                # Progress update for large datasets
+                if processed_count % 10000 == 0:
+                    print(f"    Processed {processed_count} combos, found {profitable_count} profitable...")
+
                 if self.is_correlated(combo):
                     continue
 
@@ -321,7 +375,8 @@ class GTOParleyOptimizer:
                     self.filtered_parlays_4leg.append(parlay_data)
                     profitable_count += 1
 
-            print(f"  Total 4-leg combinations: {len(self.parlays_4leg)}")
+            print(f"  Processed {processed_count} combinations")
+            print(f"  Total 4-leg saved: {len(self.parlays_4leg)}")
             print(f"  Profitable (EV > {min_parlay_ev:.1%}): {profitable_count}")
 
     def optimize_parlay_selection(self,
@@ -699,12 +754,28 @@ def main():
     # Initialize optimizer
     optimizer = GTOParleyOptimizer(picks_df, min_profitable_ev=0.0)
 
-    # Generate candidate parlays
+    # Generate candidate parlays with smart limits based on dataset size
+    n_picks = len(picks_df)
+    print(f"[*] Dataset size: {n_picks} edge plays")
+
+    # Adjust max_combinations based on pick count to prevent hanging
+    if n_picks > 50:
+        max_combos = 25000  # Aggressive limit for large datasets (95 picks = 138k+ 3-leg combos)
+        print(f"[*] Large dataset detected - using max {max_combos} combos per leg size")
+    elif n_picks > 30:
+        max_combos = 50000  # Moderate limit
+        print(f"[*] Medium dataset detected - using max {max_combos} combos per leg size")
+    else:
+        max_combos = 100000  # Generous limit for small datasets
+
+    print()
+
     optimizer.generate_candidate_parlays(
         num_2leg=100,
         num_3leg=50,
         num_4leg=25,
-        min_parlay_ev=0.10  # Only parlays with 10%+ EV
+        min_parlay_ev=0.10,  # Only parlays with 10%+ EV
+        max_combinations=max_combos
     )
 
     # Optimize selection

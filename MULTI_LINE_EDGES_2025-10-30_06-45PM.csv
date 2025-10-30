@@ -1,0 +1,166 @@
+player_name,team,opponent,prop_type,line,odds_type,our_probability,pp_implied_probability,edge,expected_value,ev_pct,payout_multiplier,reasoning
+Mark Scheifele,WPG,UNK,points,1.5,demon,85.0%,25.0%,+60.0%,2.4,+240.0%,4.0,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Kirill Kaprizov,MIN,UNK,points,1.5,demon,85.0%,25.0%,+60.0%,2.4,+240.0%,4.0,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Jack Hughes,NJ,UNK,points,1.5,demon,85.0%,25.0%,+60.0%,2.4,+240.0%,4.0,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Macklin Celebrini,SJ,UNK,points,1.5,demon,85.0%,25.0%,+60.0%,2.4,+240.0%,4.0,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Dylan Larkin,DET,UNK,points,1.5,demon,85.0%,25.0%,+60.0%,2.4,+240.0%,4.0,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Evgeni Malkin,PIT,UNK,points,1.5,demon,84.6%,25.0%,+59.6%,2.384727272727273,+238.5%,4.0,"Extrapolated from 0.5 (94.6%), -10% for +1.0 line"
+Adrian Kempe,LA,UNK,points,1.5,demon,82.2%,25.0%,+57.2%,2.286545454545455,+228.7%,4.0,"Extrapolated from 0.5 (92.2%), -10% for +1.0 line"
+Sidney Crosby,PIT,UNK,points,1.5,demon,80.0%,25.0%,+55.0%,2.198181818181818,+219.8%,4.0,"Extrapolated from 0.5 (90.0%), -10% for +1.0 line"
+William Eklund,SJ,UNK,shots,2.5,demon,76.3%,25.0%,+51.3%,2.051002032030718,+205.1%,4.0,2.9 SOG/G
+Justin Brazeau,PIT,UNK,points,0.5,demon,76.0%,25.0%,+51.0%,2.038545454545454,+203.9%,4.0,1.09 PPG
+Jesper Bratt,NJ,UNK,points,1.5,demon,75.5%,25.0%,+50.5%,2.0219999999999994,+202.2%,4.0,"Extrapolated from 0.5 (85.5%), -10% for +1.0 line"
+Mark Scheifele,WPG,UNK,points,2.5,demon,75.0%,25.0%,+50.0%,2.0,+200.0%,4.0,"Extrapolated from 0.5 (95.0%), -20% for +2.0 line"
+Kirill Kaprizov,MIN,UNK,points,2.5,demon,75.0%,25.0%,+50.0%,2.0,+200.0%,4.0,"Extrapolated from 0.5 (95.0%), -20% for +2.0 line"
+Jack Hughes,NJ,UNK,points,2.5,demon,75.0%,25.0%,+50.0%,2.0,+200.0%,4.0,"Extrapolated from 0.5 (95.0%), -20% for +2.0 line"
+Kyle Connor,WPG,UNK,points,1.5,demon,73.0%,25.0%,+48.0%,1.92,+192.0%,4.0,"Extrapolated from 0.5 (83.0%), -10% for +1.0 line"
+Adrian Kempe,LA,UNK,points,2.5,demon,72.2%,25.0%,+47.2%,1.8865454545454545,+188.7%,4.0,"Extrapolated from 0.5 (92.2%), -20% for +2.0 line"
+Matt Boldy,MIN,UNK,points,1.5,demon,71.9%,25.0%,+46.9%,1.8741818181818184,+187.4%,4.0,"Extrapolated from 0.5 (81.9%), -10% for +1.0 line"
+Kyle Connor,WPG,UNK,shots,3.5,demon,71.4%,25.0%,+46.4%,1.8544081423523067,+185.4%,4.0,"Extrapolated from 2.5 (81.4%), -10% for +1.0 line"
+William Eklund,SJ,UNK,points,1.5,demon,70.4%,25.0%,+45.4%,1.815,+181.5%,4.0,"Extrapolated from 0.5 (80.4%), -10% for +1.0 line"
+Alex DeBrincat,DET,UNK,shots,3.5,demon,70.3%,25.0%,+45.3%,1.813365278097645,+181.3%,4.0,"Extrapolated from 2.5 (80.3%), -10% for +1.0 line"
+Sidney Crosby,PIT,UNK,points,2.5,demon,70.0%,25.0%,+45.0%,1.7981818181818179,+179.8%,4.0,"Extrapolated from 0.5 (90.0%), -20% for +2.0 line"
+Jake Neighbours,STL,UNK,points,0.5,demon,69.7%,25.0%,+44.7%,1.7876000000000003,+178.8%,4.0,0.88 PPG
+Dmitry Orlov,SJ,UNK,points,0.5,demon,68.6%,25.0%,+43.6%,1.7456,+174.6%,4.0,0.80 PPG
+Anthony Mantha,PIT,UNK,points,0.5,demon,67.3%,25.0%,+42.3%,1.6923636363636363,+169.2%,4.0,0.91 PPG
+Connor Bedard,CHI,UNK,points,1.5,demon,67.0%,25.0%,+42.0%,1.6799999999999997,+168.0%,4.0,"Extrapolated from 0.5 (77.0%), -10% for +1.0 line"
+Marco Rossi,MIN,UNK,points,1.5,demon,66.7%,25.0%,+41.7%,1.6680000000000001,+166.8%,4.0,"Extrapolated from 0.5 (76.7%), -10% for +1.0 line"
+William Eklund,SJ,UNK,shots,3.5,demon,66.3%,25.0%,+41.3%,1.6510020320307182,+165.1%,4.0,"Extrapolated from 2.5 (76.3%), -10% for +1.0 line"
+Justin Brazeau,PIT,UNK,points,1.5,demon,66.0%,25.0%,+41.0%,1.6385454545454543,+163.9%,4.0,"Extrapolated from 0.5 (76.0%), -10% for +1.0 line"
+Jesper Bratt,NJ,UNK,points,2.5,demon,65.5%,25.0%,+40.5%,1.621999999999999,+162.2%,4.0,"Extrapolated from 0.5 (85.5%), -20% for +2.0 line"
+Matt Boldy,MIN,UNK,shots,4.5,demon,65.5%,25.0%,+40.5%,1.618539837983458,+161.9%,4.0,"Extrapolated from 2.5 (85.5%), -20% for +2.0 line"
+Adrian Kempe,LA,UNK,shots,3.5,demon,64.6%,25.0%,+39.6%,1.585140833770096,+158.5%,4.0,"Extrapolated from 2.5 (74.6%), -10% for +1.0 line"
+Nico Hischier,NJ,UNK,points,1.5,demon,64.6%,25.0%,+39.6%,1.5849999999999995,+158.5%,4.0,"Extrapolated from 0.5 (74.6%), -10% for +1.0 line"
+Will Smith,SJ,UNK,points,1.5,demon,64.3%,25.0%,+39.3%,1.5734999999999997,+157.3%,4.0,"Extrapolated from 0.5 (74.3%), -10% for +1.0 line"
+Macklin Celebrini,SJ,UNK,shots,3.5,demon,64.3%,25.0%,+39.3%,1.5704678908297525,+157.0%,4.0,"Extrapolated from 2.5 (74.3%), -10% for +1.0 line"
+Jack Hughes,NJ,UNK,shots,4.5,demon,64.0%,25.0%,+39.0%,1.560060504682225,+156.0%,4.0,"Extrapolated from 2.5 (84.0%), -20% for +2.0 line"
+Kyle Connor,WPG,UNK,points,2.5,demon,63.0%,25.0%,+38.0%,1.5199999999999996,+152.0%,4.0,"Extrapolated from 0.5 (83.0%), -20% for +2.0 line"
+Marcus Johansson,MIN,UNK,points,0.5,demon,63.0%,25.0%,+38.0%,1.5195636363636367,+152.0%,4.0,0.73 PPG
+Zeev Buium,MIN,UNK,points,0.5,demon,63.0%,25.0%,+38.0%,1.5195636363636367,+152.0%,4.0,0.73 PPG
+Emmitt Finnie,DET,UNK,points,0.5,demon,62.8%,25.0%,+37.8%,1.51328,+151.3%,4.0,0.80 PPG
+Kevin Fiala,LA,UNK,shots,3.5,demon,62.8%,25.0%,+37.8%,1.5102190717560435,+151.0%,4.0,"Extrapolated from 2.5 (72.8%), -10% for +1.0 line"
+Frank Nazar,CHI,UNK,points,1.5,demon,62.2%,25.0%,+37.2%,1.4899999999999998,+149.0%,4.0,"Extrapolated from 0.5 (72.2%), -10% for +1.0 line"
+Matt Boldy,MIN,UNK,points,2.5,demon,61.9%,25.0%,+36.9%,1.474181818181818,+147.4%,4.0,"Extrapolated from 0.5 (81.9%), -20% for +2.0 line"
+Mark Scheifele,WPG,UNK,shots,2.5,demon,61.6%,25.0%,+36.6%,1.4646454262302058,+146.5%,4.0,2.7 SOG/G
+Kyle Connor,WPG,UNK,shots,4.5,demon,61.4%,25.0%,+36.4%,1.4544081423523068,+145.4%,4.0,"Extrapolated from 2.5 (81.4%), -20% for +2.0 line"
+Alex DeBrincat,DET,UNK,points,1.5,demon,61.3%,25.0%,+36.3%,1.452,+145.2%,4.0,"Extrapolated from 0.5 (71.3%), -10% for +1.0 line"
+Lucas Raymond,DET,UNK,points,1.5,demon,61.3%,25.0%,+36.3%,1.452,+145.2%,4.0,"Extrapolated from 0.5 (71.3%), -10% for +1.0 line"
+Kirill Kaprizov,MIN,UNK,shots,4.5,demon,60.6%,25.0%,+35.6%,1.422026875560527,+142.2%,4.0,"Extrapolated from 2.5 (80.6%), -20% for +2.0 line"
+Ryan Donato,CHI,UNK,points,0.5,demon,60.4%,25.0%,+35.4%,1.416,+141.6%,4.0,0.80 PPG
+Teuvo Teravainen,CHI,UNK,points,0.5,demon,60.4%,25.0%,+35.4%,1.416,+141.6%,4.0,0.80 PPG
+Alex DeBrincat,DET,UNK,shots,4.5,demon,60.3%,25.0%,+35.3%,1.4133652780976451,+141.3%,4.0,"Extrapolated from 2.5 (80.3%), -20% for +2.0 line"
+Jake Neighbours,STL,UNK,points,1.5,demon,59.7%,25.0%,+34.7%,1.3876000000000004,+138.8%,4.0,"Extrapolated from 0.5 (69.7%), -10% for +1.0 line"
+Dawson Mercer,NJ,UNK,points,1.5,demon,59.3%,25.0%,+34.3%,1.3732000000000002,+137.3%,4.0,"Extrapolated from 0.5 (69.3%), -10% for +1.0 line"
+Timo Meier,NJ,UNK,points,1.5,demon,59.3%,25.0%,+34.3%,1.3732000000000002,+137.3%,4.0,"Extrapolated from 0.5 (69.3%), -10% for +1.0 line"
+Dylan Larkin,DET,UNK,shots,3.5,demon,58.1%,25.0%,+33.1%,1.3225192446976695,+132.3%,4.0,"Extrapolated from 2.5 (68.1%), -10% for +1.0 line"
+Anthony Mantha,PIT,UNK,points,1.5,demon,57.3%,25.0%,+32.3%,1.2923636363636364,+129.2%,4.0,"Extrapolated from 0.5 (67.3%), -10% for +1.0 line"
+Quinton Byfield,LA,UNK,shots,2.5,demon,56.7%,25.0%,+31.7%,1.267190338825194,+126.7%,4.0,2.4 SOG/G
+Bryan Rust,PIT,UNK,points,1.5,demon,56.5%,25.0%,+31.5%,1.2591999999999999,+125.9%,4.0,"Extrapolated from 0.5 (66.5%), -10% for +1.0 line"
+Jordan Kyrou,STL,UNK,points,1.5,demon,56.3%,25.0%,+31.3%,1.2515200000000002,+125.2%,4.0,"Extrapolated from 0.5 (66.3%), -10% for +1.0 line"
+William Eklund,SJ,UNK,shots,4.5,demon,56.3%,25.0%,+31.3%,1.2510020320307182,+125.1%,4.0,"Extrapolated from 2.5 (76.3%), -20% for +2.0 line"
+Will Smith,SJ,UNK,shots,2.5,demon,55.9%,25.0%,+30.9%,1.2341783680528424,+123.4%,4.0,2.2 SOG/G
+Will Smith,SJ,UNK,points,0.5,standard,74.3%,33.3%,+41.0%,1.2301249999999997,+123.0%,3.0,0.90 PPG
+Matt Boldy,MIN,UNK,shots,5.5,demon,55.5%,25.0%,+30.5%,1.2185398379834576,+121.9%,4.0,"Extrapolated from 2.5 (85.5%), -30% for +3.0 line"
+Adrian Kempe,LA,UNK,shots,4.5,demon,54.6%,25.0%,+29.6%,1.1851408337700962,+118.5%,4.0,"Extrapolated from 2.5 (74.6%), -20% for +2.0 line"
+Nico Hischier,NJ,UNK,points,2.5,demon,54.6%,25.0%,+29.6%,1.1849999999999996,+118.5%,4.0,"Extrapolated from 0.5 (74.6%), -20% for +2.0 line"
+Kevin Fiala,LA,UNK,shots,2.5,standard,72.8%,33.3%,+39.4%,1.1826643038170328,+118.3%,3.0,2.9 SOG/G
+Macklin Celebrini,SJ,UNK,shots,4.5,demon,54.3%,25.0%,+29.3%,1.1704678908297526,+117.0%,4.0,"Extrapolated from 2.5 (74.3%), -20% for +2.0 line"
+Frank Nazar,CHI,UNK,points,0.5,standard,72.2%,33.3%,+38.9%,1.1674999999999995,+116.7%,3.0,1.10 PPG
+Jack Hughes,NJ,UNK,shots,5.5,demon,54.0%,25.0%,+29.0%,1.1600605046822245,+116.0%,4.0,"Extrapolated from 2.5 (84.0%), -30% for +3.0 line"
+Gabriel Vilardi,WPG,UNK,points,1.5,demon,53.6%,25.0%,+28.6%,1.1440000000000001,+114.4%,4.0,"Extrapolated from 0.5 (63.6%), -10% for +1.0 line"
+Josh Morrissey,WPG,UNK,points,1.5,demon,53.6%,25.0%,+28.6%,1.1440000000000001,+114.4%,4.0,"Extrapolated from 0.5 (63.6%), -10% for +1.0 line"
+Erik Karlsson,PIT,UNK,points,1.5,demon,53.6%,25.0%,+28.6%,1.143127272727273,+114.3%,4.0,"Extrapolated from 0.5 (63.6%), -10% for +1.0 line"
+Marcus Johansson,MIN,UNK,points,1.5,demon,53.0%,25.0%,+28.0%,1.1195636363636368,+112.0%,4.0,"Extrapolated from 0.5 (63.0%), -10% for +1.0 line"
+Kevin Fiala,LA,UNK,points,1.5,demon,53.0%,25.0%,+28.0%,1.1195636363636368,+112.0%,4.0,"Extrapolated from 0.5 (63.0%), -10% for +1.0 line"
+Quinton Byfield,LA,UNK,points,1.5,demon,53.0%,25.0%,+28.0%,1.1195636363636368,+112.0%,4.0,"Extrapolated from 0.5 (63.0%), -10% for +1.0 line"
+Emmitt Finnie,DET,UNK,points,1.5,demon,52.8%,25.0%,+27.8%,1.11328,+111.3%,4.0,"Extrapolated from 0.5 (62.8%), -10% for +1.0 line"
+Kevin Fiala,LA,UNK,shots,4.5,demon,52.8%,25.0%,+27.8%,1.1102190717560436,+111.0%,4.0,"Extrapolated from 2.5 (72.8%), -20% for +2.0 line"
+Connor Bedard,CHI,UNK,shots,3.5,demon,52.1%,25.0%,+27.1%,1.0823399627443928,+108.2%,4.0,"Extrapolated from 2.5 (62.1%), -10% for +1.0 line"
+Dawson Mercer,NJ,UNK,points,0.5,standard,69.3%,33.3%,+36.0%,1.0799000000000003,+108.0%,3.0,0.90 PPG
+Timo Meier,NJ,UNK,shots,3.5,demon,51.8%,25.0%,+26.8%,1.0711623015461904,+107.1%,4.0,"Extrapolated from 2.5 (61.8%), -10% for +1.0 line"
+Mark Scheifele,WPG,UNK,shots,3.5,demon,51.6%,25.0%,+26.6%,1.0646454262302059,+106.5%,4.0,"Extrapolated from 2.5 (61.6%), -10% for +1.0 line"
+Kyle Connor,WPG,UNK,shots,5.5,demon,51.4%,25.0%,+26.4%,1.0544081423523064,+105.4%,4.0,"Extrapolated from 2.5 (81.4%), -30% for +3.0 line"
+Leon Draisaitl,EDM,UNK,shots,3.5,demon,50.9%,25.0%,+25.9%,1.0348187912279365,+103.5%,4.0,"Extrapolated from 2.5 (60.9%), -10% for +1.0 line"
+Kirill Kaprizov,MIN,UNK,shots,5.5,demon,50.6%,25.0%,+25.6%,1.022026875560527,+102.2%,4.0,"Extrapolated from 2.5 (80.6%), -30% for +3.0 line"
+Ryan Donato,CHI,UNK,points,1.5,demon,50.4%,25.0%,+25.4%,1.016,+101.6%,4.0,"Extrapolated from 0.5 (60.4%), -10% for +1.0 line"
+Teuvo Teravainen,CHI,UNK,points,1.5,demon,50.4%,25.0%,+25.4%,1.016,+101.6%,4.0,"Extrapolated from 0.5 (60.4%), -10% for +1.0 line"
+Alex DeBrincat,DET,UNK,shots,5.5,demon,50.3%,25.0%,+25.3%,1.0133652780976448,+101.3%,4.0,"Extrapolated from 2.5 (80.3%), -30% for +3.0 line"
+Connor McDavid,EDM,UNK,shots,3.5,demon,48.1%,25.0%,+23.1%,0.9236069759459737,+92.4%,4.0,"Extrapolated from 2.5 (58.1%), -10% for +1.0 line"
+Dylan Larkin,DET,UNK,shots,4.5,demon,48.1%,25.0%,+23.1%,0.9225192446976693,+92.3%,4.0,"Extrapolated from 2.5 (68.1%), -20% for +2.0 line"
+Erik Karlsson,PIT,UNK,points,0.5,standard,63.6%,33.3%,+30.2%,0.9073454545454547,+90.7%,3.0,0.82 PPG
+Mark Scheifele,WPG,UNK,points,0.5,goblin,95.0%,50.0%,+45.0%,0.8999999999999999,+90.0%,2.0,1.50 PPG
+Kirill Kaprizov,MIN,UNK,points,0.5,goblin,95.0%,50.0%,+45.0%,0.8999999999999999,+90.0%,2.0,1.36 PPG
+Jack Hughes,NJ,UNK,points,0.5,goblin,95.0%,50.0%,+45.0%,0.8999999999999999,+90.0%,2.0,1.40 PPG
+Macklin Celebrini,SJ,UNK,points,0.5,goblin,95.0%,50.0%,+45.0%,0.8999999999999999,+90.0%,2.0,1.60 PPG
+Dylan Larkin,DET,UNK,points,0.5,goblin,95.0%,50.0%,+45.0%,0.8999999999999999,+90.0%,2.0,1.60 PPG
+Evgeni Malkin,PIT,UNK,points,0.5,goblin,94.6%,50.0%,+44.6%,0.8923636363636365,+89.2%,2.0,1.45 PPG
+Quinton Byfield,LA,UNK,shots,3.5,demon,46.7%,25.0%,+21.7%,0.867190338825194,+86.7%,4.0,"Extrapolated from 2.5 (56.7%), -10% for +1.0 line"
+Adrian Kempe,LA,UNK,points,0.5,goblin,92.2%,50.0%,+42.2%,0.8432727272727274,+84.3%,2.0,1.27 PPG
+Will Smith,SJ,UNK,shots,3.5,demon,45.9%,25.0%,+20.9%,0.8341783680528425,+83.4%,4.0,"Extrapolated from 2.5 (55.9%), -10% for +1.0 line"
+Alex DeBrincat,DET,UNK,shots,1.5,goblin,90.3%,50.0%,+40.3%,0.8066826390488224,+80.7%,2.0,"Extrapolated from 2.5 (80.3%), +10% for -1.0 line"
+Sidney Crosby,PIT,UNK,points,0.5,goblin,90.0%,50.0%,+40.0%,0.7990909090909089,+79.9%,2.0,1.36 PPG
+Ryan Donato,CHI,UNK,shots,2.5,demon,44.8%,25.0%,+19.8%,0.7906346765835632,+79.1%,4.0,2.5 SOG/G
+Nico Hischier,NJ,UNK,shots,3.5,demon,44.6%,25.0%,+19.6%,0.7852075453647172,+78.5%,4.0,"Extrapolated from 2.5 (54.6%), -10% for +1.0 line"
+Adrian Kempe,LA,UNK,shots,5.5,demon,44.6%,25.0%,+19.6%,0.7851408337700958,+78.5%,4.0,"Extrapolated from 2.5 (74.6%), -30% for +3.0 line"
+Macklin Celebrini,SJ,UNK,shots,5.5,demon,44.3%,25.0%,+19.3%,0.7704678908297522,+77.0%,4.0,"Extrapolated from 2.5 (74.3%), -30% for +3.0 line"
+Jack Hughes,NJ,UNK,shots,6.5,demon,44.0%,25.0%,+19.0%,0.7600605046822246,+76.0%,4.0,"Extrapolated from 2.5 (84.0%), -40% for +4.0 line"
+William Eklund,SJ,UNK,shots,1.5,goblin,86.3%,50.0%,+36.3%,0.725501016015359,+72.6%,2.0,"Extrapolated from 2.5 (76.3%), +10% for -1.0 line"
+Jesper Bratt,NJ,UNK,points,0.5,goblin,85.5%,50.0%,+35.5%,0.7109999999999996,+71.1%,2.0,1.20 PPG
+Matt Boldy,MIN,UNK,shots,2.5,goblin,85.5%,50.0%,+35.5%,0.7092699189917289,+70.9%,2.0,3.8 SOG/G
+Adrian Kempe,LA,UNK,shots,1.5,goblin,84.6%,50.0%,+34.6%,0.692570416885048,+69.3%,2.0,"Extrapolated from 2.5 (74.6%), +10% for -1.0 line"
+Connor Bedard,CHI,UNK,shots,4.5,demon,42.1%,25.0%,+17.1%,0.6823399627443927,+68.2%,4.0,"Extrapolated from 2.5 (62.1%), -20% for +2.0 line"
+Jack Hughes,NJ,UNK,shots,2.5,goblin,84.0%,50.0%,+34.0%,0.6800302523411124,+68.0%,2.0,3.8 SOG/G
+Timo Meier,NJ,UNK,shots,4.5,demon,41.8%,25.0%,+16.8%,0.6711623015461903,+67.1%,4.0,"Extrapolated from 2.5 (61.8%), -20% for +2.0 line"
+Mark Scheifele,WPG,UNK,shots,4.5,demon,41.6%,25.0%,+16.6%,0.6646454262302057,+66.5%,4.0,"Extrapolated from 2.5 (61.6%), -20% for +2.0 line"
+Kyle Connor,WPG,UNK,points,0.5,goblin,83.0%,50.0%,+33.0%,0.6599999999999999,+66.0%,2.0,1.20 PPG
+Kevin Fiala,LA,UNK,shots,1.5,goblin,82.8%,50.0%,+32.8%,0.6551095358780217,+65.5%,2.0,"Extrapolated from 2.5 (72.8%), +10% for -1.0 line"
+Artemi Panarin,NYR,UNK,shots,3.5,demon,41.4%,25.0%,+16.4%,0.6544493170671202,+65.4%,4.0,"Extrapolated from 2.5 (51.4%), -10% for +1.0 line"
+Matt Boldy,MIN,UNK,points,0.5,goblin,81.9%,50.0%,+31.9%,0.6370909090909092,+63.7%,2.0,1.09 PPG
+Leon Draisaitl,EDM,UNK,shots,4.5,demon,40.9%,25.0%,+15.9%,0.6348187912279364,+63.5%,4.0,"Extrapolated from 2.5 (60.9%), -20% for +2.0 line"
+Kyle Connor,WPG,UNK,shots,2.5,goblin,81.4%,50.0%,+31.4%,0.6272040711761533,+62.7%,2.0,3.7 SOG/G
+Bryan Rust,PIT,UNK,shots,3.5,demon,40.3%,25.0%,+15.3%,0.6127252967196735,+61.3%,4.0,"Extrapolated from 2.5 (50.3%), -10% for +1.0 line"
+Kirill Kaprizov,MIN,UNK,shots,2.5,goblin,80.6%,50.0%,+30.6%,0.6110134377802636,+61.1%,2.0,3.4 SOG/G
+Alex DeBrincat,DET,UNK,shots,2.5,goblin,80.3%,50.0%,+30.3%,0.6066826390488225,+60.7%,2.0,3.7 SOG/G
+Jordan Kyrou,STL,UNK,shots,3.5,demon,39.8%,25.0%,+14.8%,0.5916847423840297,+59.2%,4.0,"Extrapolated from 2.5 (49.8%), -10% for +1.0 line"
+Dylan Larkin,DET,UNK,shots,1.5,goblin,78.1%,50.0%,+28.1%,0.5612596223488346,+56.1%,2.0,"Extrapolated from 2.5 (68.1%), +10% for -1.0 line"
+Evgeni Malkin,PIT,UNK,shots,2.5,demon,38.5%,25.0%,+13.5%,0.5405861649056365,+54.1%,4.0,2.2 SOG/G
+Connor Bedard,CHI,UNK,points,0.5,goblin,77.0%,50.0%,+27.0%,0.5399999999999998,+54.0%,2.0,1.20 PPG
+Connor McDavid,EDM,UNK,shots,4.5,demon,38.1%,25.0%,+13.1%,0.5236069759459736,+52.4%,4.0,"Extrapolated from 2.5 (58.1%), -20% for +2.0 line"
+Bryan Rust,PIT,UNK,shots,2.5,standard,50.3%,33.3%,+17.0%,0.509543972539755,+51.0%,3.0,2.4 SOG/G
+Jordan Kyrou,STL,UNK,shots,2.5,standard,49.8%,33.3%,+16.5%,0.4937635567880223,+49.4%,3.0,2.2 SOG/G
+Adrian Kempe,LA,UNK,shots,2.5,goblin,74.6%,50.0%,+24.6%,0.492570416885048,+49.3%,2.0,3.0 SOG/G
+Nico Hischier,NJ,UNK,points,0.5,goblin,74.6%,50.0%,+24.6%,0.4924999999999997,+49.2%,2.0,1.00 PPG
+Macklin Celebrini,SJ,UNK,shots,2.5,goblin,74.3%,50.0%,+24.3%,0.4852339454148762,+48.5%,2.0,2.8 SOG/G
+Gabriel Vilardi,WPG,UNK,shots,2.5,demon,36.9%,25.0%,+11.9%,0.4760541959024618,+47.6%,4.0,2.1 SOG/G
+Connor Bedard,CHI,UNK,shots,1.5,goblin,72.1%,50.0%,+22.1%,0.4411699813721963,+44.1%,2.0,"Extrapolated from 2.5 (62.1%), +10% for -1.0 line"
+Timo Meier,NJ,UNK,shots,1.5,goblin,71.8%,50.0%,+21.8%,0.4355811507730951,+43.6%,2.0,"Extrapolated from 2.5 (61.8%), +10% for -1.0 line"
+Mark Scheifele,WPG,UNK,shots,1.5,goblin,71.6%,50.0%,+21.6%,0.43232271311510284,+43.2%,2.0,"Extrapolated from 2.5 (61.6%), +10% for -1.0 line"
+Alex DeBrincat,DET,UNK,points,0.5,goblin,71.3%,50.0%,+21.3%,0.42599999999999993,+42.6%,2.0,1.00 PPG
+Lucas Raymond,DET,UNK,points,0.5,goblin,71.3%,50.0%,+21.3%,0.42599999999999993,+42.6%,2.0,1.00 PPG
+Ryan Donato,CHI,UNK,shots,3.5,demon,34.8%,25.0%,+9.8%,0.3906346765835633,+39.1%,4.0,"Extrapolated from 2.5 (44.8%), -10% for +1.0 line"
+Timo Meier,NJ,UNK,points,0.5,goblin,69.3%,50.0%,+19.3%,0.38660000000000005,+38.7%,2.0,0.90 PPG
+Nico Hischier,NJ,UNK,shots,4.5,demon,34.6%,25.0%,+9.6%,0.385207545364717,+38.5%,4.0,"Extrapolated from 2.5 (54.6%), -20% for +2.0 line"
+Quinton Byfield,LA,UNK,shots,1.5,goblin,66.7%,50.0%,+16.7%,0.3335951694125969,+33.4%,2.0,"Extrapolated from 2.5 (56.7%), +10% for -1.0 line"
+Bryan Rust,PIT,UNK,points,0.5,goblin,66.5%,50.0%,+16.5%,0.3295999999999999,+33.0%,2.0,0.89 PPG
+Jordan Kyrou,STL,UNK,points,0.5,goblin,66.3%,50.0%,+16.3%,0.32576000000000005,+32.6%,2.0,0.80 PPG
+Will Smith,SJ,UNK,shots,1.5,goblin,65.9%,50.0%,+15.9%,0.31708918402642117,+31.7%,2.0,"Extrapolated from 2.5 (55.9%), +10% for -1.0 line"
+Nico Hischier,NJ,UNK,shots,1.5,goblin,64.6%,50.0%,+14.6%,0.2926037726823585,+29.3%,2.0,"Extrapolated from 2.5 (54.6%), +10% for -1.0 line"
+Gabriel Vilardi,WPG,UNK,points,0.5,goblin,63.6%,50.0%,+13.6%,0.272,+27.2%,2.0,0.80 PPG
+Josh Morrissey,WPG,UNK,points,0.5,goblin,63.6%,50.0%,+13.6%,0.272,+27.2%,2.0,0.80 PPG
+Timo Meier,NJ,UNK,shots,5.5,demon,31.8%,25.0%,+6.8%,0.27116230154619014,+27.1%,4.0,"Extrapolated from 2.5 (61.8%), -30% for +3.0 line"
+Kevin Fiala,LA,UNK,points,0.5,goblin,63.0%,50.0%,+13.0%,0.25978181818181834,+26.0%,2.0,0.73 PPG
+Artemi Panarin,NYR,UNK,shots,4.5,demon,31.4%,25.0%,+6.4%,0.25444931706712004,+25.4%,4.0,"Extrapolated from 2.5 (51.4%), -20% for +2.0 line"
+Timo Meier,NJ,UNK,shots,2.5,goblin,61.8%,50.0%,+11.8%,0.23558115077309516,+23.6%,2.0,2.6 SOG/G
+Leon Draisaitl,EDM,UNK,shots,5.5,demon,30.9%,25.0%,+5.9%,0.23481879122793625,+23.5%,4.0,"Extrapolated from 2.5 (60.9%), -30% for +3.0 line"
+Artemi Panarin,NYR,UNK,shots,1.5,goblin,61.4%,50.0%,+11.4%,0.22722465853356,+22.7%,2.0,"Extrapolated from 2.5 (51.4%), +10% for -1.0 line"
+Leon Draisaitl,EDM,UNK,shots,2.5,goblin,60.9%,50.0%,+10.9%,0.21740939561396821,+21.7%,2.0,2.9 SOG/G
+Bryan Rust,PIT,UNK,shots,4.5,demon,30.3%,25.0%,+5.3%,0.21272529671967333,+21.3%,4.0,"Extrapolated from 2.5 (50.3%), -20% for +2.0 line"
+Bryan Rust,PIT,UNK,shots,1.5,goblin,60.3%,50.0%,+10.3%,0.20636264835983664,+20.6%,2.0,"Extrapolated from 2.5 (50.3%), +10% for -1.0 line"
+Jordan Kyrou,STL,UNK,shots,1.5,goblin,59.8%,50.0%,+9.8%,0.19584237119201475,+19.6%,2.0,"Extrapolated from 2.5 (49.8%), +10% for -1.0 line"
+Jordan Kyrou,STL,UNK,shots,4.5,demon,29.8%,25.0%,+4.8%,0.19168474238402955,+19.2%,4.0,"Extrapolated from 2.5 (49.8%), -20% for +2.0 line"
+Connor McDavid,EDM,UNK,shots,2.5,goblin,58.1%,50.0%,+8.1%,0.16180348797298683,+16.2%,2.0,2.8 SOG/G
+Marco Rossi,MIN,UNK,shots,2.5,demon,28.7%,25.0%,+3.7%,0.14833511393788656,+14.8%,4.0,1.8 SOG/G
+Evgeni Malkin,PIT,UNK,shots,3.5,demon,28.5%,25.0%,+3.5%,0.14058616490563658,+14.1%,4.0,"Extrapolated from 2.5 (38.5%), -10% for +1.0 line"
+Connor McDavid,EDM,UNK,shots,5.5,demon,28.1%,25.0%,+3.1%,0.12360697594597347,+12.4%,4.0,"Extrapolated from 2.5 (58.1%), -30% for +3.0 line"
+Ryan Donato,CHI,UNK,shots,1.5,goblin,54.8%,50.0%,+4.8%,0.09531733829178157,+9.5%,2.0,"Extrapolated from 2.5 (44.8%), +10% for -1.0 line"
+Gabriel Vilardi,WPG,UNK,shots,3.5,demon,26.9%,25.0%,+1.9%,0.07605419590246187,+7.6%,4.0,"Extrapolated from 2.5 (36.9%), -10% for +1.0 line"

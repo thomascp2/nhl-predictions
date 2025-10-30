@@ -60,6 +60,13 @@ def commit_to_github():
     latest_gto = max(gto_files, key=os.path.getmtime)
     print(f"Found latest GTO file: {latest_gto}")
 
+    # Find latest multi-line edges file
+    edges_files = glob.glob("MULTI_LINE_EDGES_*.csv")
+    latest_edges = None
+    if edges_files:
+        latest_edges = max(edges_files, key=os.path.getmtime)
+        print(f"Found latest edges file: {latest_edges}")
+
     # Use full git path for Task Scheduler compatibility
     git_exe = "C:\\Program Files\\Git\\cmd\\git.exe"
 
@@ -70,6 +77,10 @@ def commit_to_github():
             "LATEST_PICKS.txt",
             "LATEST_PICKS.csv"
         ]
+
+        # Add edges file if it exists
+        if latest_edges:
+            files_to_commit.append(latest_edges)
 
         print(f"Adding files: {', '.join(files_to_commit)}")
         result = subprocess.run(
@@ -148,11 +159,11 @@ def main():
         print("\n[WARNING] Predictions failed - cannot continue")
         return
 
-    # Step 2: Fetch PrizePicks lines and find edge
-    if run_script("prizepicks_integration_v2.py", "STEP 2: Find PrizePicks Edge"):
+    # Step 2: Multi-line EV optimization (evaluates ALL PrizePicks lines)
+    if run_script("prizepicks_multi_line_optimizer.py", "STEP 2: Multi-Line EV Optimization"):
         success_count += 1
     else:
-        print("\n[WARNING] PrizePicks integration failed - skipping parlays")
+        print("\n[WARNING] Multi-line optimizer failed - skipping parlays")
         print("   You can still use individual picks from LATEST_PICKS.txt")
         return
 
