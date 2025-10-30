@@ -341,6 +341,70 @@ optimizer.generate_candidate_parlays(
 
 ---
 
+## Individual Pick Odds Tracking
+
+### The Problem
+
+**IMPORTANT DISCOVERY**: PrizePicks assigns **individual multipliers to each pick**, not fixed parlay multipliers!
+
+**What This Means:**
+```
+Matthews SHOTS O3.5 = 1.5x
+Marchenko SHOTS O2.5 = 1.5x
+2-leg parlay = 1.5 × 1.5 = 2.25x (NOT 3.0x!)
+```
+
+**Impact on GTO Parlays:**
+- Previous EV calculations overstated by ~58%
+- Need to learn actual individual pick multipliers
+- PrizePicks API doesn't expose individual odds
+
+### The Solution: Crowdsourced Learning
+
+**Log actual parlay payouts → Reverse engineer individual odds → Build database**
+
+### How to Track Odds
+
+After placing each bet on PrizePicks, run:
+
+```bash
+python log_parlay.py
+```
+
+Example session:
+```
+Date: [Enter for today]
+Payout: 2.25
+Number of legs: 2
+
+Leg 1:
+  Player: Auston Matthews
+  Prop type: shots
+  Line: 3.5
+
+Leg 2:
+  Player: Kirill Marchenko
+  Prop type: shots
+  Line: 2.5
+
+[SUCCESS] Logged! Implied odds: ~1.50x each
+```
+
+### Building Training Data
+
+**Goal: 50-100 observations for ML model**
+
+As you place bets over the next few weeks:
+1. Log each parlay immediately (30 seconds)
+2. System learns individual pick odds
+3. Confidence improves with more data
+4. After 50+ observations, train ML model
+5. Integrate learned odds into GTO optimizer
+
+**See PRIZEPICKS_ODDS_TRACKING.md for complete guide**
+
+---
+
 ## What's Next
 
 ### Short Term (This Week):
@@ -348,9 +412,14 @@ optimizer.generate_candidate_parlays(
 - [x] GTO parlay optimizer
 - [x] Real PrizePicks payouts
 - [x] GitHub auto-commit
+- [x] Interactive odds tracking logger
+- [ ] Log 10-20 parlay observations
 - [ ] Test for 1 week, track results
 
 ### Medium Term (This Month):
+- [ ] Collect 50+ parlay observations
+- [ ] Train ML model for individual pick odds
+- [ ] Integrate learned odds into GTO optimizer
 - [ ] Build parlay grading system
 - [ ] Track GTO frequency effectiveness
 - [ ] Retrain ML model on graded data
@@ -371,6 +440,7 @@ optimizer.generate_candidate_parlays(
 ✅ Complete automation (picks → edge → parlays → GitHub)
 ✅ GTO-optimized parlay selection
 ✅ Real PrizePicks payouts (standard/goblin/demon)
+✅ Individual pick odds tracking system
 ✅ Kelly criterion bet sizing
 ✅ Correlation avoidance
 ✅ Frequency balancing
