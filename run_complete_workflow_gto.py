@@ -40,6 +40,96 @@ def run_script(script_name: str, description: str) -> bool:
         return False
 
 
+def commit_to_github():
+    """Commit GTO parlays and picks to GitHub"""
+    print("\n" + "="*80)
+    print("STEP 4: Commit to GitHub")
+    print("="*80)
+    print()
+
+    import glob
+    import os
+
+    # Find latest GTO parlay file
+    gto_files = glob.glob("GTO_PARLAYS_*.csv")
+    if not gto_files:
+        print("[WARNING] No GTO parlay files found to commit")
+        return False
+
+    # Sort by modification time, get most recent
+    latest_gto = max(gto_files, key=os.path.getmtime)
+    print(f"Found latest GTO file: {latest_gto}")
+
+    # Use full git path for Task Scheduler compatibility
+    git_exe = "C:\\Program Files\\Git\\cmd\\git.exe"
+
+    try:
+        # Add files
+        files_to_commit = [
+            latest_gto,
+            "LATEST_PICKS.txt",
+            "LATEST_PICKS.csv"
+        ]
+
+        print(f"Adding files: {', '.join(files_to_commit)}")
+        result = subprocess.run(
+            [git_exe, "add"] + files_to_commit,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if result.returncode != 0:
+            print(f"[WARNING] Git add failed: {result.stderr}")
+            return False
+
+        # Commit with timestamp
+        commit_msg = f"Auto-update picks and GTO parlays - {datetime.now().strftime('%Y-%m-%d %I:%M %p')}"
+        print(f"Committing: {commit_msg}")
+
+        result = subprocess.run(
+            [git_exe, "commit", "-m", commit_msg],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if result.returncode != 0:
+            # Check if it's just "nothing to commit"
+            if "nothing to commit" in result.stdout:
+                print("[INFO] No changes to commit")
+                return True
+            else:
+                print(f"[WARNING] Git commit failed: {result.stderr}")
+                return False
+
+        # Push
+        print("Pushing to GitHub...")
+        result = subprocess.run(
+            [git_exe, "push"],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        if result.returncode != 0:
+            print(f"[WARNING] Git push failed: {result.stderr}")
+            return False
+
+        print("[SUCCESS] Successfully pushed to GitHub!")
+        return True
+
+    except FileNotFoundError:
+        print("[WARNING] Git not found - files saved locally only")
+        return False
+    except subprocess.TimeoutExpired:
+        print("[WARNING] Git operation timed out")
+        return False
+    except Exception as e:
+        print(f"[WARNING] Git operation failed: {e}")
+        return False
+
+
 def main():
     """Run complete workflow"""
     print("\n" + "="*80)
@@ -73,6 +163,10 @@ def main():
         print("\n[WARNING] GTO optimizer failed - check if you have edge plays")
         print("   You can still use edge plays from prizepicks_integration output")
 
+    # Step 4: Commit to GitHub
+    if commit_to_github():
+        success_count += 1
+
     # Summary
     print("\n" + "="*80)
     print("WORKFLOW SUMMARY")
@@ -82,7 +176,7 @@ def main():
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
     print()
 
-    if success_count >= 2:
+    if success_count >= 3:
         print("[SUCCESS] Ready to bet!")
         print()
         print("Check these files:")
@@ -95,9 +189,21 @@ def main():
         print("   - Parlays: Use GTO recommendations with Kelly sizing")
         print("   - Bankroll: Risk 2-5% total across all plays")
         print()
-        print("View online:")
-        print("   TXT: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt")
-        print("   CSV: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.csv")
+
+        if success_count == 4:
+            print("View online (auto-updated):")
+            print("   TXT: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt")
+            print("   CSV: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.csv")
+
+            # Find latest GTO file for link
+            import glob
+            import os
+            gto_files = glob.glob("GTO_PARLAYS_*.csv")
+            if gto_files:
+                latest_gto = os.path.basename(max(gto_files, key=os.path.getmtime))
+                print(f"   GTO: https://github.com/thomascp2/nhl-predictions/blob/main/{latest_gto}")
+        else:
+            print("Files saved locally (GitHub push skipped)")
     else:
         print("[WARNING] PARTIAL SUCCESS - Some steps failed")
         print("   Check output above for errors")
