@@ -8,6 +8,7 @@ Uses real PrizePicks payouts based on odds_type.
 import sqlite3
 import pandas as pd
 import numpy as np
+import json
 from itertools import combinations
 from typing import List, Tuple, Dict
 from collections import defaultdict
@@ -530,6 +531,82 @@ class GTOParleyOptimizer:
         df.to_csv(filename, index=False)
         print(f"[SUCCESS] Exported {len(self.selected_parlays)} parlays to {filename}")
 
+    def save_to_database(self, date: str = None):
+        """Save selected parlays to database for tracking and grading."""
+        if not self.selected_parlays:
+            print("[WARNING] No parlays to save")
+            return
+
+        if date is None:
+            date = datetime.now().strftime('%Y-%m-%d')
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        saved_count = 0
+
+        for i, parlay in enumerate(self.selected_parlays, 1):
+            # Build picks JSON
+            picks_list = []
+            for idx in parlay['picks']:
+                pick = self.picks_df.iloc[idx]
+                picks_list.append({
+                    'player_name': pick['player_name'],
+                    'prop_type': pick['prop_type'],
+                    'line': float(pick['line']),
+                    'team': pick['team'],
+                    'opponent': pick['opponent'],
+                    'odds_type': pick.get('odds_type', 'standard')
+                })
+
+            picks_json = json.dumps(picks_list)
+            parlay_id = f"P{i:03d}"
+
+            # Calculate parlay tier based on EV
+            if parlay['ev'] >= 0.25:
+                tier = 'ELITE'
+            elif parlay['ev'] >= 0.15:
+                tier = 'T1'
+            elif parlay['ev'] >= 0.10:
+                tier = 'T2'
+            else:
+                tier = 'T3'
+
+            # Get Kelly bet sizing if available
+            kelly_bet = parlay.get('kelly_bet', 0)
+            kelly_fraction = parlay.get('kelly_fraction', 0.25)
+
+            # Insert into database
+            insert_query = """
+                INSERT OR REPLACE INTO gto_parlays
+                (date, parlay_id, num_legs, picks_json, combined_probability,
+                 payout_multiplier, expected_value, kelly_fraction,
+                 recommended_bet_size, parlay_tier, correlation_score, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+
+            cursor.execute(insert_query, (
+                date,
+                parlay_id,
+                parlay['legs'],
+                picks_json,
+                parlay['probability'],
+                parlay['actual_payout'],
+                parlay['ev'],
+                kelly_fraction,
+                kelly_bet,
+                tier,
+                0.0,  # correlation_score (placeholder for now)
+                datetime.now().isoformat()
+            ))
+
+            saved_count += 1
+
+        conn.commit()
+        conn.close()
+
+        print(f"[SUCCESS] Saved {saved_count} parlays to database")
+
 
 def load_picks_from_database(date: str = None, min_edge: float = 0.07) -> pd.DataFrame:
     """
@@ -647,6 +724,9 @@ def main():
     timestamp = datetime.now().strftime('%Y-%m-%d_%I-%M%p')
     filename = f"GTO_PARLAYS_{timestamp}.csv"
     optimizer.export_to_csv(filename)
+
+    # Save to database
+    optimizer.save_to_database(date)
 
     print("\n" + "="*80)
     print("[SUCCESS] OPTIMIZATION COMPLETE")
