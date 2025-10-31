@@ -15,8 +15,11 @@ from smart_data_refresh import smart_refresh
 DB_PATH = "database/nhl_predictions.db"
 
 def generate_predictions():
-    """Run both prediction models"""
+    """Run all prediction models"""
     print("Generating predictions...")
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    success_count = 0
 
     # Run statistical model
     print("Running statistical model...")
@@ -26,6 +29,8 @@ def generate_predictions():
         text=True,
         timeout=120
     )
+    if result1.returncode == 0:
+        success_count += 1
 
     # Run ensemble model
     print("Running ensemble model...")
@@ -35,8 +40,54 @@ def generate_predictions():
         text=True,
         timeout=120
     )
+    if result2.returncode == 0:
+        success_count += 1
 
-    print("Predictions generated!")
+    # Run TOI predictions (NEW!)
+    print("Generating TOI predictions...")
+    try:
+        # First generate TOI data if not already done
+        result3a = subprocess.run(
+            [sys.executable, "generate_toi_predictions.py", today],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        # Then integrate into main predictions table
+        result3b = subprocess.run(
+            [sys.executable, "integrate_toi_predictions.py", today],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        if result3a.returncode == 0 and result3b.returncode == 0:
+            success_count += 1
+            print("✅ TOI predictions integrated!")
+        else:
+            print("⚠️  TOI predictions skipped (may not have data)")
+    except Exception as e:
+        print(f"⚠️  TOI predictions failed: {e}")
+
+    # Run Goalie Saves predictions (NEW!)
+    print("Generating Goalie Saves predictions...")
+    try:
+        result4 = subprocess.run(
+            [sys.executable, "goalie_saves_predictions.py", today],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        if result4.returncode == 0:
+            success_count += 1
+            print("✅ Goalie Saves predictions integrated!")
+        else:
+            print("⚠️  Goalie Saves predictions skipped (may not have data)")
+    except Exception as e:
+        print(f"⚠️  Goalie Saves predictions failed: {e}")
+
+    print(f"Predictions generated! ({success_count}/4 models succeeded)")
+
+    # Return True if at least the core models (statistical + ensemble) worked
     return result1.returncode == 0 and result2.returncode == 0
 
 def get_todays_picks():
