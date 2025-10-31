@@ -164,14 +164,18 @@ class MultiLineEVCalculator:
         self.predictions_cache = {}
         self.multiplier_learner = None
 
+        # TEMPORARILY DISABLED: Use fallback multipliers to test exponential decay fix
         # Load multiplier learner
-        try:
-            from prizepicks_multiplier_learner import PrizePicksMultiplierLearner
-            self.multiplier_learner = PrizePicksMultiplierLearner()
-            print("[+] Loaded multiplier learner - will use ACTUAL learned multipliers")
-        except:
-            print("[WARNING] Multiplier learner not available - using fallback assumptions")
-            self.multiplier_learner = None
+        # try:
+        #     from prizepicks_multiplier_learner import PrizePicksMultiplierLearner
+        #     self.multiplier_learner = PrizePicksMultiplierLearner()
+        #     print("[+] Loaded multiplier learner - will use ACTUAL learned multipliers")
+        # except:
+        #     print("[WARNING] Multiplier learner not available - using fallback assumptions")
+        #     self.multiplier_learner = None
+
+        self.multiplier_learner = None
+        print("[!] Using fallback multipliers (learned multipliers temporarily disabled for testing)")
 
     def load_predictions(self, date: str = None) -> pd.DataFrame:
         """Load our model's predictions for the date"""
@@ -246,24 +250,60 @@ class MultiLineEVCalculator:
             # Target line is ABOVE all our predictions
             closest = max(lower_preds, key=lambda x: x['line'])
 
-            # Assume probability drops by ~10% per 1.0 line increase
+            # Use EXPONENTIAL decay (each additional unit is harder)
             line_diff = target_line - closest['line']
-            prob_drop = line_diff * 0.10  # Conservative estimate
-            prob = max(0.05, closest['probability'] - prob_drop)  # Floor at 5%
 
-            reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), -{prob_drop:.0%} for +{line_diff:.1f} line"
+            # Decay rate varies by stat type:
+            # - Points: aggressive decay (0.60 per point) - much harder to score multiple
+            # - Shots/Blocks/Hits: moderate decay (0.70) - volume stats
+            # - Assists: moderate-aggressive decay (0.65)
+            decay_rates = {
+                'points': 0.60,    # 2 points is MUCH harder than 1
+                'goals': 0.55,     # Even harder
+                'assists': 0.65,   # Harder but more achievable
+                'shots': 0.72,     # Volume stat
+                'blocks': 0.75,    # High volume
+                'hits': 0.75,      # High volume
+                'saves': 0.80      # Goalie volume stat
+            }
+
+            decay_rate = decay_rates.get(prop_type.lower(), 0.65)  # Default moderate
+
+            # Exponential decay: new_prob = base_prob * (decay_rate)^line_diff
+            prob = closest['probability'] * (decay_rate ** line_diff)
+            prob = max(0.05, prob)  # Floor at 5%
+
+            prob_drop_pct = (closest['probability'] - prob) * 100
+            reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), exponential decay for +{line_diff:.1f} line (decay rate: {decay_rate})"
             return prob, reasoning
 
         if upper_preds:
             # Target line is BELOW all our predictions
             closest = min(upper_preds, key=lambda x: x['line'])
 
-            # Assume probability increases by ~10% per 1.0 line decrease
+            # Use EXPONENTIAL increase (inverse of decay)
             line_diff = closest['line'] - target_line
-            prob_increase = line_diff * 0.10
-            prob = min(0.95, closest['probability'] + prob_increase)  # Cap at 95%
 
-            reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), +{prob_increase:.0%} for -{line_diff:.1f} line"
+            # Same decay rates as above
+            decay_rates = {
+                'points': 0.60,
+                'goals': 0.55,
+                'assists': 0.65,
+                'shots': 0.72,
+                'blocks': 0.75,
+                'hits': 0.75,
+                'saves': 0.80
+            }
+
+            decay_rate = decay_rates.get(prop_type.lower(), 0.65)
+
+            # Inverse exponential: prob = base_prob / (decay_rate)^line_diff
+            # Easier line = higher probability
+            prob = closest['probability'] / (decay_rate ** line_diff)
+            prob = min(0.95, prob)  # Cap at 95%
+
+            prob_increase_pct = (prob - closest['probability']) * 100
+            reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), exponential increase for -{line_diff:.1f} line (decay rate: {decay_rate})"
             return prob, reasoning
 
         return None, "No prediction available"
