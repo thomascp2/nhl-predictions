@@ -529,13 +529,27 @@ def display_top_edges(edge_plays: List[Dict], top_n: int = 30):
 def main():
     """Run multi-line EV optimizer"""
     import sys
+    from datetime import timedelta
 
     print("\n" + "="*80)
     print("MULTI-LINE EV OPTIMIZER - PRIZEPICKS")
     print("="*80)
     print()
 
-    date = sys.argv[1] if len(sys.argv) > 1 else None
+    # Smart date detection: After 10 PM, PrizePicks switches to tomorrow's lines
+    now = datetime.now()
+    if len(sys.argv) > 1:
+        date = sys.argv[1]
+    else:
+        # Auto-detect: if it's after 10 PM, use tomorrow
+        if now.hour >= 22:  # 10 PM or later
+            date = (now + timedelta(days=1)).strftime('%Y-%m-%d')
+            print(f"[SMART TIMING] After 10 PM detected - using tomorrow's date: {date}")
+        else:
+            date = now.strftime('%Y-%m-%d')
+            print(f"[SMART TIMING] Before 10 PM - using today's date: {date}")
+        print()
+
     min_ev = float(sys.argv[2]) if len(sys.argv) > 2 else 0.03  # 3% minimum EV (lowered for more opportunities)
 
     # Step 1: Fetch ALL PrizePicks lines
@@ -552,7 +566,19 @@ def main():
     calculator.load_predictions(date)
 
     if len(calculator.predictions_cache) == 0:
-        print("[ERROR] No predictions found. Run prediction generation first.")
+        print(f"[ERROR] No predictions found for {date}")
+
+        if now.hour >= 22:
+            print(f"[INFO] After 10 PM, PrizePicks shows tomorrow's lines")
+            print(f"[INFO] The automated workflow will generate tomorrow's predictions in the morning (8 AM)")
+            print(f"[INFO] If you need edges now, wait until morning or manually generate predictions:")
+            print(f"       python fresh_clean_predictions.py   (generates statistical predictions)")
+            print(f"       python ensemble_predictions.py {date}   (generates ensemble predictions)")
+        else:
+            print("[ERROR] Run prediction generation first:")
+            print(f"       python fresh_clean_predictions.py")
+            print(f"       python ensemble_predictions.py")
+
         conn.close()
         return
 

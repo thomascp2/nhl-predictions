@@ -143,6 +143,8 @@ def commit_to_github():
 
 def main():
     """Run complete workflow"""
+    from datetime import timedelta
+
     print("\n" + "="*80)
     print("COMPLETE NHL BETTING WORKFLOW WITH GTO PARLAYS")
     print("="*80)
@@ -150,9 +152,27 @@ def main():
     print()
 
     success_count = 0
-    total_steps = 4
+    total_steps = 5  # Added grading step
+
+    # Smart timing detection: After 10 PM, PrizePicks shows tomorrow's lines
+    current_hour = datetime.now().hour
+    target_date = datetime.now()
+
+    if current_hour >= 22:  # 10 PM or later
+        target_date = target_date + timedelta(days=1)
+        print(f"\n[SMART TIMING] After 10 PM - PrizePicks showing tomorrow's lines")
+        print(f"[SMART TIMING] Generating predictions for: {target_date.strftime('%Y-%m-%d')}")
+        print()
+
+    # Step 0: Grade yesterday's picks (if it's morning)
+    if 6 <= current_hour <= 11:  # Run between 6 AM and 11 AM
+        print("\n[BONUS STEP] Grading yesterday's picks...")
+        run_script("auto_grade_yesterday.py", "STEP 0 (BONUS): Grade Yesterday's Picks")
+        print()
 
     # Step 1: Generate predictions (uses smart data refresh internally)
+    # Note: generate_picks_to_file.py generates for "today" - that's fine during the day
+    # At night (after 10 PM), the optimizer will auto-detect and use tomorrow's date
     if run_script("generate_picks_to_file.py", "STEP 1: Generate Predictions"):
         success_count += 1
     else:

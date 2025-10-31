@@ -456,7 +456,13 @@ class EnsemblePredictionEngine:
 
 
 def main():
-    today = datetime.now().strftime('%Y-%m-%d')
+    import sys
+
+    # Accept date from command line, or use today
+    if len(sys.argv) > 1:
+        date = sys.argv[1]
+    else:
+        date = datetime.now().strftime('%Y-%m-%d')
 
     logger.info("")
     logger.info("=" * 80)
@@ -469,11 +475,11 @@ def main():
     engine = EnsemblePredictionEngine(stat_weight=0.70, ml_weight=0.30)
 
     # Generate ensemble predictions
-    predictions = engine.generate_ensemble_predictions(today)
+    predictions = engine.generate_ensemble_predictions(date)
 
     if predictions:
         # Save to database
-        engine.save_ensemble_predictions(today, predictions)
+        engine.save_ensemble_predictions(date, predictions)
 
         # Show summary
         engine.show_summary(predictions)
