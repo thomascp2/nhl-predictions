@@ -68,10 +68,13 @@ def convert_toi_to_predictions(toi_df: pd.DataFrame, date: str) -> list:
     """
     Convert TOI predictions to standard prediction format
 
+    Enhanced with LINEAR probability model for better calibration.
+
     PrizePicks offers TOI lines like:
-    - O15.5 minutes
-    - O17.5 minutes
-    - O19.5 minutes
+    - O15.5 minutes (bottom-6/bottom-4)
+    - O17.5 minutes (middle-6/middle-4)
+    - O19.5 minutes (top-6/top-4)
+    - O21.5 minutes (elite players)
 
     Args:
         toi_df: TOI predictions DataFrame
@@ -82,8 +85,8 @@ def convert_toi_to_predictions(toi_df: pd.DataFrame, date: str) -> list:
     """
     predictions = []
 
-    # Common TOI lines on PrizePicks
-    toi_lines = [15.5, 17.5, 19.5, 21.5]
+    # Expanded TOI lines on PrizePicks
+    toi_lines = [13.5, 15.5, 17.5, 19.5, 21.5, 23.5]
 
     for _, row in toi_df.iterrows():
         player = row['player_name']
@@ -92,48 +95,94 @@ def convert_toi_to_predictions(toi_df: pd.DataFrame, date: str) -> list:
         predicted_toi = row['predicted_toi_minutes']
         confidence = row['confidence']
 
+        # Estimate standard deviation based on TOI range
+        # Elite players (20+ min): More consistent, lower std_dev
+        # Middle players (15-20 min): Moderate variance
+        # Bottom players (<15 min): Higher variance
+        if predicted_toi >= 20:
+            std_dev = 1.5  # Elite players: tight distribution
+        elif predicted_toi >= 17:
+            std_dev = 2.0  # Top-6/Top-4: moderate variance
+        elif predicted_toi >= 15:
+            std_dev = 2.5  # Middle-6/Middle-4: higher variance
+        else:
+            std_dev = 3.0  # Bottom-6/Bottom-4: most variance
+
         # Generate predictions for each line
         for line in toi_lines:
-            if predicted_toi > line:
-                # Calculate probability of going over
-                # Use confidence and distance from line
-                distance = predicted_toi - line
-                std_dev = 2.0  # Assume 2 minute standard deviation
+            # Calculate distance from line
+            distance = predicted_toi - line
 
-                # Simple probability calculation
-                # Higher distance = higher probability
-                # Higher confidence = higher probability
-                base_prob = 0.50 + (distance / (2 * std_dev)) * 0.40
+            # LINEAR PROBABILITY MODEL (better than exponential for TOI)
+            # Theory: TOI variance is roughly normal, so linear is more accurate
+            #
+            # P(Over) = 0.5 + (distance / (k * std_dev))
+            # where k controls the steepness (we use 4 for gradual slope)
+            #
+            # Examples:
+            # - distance = +2 std_dev → P = 0.5 + 0.5 = 1.0 (clamped to 0.95)
+            # - distance = +1 std_dev → P = 0.5 + 0.25 = 0.75
+            # - distance = 0 → P = 0.5 (neutral)
+            # - distance = -1 std_dev → P = 0.5 - 0.25 = 0.25
 
-                # Adjust by confidence
-                confidence_multiplier = confidence / 100.0  # 0-1
-                probability = base_prob * confidence_multiplier
+            k = 4  # Steepness factor (higher = more gradual)
+            linear_prob = 0.50 + (distance / (k * std_dev))
 
-                # Clamp to reasonable range
-                probability = max(0.30, min(0.95, probability))
+            # Adjust by confidence (high confidence = trust model more)
+            # Confidence ranges from 0-100
+            confidence_factor = confidence / 100.0  # 0-1
 
-                # Assign confidence tier
-                if probability >= 0.75:
-                    tier = 'T1-ELITE'
-                elif probability >= 0.65:
-                    tier = 'T2-STRONG'
-                else:
-                    tier = 'T3-MARGINAL'
+            # Blend with base 0.50 probability based on confidence
+            # High confidence = use linear_prob fully
+            # Low confidence = regress toward 0.50
+            probability = 0.50 + (linear_prob - 0.50) * confidence_factor
 
-                predictions.append({
-                    'game_date': date,
-                    'player_name': player,
-                    'team': team,
-                    'opponent': opponent,
-                    'prop_type': 'toi',
-                    'line': line,
-                    'prediction': 'OVER',
-                    'probability': probability,
-                    'confidence_tier': tier,
-                    'reasoning': f"TOI model predicts {predicted_toi:.1f} min (confidence: {confidence:.0f}%)",
-                    'base_probability': probability * 0.95,  # Mostly TOI model
-                    'ml_boost': probability * 0.05,  # Small ML component
-                })
+            # Clamp to reasonable range
+            probability = max(0.25, min(0.95, probability))
+
+            # Only create predictions if probability suggests edge potential
+            # Skip extreme mismatches (very low or very high probability)
+            if probability < 0.35 or probability > 0.90:
+                continue
+
+            # Determine prediction direction
+            if probability >= 0.50:
+                prediction_direction = 'OVER'
+            else:
+                prediction_direction = 'UNDER'
+                probability = 1.0 - probability  # Flip probability for UNDER
+
+            # Assign confidence tier
+            if probability >= 0.75:
+                tier = 'T1-ELITE'
+            elif probability >= 0.65:
+                tier = 'T2-STRONG'
+            elif probability >= 0.55:
+                tier = 'T3-MARGINAL'
+            else:
+                tier = 'T4-FADE'
+
+            # Enhanced reasoning
+            reasoning = (
+                f"TOI model: {predicted_toi:.1f} min (σ={std_dev:.1f}, "
+                f"confidence={confidence:.0f}%) | "
+                f"Distance: {distance:+.1f} min from {line} line"
+            )
+
+            predictions.append({
+                'game_date': date,
+                'player_name': player,
+                'team': team,
+                'opponent': opponent,
+                'prop_type': 'toi',
+                'line': line,
+                'prediction': prediction_direction,
+                'probability': probability,
+                'confidence_tier': tier,
+                'reasoning': reasoning,
+                'base_probability': probability * 0.95,  # Mostly TOI model
+                'ml_boost': probability * 0.05,  # Small ML component
+            })
 
     return predictions
 

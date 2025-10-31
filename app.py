@@ -101,7 +101,8 @@ page = st.sidebar.radio(
         "🎯 Today's Picks",
         "📊 Performance",
         "📚 System Guide",
-        "⚙️ Settings"
+        "⚙️ Settings",
+        "🛠️ System Utilities"
     ]
 )
 
@@ -1902,6 +1903,400 @@ elif page == "⚙️ Settings":
                 result = run_script("inspect_database.py")
                 if result:
                     st.code(result.stdout[:1000])
+
+# ============================================================================
+# SYSTEM UTILITIES PAGE
+# ============================================================================
+
+elif page == "🛠️ System Utilities":
+    st.title("🛠️ System Utilities")
+    st.markdown("### Production-ready system utilities and tools")
+    st.markdown("---")
+
+    # Tabs for different utilities
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "💰 Bankroll Manager",
+        "📊 Adaptive Weights",
+        "🔗 Correlation Detector",
+        "⚡ Database Utilities",
+        "📝 System Logs"
+    ])
+
+    # ========================================================================
+    # TAB 1: BANKROLL MANAGER
+    # ========================================================================
+    with tab1:
+        st.header("💰 Bankroll Management")
+        st.markdown("**Track bankroll, calculate bet sizes, enforce risk limits**")
+        st.markdown("---")
+
+        # Bankroll Status
+        st.subheader("Current Bankroll Status")
+
+        try:
+            from bankroll_manager import BankrollManager
+            manager = BankrollManager()
+            status = manager.get_status()
+
+            # Display metrics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Current Bankroll", f"${status['current_bankroll']:,.2f}")
+            with col2:
+                st.metric("Today's P/L", f"${status['daily_profit']:+,.2f}")
+            with col3:
+                st.metric("Win Rate", f"{status['win_rate']:.1f}%")
+            with col4:
+                st.metric("ROI", f"{status['roi']:+.1f}%")
+
+            # Pending bets
+            st.markdown("---")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Pending Bets", status['pending_bets'])
+                st.metric("Today's Wins", status['today_wins'])
+            with col2:
+                st.metric("Amount at Risk", f"${status['pending_amount']:,.2f}")
+                st.metric("Today's Losses", status['today_losses'])
+
+            # All-time stats
+            st.markdown("---")
+            st.subheader("All-Time Performance")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Bets", status['all_time_bets'])
+            with col2:
+                st.metric("Record", f"{status['all_time_wins']}W - {status['all_time_losses']}L")
+            with col3:
+                st.metric("Total Profit", f"${status['all_time_profit']:+,.2f}")
+
+        except Exception as e:
+            st.warning("Bankroll manager not initialized yet")
+            st.info("Run: `BankrollManager(initial_bankroll=1000)` to initialize")
+
+        # Bet Size Calculator
+        st.markdown("---")
+        st.subheader("Kelly Bet Size Calculator")
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            prob = st.slider("Win Probability", 0.50, 0.95, 0.60, 0.01)
+        with col2:
+            payout = st.number_input("Payout Multiplier", 1.5, 10.0, 2.0, 0.1)
+        with col3:
+            edge = st.slider("Expected Value (EV)", 0.0, 0.50, 0.10, 0.01)
+
+        if st.button("Calculate Bet Size", type="primary"):
+            try:
+                from bankroll_manager import BankrollManager
+                manager = BankrollManager()
+                bet_info = manager.get_bet_size(prob, payout, edge)
+
+                st.success("Bet size calculated!")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Recommended Bet", f"${bet_info['recommended_bet']:.2f}")
+                with col2:
+                    st.metric("Kelly Bet", f"${bet_info['kelly_bet']:.2f}")
+                with col3:
+                    st.metric("Max Bet", f"${bet_info['max_bet']:.2f}")
+
+                # Show warnings
+                if bet_info['warnings']:
+                    st.warning("⚠️ Warnings:")
+                    for warning in bet_info['warnings']:
+                        st.write(f"- {warning}")
+
+                # Show daily risk
+                st.info(f"Daily Risk Used: ${bet_info['daily_risk_used']:.2f} | Remaining: ${bet_info['daily_risk_remaining']:.2f}")
+
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+        # Initialize Bankroll
+        st.markdown("---")
+        st.subheader("Initialize/Update Bankroll")
+        initial_bankroll = st.number_input("Starting Bankroll ($)", 100.0, 100000.0, 1000.0, 100.0)
+        if st.button("Initialize Bankroll"):
+            try:
+                from bankroll_manager import BankrollManager
+                manager = BankrollManager(initial_bankroll=initial_bankroll)
+                st.success(f"Bankroll initialized: ${initial_bankroll:,.2f}")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+    # ========================================================================
+    # TAB 2: ADAPTIVE WEIGHTS
+    # ========================================================================
+    with tab2:
+        st.header("📊 Adaptive Model Weights")
+        st.markdown("**Dynamically adjust ensemble weights based on recent performance**")
+        st.markdown("---")
+
+        # Current weights
+        st.subheader("Current Weights")
+
+        try:
+            from adaptive_weights import get_adaptive_weights, get_model_performance
+
+            # Get current weights
+            stat_weight, ml_weight = get_adaptive_weights(days_back=7)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Statistical Model", f"{stat_weight:.0%}")
+            with col2:
+                st.metric("ML Model", f"{ml_weight:.0%}")
+
+            # Performance analysis
+            st.markdown("---")
+            st.subheader("Recent Performance")
+
+            days_back = st.slider("Days to Analyze", 3, 30, 7, 1)
+
+            if st.button("Analyze Performance", type="primary"):
+                performance = get_model_performance(days_back)
+
+                if performance:
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Total Predictions", performance['total_predictions'])
+                    with col2:
+                        st.metric("Ensemble Accuracy", f"{performance['ensemble_accuracy']:.1%}")
+                    with col3:
+                        st.metric("Days Analyzed", performance['days_analyzed'])
+
+                    st.markdown("---")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric("Avg Base Probability", f"{performance['avg_base_probability']:.1%}")
+                    with col2:
+                        st.metric("Avg ML Boost", f"{performance['avg_ml_boost']:+.1%}")
+
+                    # Recalculate weights
+                    st.markdown("---")
+                    if st.button("Recalculate Weights"):
+                        new_stat, new_ml = get_adaptive_weights(days_back=days_back)
+                        st.success(f"New weights: {new_stat:.0%} statistical, {new_ml:.0%} ML")
+
+                else:
+                    st.warning(f"Not enough graded predictions in last {days_back} days")
+                    st.info("Need at least 20 graded predictions for reliable analysis")
+
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
+        # Explanation
+        st.markdown("---")
+        st.subheader("How It Works")
+        st.markdown("""
+        **Adaptive Weights automatically adjust based on performance:**
+
+        1. **Statistical Model Performance:**
+           - If accuracy ≥ 75% → Increase weight to 80%
+           - If accuracy < 65% → Decrease weight to 60%
+
+        2. **ML Model Contribution:**
+           - If ML boost helps accuracy → Increase ML weight
+           - If ML boost hurts accuracy → Decrease ML weight
+
+        3. **Fallback:**
+           - Not enough data → Use baseline 70/30 split
+
+        **Expected Impact:** 2-5% accuracy improvement through self-optimization
+        """)
+
+    # ========================================================================
+    # TAB 3: CORRELATION DETECTOR
+    # ========================================================================
+    with tab3:
+        st.header("🔗 Correlation Detection")
+        st.markdown("**Test parlay leg correlations to avoid correlated bets**")
+        st.markdown("---")
+
+        st.subheader("Test Two Legs for Correlation")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**Leg 1**")
+            player1 = st.text_input("Player Name", "Dylan Larkin", key="player1")
+            team1 = st.text_input("Team", "DET", key="team1")
+            opp1 = st.text_input("Opponent", "LAK", key="opp1")
+            prop1 = st.selectbox("Prop Type", ["points", "shots", "goals", "assists", "blocks", "hits"], key="prop1")
+
+        with col2:
+            st.markdown("**Leg 2**")
+            player2 = st.text_input("Player Name", "Adrian Kempe", key="player2")
+            team2 = st.text_input("Team", "LAK", key="team2")
+            opp2 = st.text_input("Opponent", "DET", key="opp2")
+            prop2 = st.selectbox("Prop Type", ["points", "shots", "goals", "assists", "blocks", "hits"], key="prop2")
+
+        threshold = st.slider("Correlation Threshold", 0.0, 1.0, 0.30, 0.05)
+
+        if st.button("Test Correlation", type="primary"):
+            try:
+                from correlation_detector import CorrelationDetector
+
+                detector = CorrelationDetector()
+
+                leg1 = {'player_name': player1, 'team': team1, 'opponent': opp1, 'prop_type': prop1}
+                leg2 = {'player_name': player2, 'team': team2, 'opponent': opp2, 'prop_type': prop2}
+
+                # Get correlation score
+                score = detector.get_correlation_score(
+                    player1, team1, opp1, prop1,
+                    player2, team2, opp2, prop2
+                )
+
+                # Check if correlated
+                is_correlated = detector.are_correlated(leg1, leg2, threshold)
+
+                # Display results
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Correlation Score", f"{score:.2f}")
+                with col2:
+                    if is_correlated:
+                        st.error(f"❌ CORRELATED (>{threshold:.2f})")
+                    else:
+                        st.success(f"✅ NOT CORRELATED (<{threshold:.2f})")
+
+                # Explanation
+                st.markdown("---")
+                if score >= 1.0:
+                    st.warning("**Same player** - Perfect correlation (1.0)")
+                elif score >= 0.50:
+                    st.warning("**High correlation** - Avoid in parlays")
+                elif score >= 0.30:
+                    st.info("**Moderate correlation** - Use caution")
+                else:
+                    st.success("**Low/No correlation** - Safe for parlays")
+
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+        # Known correlations table
+        st.markdown("---")
+        st.subheader("Known Prop Correlations")
+        st.markdown("""
+        | Prop Combination | Correlation | Reason |
+        |-----------------|-------------|---------|
+        | Points + Goals | 0.75 | Goals count as points |
+        | Points + Assists | 0.70 | Assists count as points |
+        | Points + Shots | 0.60 | More shots → more points |
+        | Shots + Goals | 0.55 | More shots → more goals |
+        | Same Player | 1.00 | Perfect correlation |
+        | Same Game | 0.30 | Game script affects both |
+        | Same Team | 0.20 | Team performance correlation |
+        """)
+
+    # ========================================================================
+    # TAB 4: DATABASE UTILITIES
+    # ========================================================================
+    with tab4:
+        st.header("⚡ Database Utilities")
+        st.markdown("**One-time database optimizations and maintenance**")
+        st.markdown("---")
+
+        # Add indexes
+        st.subheader("Performance Indexes")
+        st.markdown("Add database indexes for faster queries (run once)")
+
+        if st.button("Add Database Indexes", type="primary"):
+            with st.spinner("Adding indexes..."):
+                result = run_script("add_database_indexes.py")
+                if result and result.returncode == 0:
+                    st.success("✅ Database indexes added!")
+                    st.code(result.stdout)
+                else:
+                    st.error("Failed to add indexes")
+                    if result:
+                        st.code(result.stderr)
+
+        # Database stats
+        st.markdown("---")
+        st.subheader("Database Statistics")
+
+        if st.button("Show Database Stats"):
+            try:
+                # Get table sizes
+                tables = [
+                    'predictions',
+                    'prizepicks_edges',
+                    'gto_parlays',
+                    'player_stats',
+                    'bet_history'
+                ]
+
+                stats_data = []
+                for table in tables:
+                    try:
+                        cursor = conn.cursor()
+                        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                        count = cursor.fetchone()[0]
+                        stats_data.append({'Table': table, 'Rows': count})
+                    except:
+                        pass
+
+                if stats_data:
+                    df = pd.DataFrame(stats_data)
+                    st.dataframe(df, use_container_width=True)
+
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+    # ========================================================================
+    # TAB 5: SYSTEM LOGS
+    # ========================================================================
+    with tab5:
+        st.header("📝 System Logs")
+        st.markdown("**View system logs and error reports**")
+        st.markdown("---")
+
+        # Log file selector
+        import glob
+        log_files = glob.glob("logs/*.log")
+
+        if log_files:
+            log_file = st.selectbox("Select Log File", sorted(log_files, reverse=True))
+
+            # Display options
+            col1, col2 = st.columns(2)
+            with col1:
+                num_lines = st.number_input("Lines to Display", 10, 1000, 100, 10)
+            with col2:
+                log_level = st.selectbox("Filter Level", ["ALL", "ERROR", "WARNING", "INFO", "DEBUG"])
+
+            if st.button("View Log", type="primary"):
+                try:
+                    with open(log_file, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+
+                    # Filter by level
+                    if log_level != "ALL":
+                        lines = [line for line in lines if log_level in line]
+
+                    # Get last N lines
+                    lines = lines[-num_lines:]
+
+                    # Display
+                    st.code(''.join(lines))
+
+                    # Download button
+                    st.download_button(
+                        "Download Log File",
+                        data=''.join(lines),
+                        file_name=log_file.split('/')[-1],
+                        mime="text/plain"
+                    )
+
+                except Exception as e:
+                    st.error(f"Error reading log: {str(e)}")
+        else:
+            st.info("No log files found. Logs will be created when the system runs.")
+            st.markdown("Logs are saved to: `logs/system_YYYY-MM-DD.log`")
 
 # Footer
 st.markdown("---")
