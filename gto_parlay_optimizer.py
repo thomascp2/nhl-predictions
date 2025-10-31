@@ -808,6 +808,44 @@ def main():
         return
 
     print(f"[SUCCESS] Loaded {len(picks_df)} edge plays")
+
+    # Convert numeric columns from strings if needed
+    numeric_cols = ['edge', 'model_probability', 'ev_score']
+    for col in numeric_cols:
+        if col in picks_df.columns and picks_df[col].dtype == 'object':
+            # Remove + and % signs, then convert to float
+            picks_df[col] = picks_df[col].astype(str).str.replace('+', '').str.replace('%', '').astype(float)
+            # If it was a percentage, divide by 100
+            if picks_df[col].max() > 1:
+                picks_df[col] = picks_df[col] / 100.0
+
+    # Filter to prefer GOBLIN/STANDARD over DEMON lines
+    print(f"[*] Filtering to prefer safer GOBLIN/STANDARD lines over DEMON...")
+
+    # Group by player/prop and keep best non-DEMON option if available
+    filtered_picks = []
+    for (player, prop), group in picks_df.groupby(['player_name', 'prop_type']):
+        # Prefer GOBLIN, then STANDARD, then DEMON (only if no other option)
+        goblin = group[group['odds_type'] == 'goblin']
+        standard = group[group['odds_type'] == 'standard']
+        demon = group[group['odds_type'] == 'demon']
+
+        if not goblin.empty:
+            # Use best GOBLIN line (highest edge)
+            filtered_picks.append(goblin.nlargest(1, 'edge'))
+        elif not standard.empty:
+            # Use best STANDARD line
+            filtered_picks.append(standard.nlargest(1, 'edge'))
+        else:
+            # Only use DEMON if no GOBLIN/STANDARD available
+            filtered_picks.append(demon.nlargest(1, 'edge'))
+
+    picks_df = pd.concat(filtered_picks, ignore_index=True) if filtered_picks else picks_df
+
+    print(f"[SUCCESS] Filtered to {len(picks_df)} picks (prioritized GOBLIN/STANDARD)")
+    print(f"    GOBLIN: {len(picks_df[picks_df['odds_type']=='goblin'])}")
+    print(f"    STANDARD: {len(picks_df[picks_df['odds_type']=='standard'])}")
+    print(f"    DEMON: {len(picks_df[picks_df['odds_type']=='demon'])}")
     print()
 
     # Initialize optimizer

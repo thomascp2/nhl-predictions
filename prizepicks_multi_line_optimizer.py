@@ -496,7 +496,7 @@ def main():
     print()
 
     date = sys.argv[1] if len(sys.argv) > 1 else None
-    min_ev = float(sys.argv[2]) if len(sys.argv) > 2 else 0.05  # 5% minimum EV
+    min_ev = float(sys.argv[2]) if len(sys.argv) > 2 else 0.03  # 3% minimum EV (lowered for more opportunities)
 
     # Step 1: Fetch ALL PrizePicks lines
     client = PrizePicksMultiLineClient()
