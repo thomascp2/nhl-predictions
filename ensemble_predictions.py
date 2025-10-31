@@ -94,7 +94,7 @@ class EnsemblePredictionEngine:
 
         return df
 
-    def get_ml_prediction_for_player(self, player_name, team, opponent, is_home):
+    def get_ml_prediction_for_player(self, player_name, team, opponent, is_home, home_ml=None, away_ml=None, over_under=None):
         """Get ML prediction for a specific player"""
 
         # Get player features (same logic as ml_predictions.py)
@@ -240,6 +240,51 @@ class EnsemblePredictionEngine:
                 features['goalie_difficulty_gaa'] = 1.0
                 features['goalie_difficulty'] = 1.0
 
+        # Money line features (if available in model)
+        if 'home_ml' in self.feature_columns:
+            from game_script_features import GameScriptAnalyzer
+
+            if home_ml and away_ml:
+                analyzer = GameScriptAnalyzer()
+                script = analyzer.calculate_game_script_features(
+                    home_ml=int(home_ml),
+                    away_ml=int(away_ml),
+                    over_under=over_under if over_under else 6.0
+                )
+
+                # Determine if player's team is favorite
+                if is_home:
+                    is_favorite = script['is_home_favorite']
+                    win_prob = script['home_win_prob']
+                else:
+                    is_favorite = not script['is_home_favorite']
+                    win_prob = script['away_win_prob']
+
+                features['home_ml'] = home_ml
+                features['away_ml'] = away_ml
+                features['over_under'] = over_under if over_under else 6.0
+                features['is_favorite'] = 1 if is_favorite else 0
+                features['win_prob'] = win_prob
+                features['blowout_prob'] = script['blowout_probability']
+                features['expected_margin'] = script['expected_margin']
+                features['pace_factor'] = script['pace_factor']
+                features['competitive_factor'] = script['competitive_factor']
+                features['is_heavy_favorite'] = 1 if script['favorite_strength'] > 0.20 else 0
+                features['is_pick_em'] = 1 if abs(script['home_win_prob'] - 0.5) < 0.05 else 0
+            else:
+                # Default values if no money lines available
+                features['home_ml'] = -110
+                features['away_ml'] = -110
+                features['over_under'] = 6.0
+                features['is_favorite'] = 0
+                features['win_prob'] = 0.5
+                features['blowout_prob'] = 0.05
+                features['expected_margin'] = 0.0
+                features['pace_factor'] = 1.0
+                features['competitive_factor'] = 1.0
+                features['is_heavy_favorite'] = 0
+                features['is_pick_em'] = 1
+
         # Context
         features['home_adv'] = 1 if is_home else 0
         features['is_forward'] = 1 if season_row[7] == 'F' else 0
@@ -255,6 +300,52 @@ class EnsemblePredictionEngine:
             'prob_points': prob_points,
             'prob_shots': prob_shots
         }
+
+    def fetch_game_odds(self, game_date):
+        """Fetch money lines for a given date"""
+        # NHL Team Name Mapping (same as in enhanced_predictions and train_nhl_ml)
+        NHL_TEAM_MAP = {
+            'Anaheim Ducks': 'ANA', 'Boston Bruins': 'BOS', 'Buffalo Sabres': 'BUF',
+            'Calgary Flames': 'CGY', 'Carolina Hurricanes': 'CAR', 'Chicago Blackhawks': 'CHI',
+            'Colorado Avalanche': 'COL', 'Columbus Blue Jackets': 'CBJ', 'Dallas Stars': 'DAL',
+            'Detroit Red Wings': 'DET', 'Edmonton Oilers': 'EDM', 'Florida Panthers': 'FLA',
+            'Los Angeles Kings': 'LAK', 'Minnesota Wild': 'MIN', 'Montreal Canadiens': 'MTL',
+            'Nashville Predators': 'NSH', 'New Jersey Devils': 'NJD', 'New York Islanders': 'NYI',
+            'New York Rangers': 'NYR', 'Ottawa Senators': 'OTT', 'Philadelphia Flyers': 'PHI',
+            'Pittsburgh Penguins': 'PIT', 'San Jose Sharks': 'SJS', 'Seattle Kraken': 'SEA',
+            'St Louis Blues': 'STL', 'Tampa Bay Lightning': 'TBL', 'Toronto Maple Leafs': 'TOR',
+            'Vancouver Canucks': 'VAN', 'Vegas Golden Knights': 'VGK', 'Washington Capitals': 'WSH',
+            'Winnipeg Jets': 'WPG', 'Utah Hockey Club': 'UTA'
+        }
+
+        odds_query = """
+            SELECT home_team, away_team, home_ml, away_ml, over_under
+            FROM odds_api_game_odds
+            WHERE DATE(commence_time) = ?
+            GROUP BY home_team, away_team
+        """
+
+        try:
+            odds_df = pd.read_sql_query(odds_query, self.conn, params=(game_date,))
+
+            # Create lookup dictionary with team name conversion
+            game_odds = {}
+            for _, row in odds_df.iterrows():
+                home_abbr = NHL_TEAM_MAP.get(row['home_team'], row['home_team'])
+                away_abbr = NHL_TEAM_MAP.get(row['away_team'], row['away_team'])
+
+                key = f"{away_abbr}@{home_abbr}"
+                game_odds[key] = {
+                    'home_ml': row['home_ml'] if pd.notna(row['home_ml']) else None,
+                    'away_ml': row['away_ml'] if pd.notna(row['away_ml']) else None,
+                    'over_under': row['over_under'] if pd.notna(row['over_under']) else None
+                }
+
+            return game_odds
+
+        except Exception as e:
+            logger.warning(f"Could not load money lines: {e}")
+            return {}
 
     def generate_ensemble_predictions(self, game_date):
         """Generate ensemble predictions combining statistical + ML"""
@@ -274,6 +365,12 @@ class EnsemblePredictionEngine:
             logger.warning("WARNING:No statistical predictions found! Run fresh_clean_predictions.py first")
             return []
 
+        # Fetch money lines for today's games
+        logger.info("Loading money lines for game scripting...")
+        game_odds = self.fetch_game_odds(game_date)
+        logger.info(f"SUCCESS:Loaded odds for {len(game_odds)} games")
+        logger.info("")
+
         ensemble_predictions = []
 
         logger.info("Generating ensemble predictions...")
@@ -290,8 +387,28 @@ class EnsemblePredictionEngine:
             # Infer home/away (if home team matches player's team)
             is_home = True  # Default assumption, could be improved
 
-            # Get ML prediction
-            ml_pred = self.get_ml_prediction_for_player(player_name, team, opponent, is_home)
+            # Get money lines for this game
+            game_key_home = f"{opponent}@{team}"  # team is home
+            game_key_away = f"{team}@{opponent}"  # team is away
+
+            if game_key_home in game_odds:
+                odds = game_odds[game_key_home]
+                is_home = True
+            elif game_key_away in game_odds:
+                odds = game_odds[game_key_away]
+                is_home = False
+            else:
+                odds = {}
+
+            home_ml = odds.get('home_ml', None)
+            away_ml = odds.get('away_ml', None)
+            over_under = odds.get('over_under', None)
+
+            # Get ML prediction with money lines
+            ml_pred = self.get_ml_prediction_for_player(
+                player_name, team, opponent, is_home,
+                home_ml=home_ml, away_ml=away_ml, over_under=over_under
+            )
 
             if ml_pred:
                 # Extract ML probability for this prop type
