@@ -1,0 +1,57 @@
+player_name,team,opponent,prop_type,line,odds_type,our_probability,pp_implied_probability,edge,expected_value,ev_pct,individual_multiplier,confidence,multiplier_source,reasoning
+Jack Hughes,NJ,UNK,points,1.5,demon,85.0%,50.0%,+35.0%,0.7,+70.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Macklin Celebrini,SJ,UNK,points,1.5,demon,85.0%,50.0%,+35.0%,0.7,+70.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Dylan Larkin,DET,UNK,points,1.5,demon,85.0%,50.0%,+35.0%,0.7,+70.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), -10% for +1.0 line"
+Adrian Kempe,LA,UNK,points,1.5,demon,82.2%,50.0%,+32.2%,0.6432727272727274,+64.3%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (92.2%), -10% for +1.0 line"
+William Eklund,SJ,UNK,shots,2.5,demon,76.3%,49.5%,+26.8%,0.5413097389296515,+54.1%,2.0207259421636903,70%,learned,2.9 SOG/G
+Jesper Bratt,NJ,UNK,points,1.5,demon,75.5%,50.0%,+25.5%,0.5109999999999997,+51.1%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (85.5%), -10% for +1.0 line"
+Jack Hughes,NJ,UNK,points,2.5,demon,75.0%,50.0%,+25.0%,0.5,+50.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), -20% for +2.0 line"
+Adrian Kempe,LA,UNK,points,2.5,demon,72.2%,50.0%,+22.2%,0.44327272727272726,+44.3%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (92.2%), -20% for +2.0 line"
+William Eklund,SJ,UNK,points,1.5,demon,70.4%,50.0%,+20.4%,0.4075,+40.8%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (80.4%), -10% for +1.0 line"
+Alex DeBrincat,DET,UNK,shots,3.5,demon,70.3%,50.0%,+20.3%,0.4066826390488225,+40.7%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (80.3%), -10% for +1.0 line"
+Dmitry Orlov,SJ,UNK,points,0.5,demon,68.6%,50.0%,+18.6%,0.3728,+37.3%,2.0,20%,fallback_assumption,0.80 PPG
+Macklin Celebrini,SJ,UNK,points,0.5,goblin,95.0%,69.3%,+25.7%,0.3712068893253613,+37.1%,1.4433756729740645,70%,learned,1.60 PPG
+Dylan Larkin,DET,UNK,points,0.5,goblin,95.0%,69.3%,+25.7%,0.3712068893253613,+37.1%,1.4433756729740645,70%,learned,1.60 PPG
+Adrian Kempe,LA,UNK,points,0.5,goblin,92.2%,69.3%,+22.9%,0.3302675066010061,+33.0%,1.4433756729740645,70%,learned,1.27 PPG
+William Eklund,SJ,UNK,shots,3.5,demon,66.3%,50.0%,+16.3%,0.3255010160153591,+32.6%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (76.3%), -10% for +1.0 line"
+Jesper Bratt,NJ,UNK,points,2.5,demon,65.5%,50.0%,+15.5%,0.3109999999999995,+31.1%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (85.5%), -20% for +2.0 line"
+Adrian Kempe,LA,UNK,shots,3.5,demon,64.6%,50.0%,+14.6%,0.29257041688504803,+29.3%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (74.6%), -10% for +1.0 line"
+Nico Hischier,NJ,UNK,points,1.5,demon,64.6%,50.0%,+14.6%,0.29249999999999976,+29.2%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (74.6%), -10% for +1.0 line"
+Will Smith,SJ,UNK,points,0.5,standard,74.3%,57.7%,+16.6%,0.28756326907651397,+28.8%,1.7320508075688774,70%,learned,0.90 PPG
+Will Smith,SJ,UNK,points,1.5,demon,64.3%,50.0%,+14.3%,0.28674999999999984,+28.7%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (74.3%), -10% for +1.0 line"
+Macklin Celebrini,SJ,UNK,shots,3.5,demon,64.3%,50.0%,+14.3%,0.28523394541487623,+28.5%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (74.3%), -10% for +1.0 line"
+Jack Hughes,NJ,UNK,shots,4.5,demon,64.0%,50.0%,+14.0%,0.28003025234111245,+28.0%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (84.0%), -20% for +2.0 line"
+Alex DeBrincat,DET,UNK,shots,1.5,goblin,90.3%,70.7%,+19.6%,0.2773246258075175,+27.7%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (80.3%), +10% for -1.0 line"
+Alex DeBrincat,DET,UNK,shots,2.5,goblin,80.3%,63.0%,+17.4%,0.27547564946606196,+27.5%,1.5877132402714709,70%,learned,3.7 SOG/G
+Kevin Fiala,LA,UNK,shots,2.5,standard,72.8%,57.7%,+15.0%,0.260161823359351,+26.0%,1.7320508075688774,70%,learned,2.9 SOG/G
+Emmitt Finnie,DET,UNK,points,0.5,demon,62.8%,50.0%,+12.8%,0.25664,+25.7%,2.0,20%,fallback_assumption,0.80 PPG
+Kevin Fiala,LA,UNK,shots,3.5,demon,62.8%,50.0%,+12.8%,0.25510953587802176,+25.5%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (72.8%), -10% for +1.0 line"
+Alex DeBrincat,DET,UNK,points,1.5,demon,61.3%,50.0%,+11.3%,0.22599999999999998,+22.6%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (71.3%), -10% for +1.0 line"
+Lucas Raymond,DET,UNK,points,1.5,demon,61.3%,50.0%,+11.3%,0.22599999999999998,+22.6%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (71.3%), -10% for +1.0 line"
+William Eklund,SJ,UNK,shots,1.5,goblin,86.3%,70.7%,+15.6%,0.21992921832285872,+22.0%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (76.3%), +10% for -1.0 line"
+Alex DeBrincat,DET,UNK,shots,4.5,demon,60.3%,50.0%,+10.3%,0.20668263904882256,+20.7%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (80.3%), -20% for +2.0 line"
+Dawson Mercer,NJ,UNK,points,0.5,standard,69.3%,57.7%,+11.6%,0.20079559999999996,+20.1%,1.732,30%,fallback_assumption,0.90 PPG
+Adrian Kempe,LA,UNK,shots,1.5,goblin,84.6%,70.7%,+13.9%,0.19664728473772874,+19.7%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (74.6%), +10% for -1.0 line"
+Dawson Mercer,NJ,UNK,points,1.5,demon,59.3%,50.0%,+9.3%,0.1866000000000001,+18.7%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (69.3%), -10% for +1.0 line"
+Timo Meier,NJ,UNK,points,1.5,demon,59.3%,50.0%,+9.3%,0.1866000000000001,+18.7%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (69.3%), -10% for +1.0 line"
+Adrian Kempe,LA,UNK,shots,2.5,goblin,74.6%,63.0%,+11.6%,0.18488690646294992,+18.5%,1.5877132402714709,70%,learned,3.0 SOG/G
+Macklin Celebrini,SJ,UNK,shots,2.5,goblin,74.3%,63.0%,+11.3%,0.17906280001791708,+17.9%,1.5877132402714709,70%,learned,2.8 SOG/G
+Kevin Fiala,LA,UNK,shots,1.5,goblin,82.8%,70.7%,+12.0%,0.17016244186576124,+17.0%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (72.8%), +10% for -1.0 line"
+Dylan Larkin,DET,UNK,shots,3.5,demon,58.1%,50.0%,+8.1%,0.16125962234883473,+16.1%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (68.1%), -10% for +1.0 line"
+Quinton Byfield,LA,UNK,shots,2.5,demon,56.7%,50.0%,+6.7%,0.13359516941259697,+13.4%,2.0,20%,fallback_assumption,2.4 SOG/G
+Alex DeBrincat,DET,UNK,points,0.5,goblin,71.3%,63.0%,+8.3%,0.13203954031355858,+13.2%,1.5877132402714709,70%,learned,1.00 PPG
+William Eklund,SJ,UNK,shots,4.5,demon,56.3%,50.0%,+6.3%,0.12550101601535912,+12.6%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (76.3%), -20% for +2.0 line"
+Will Smith,SJ,UNK,shots,2.5,demon,55.9%,50.0%,+5.9%,0.11708918402642121,+11.7%,2.0,20%,fallback_assumption,2.2 SOG/G
+Jesper Bratt,NJ,UNK,points,0.5,goblin,85.5%,77.0%,+8.6%,0.11132709940638064,+11.1%,1.299038105676658,70%,learned,1.20 PPG
+Dylan Larkin,DET,UNK,shots,1.5,goblin,78.1%,70.7%,+7.4%,0.10381055300062614,+10.4%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (68.1%), +10% for -1.0 line"
+Jack Hughes,NJ,UNK,points,0.5,goblin,95.0%,86.6%,+8.4%,0.09696551146028898,+9.7%,1.1547005383792517,70%,learned,1.40 PPG
+Adrian Kempe,LA,UNK,shots,4.5,demon,54.6%,50.0%,+4.6%,0.09257041688504808,+9.3%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (74.6%), -20% for +2.0 line"
+Nico Hischier,NJ,UNK,points,2.5,demon,54.6%,50.0%,+4.6%,0.0924999999999998,+9.2%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (74.6%), -20% for +2.0 line"
+Jack Hughes,NJ,UNK,shots,2.5,goblin,84.0%,77.0%,+7.0%,0.09121165824033817,+9.1%,1.299038105676658,70%,learned,3.8 SOG/G
+Macklin Celebrini,SJ,UNK,shots,4.5,demon,54.3%,50.0%,+4.3%,0.08523394541487628,+8.5%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (74.3%), -20% for +2.0 line"
+Jack Hughes,NJ,UNK,shots,5.5,demon,54.0%,50.0%,+4.0%,0.08003025234111227,+8.0%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (84.0%), -30% for +3.0 line"
+Nico Hischier,NJ,UNK,points,0.5,goblin,74.6%,69.3%,+5.3%,0.07711909595689548,+7.7%,1.4433756729740645,70%,learned,1.00 PPG
+Kevin Fiala,LA,UNK,points,1.5,demon,53.0%,50.0%,+3.0%,0.05978181818181838,+6.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (63.0%), -10% for +1.0 line"
+Quinton Byfield,LA,UNK,points,1.5,demon,53.0%,50.0%,+3.0%,0.05978181818181838,+6.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (63.0%), -10% for +1.0 line"
+Emmitt Finnie,DET,UNK,points,1.5,demon,52.8%,50.0%,+2.8%,0.056640000000000024,+5.7%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (62.8%), -10% for +1.0 line"
+Kevin Fiala,LA,UNK,shots,4.5,demon,52.8%,50.0%,+2.8%,0.05510953587802181,+5.5%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (72.8%), -20% for +2.0 line"
