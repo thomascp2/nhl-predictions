@@ -1,0 +1,58 @@
+player_name,team,opponent,prop_type,line,odds_type,our_probability,pp_implied_probability,edge,expected_value,ev_pct,individual_multiplier,confidence,multiplier_source,reasoning
+Leo Carlsson,ANA,UNK,shots,2.5,demon,73.8%,50.0%,+23.8%,0.47564452077999597,+47.6%,2.0,20%,fallback_assumption,2.8 SOG/G
+Victor Olofsson,COL,UNK,shots,2.5,demon,69.5%,50.0%,+19.5%,0.3905791054652634,+39.1%,2.0,20%,fallback_assumption,3.0 SOG/G | Underdog (GS: 1.05x)
+Victor Olofsson,COL,UNK,shots,1.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (69.5%), exponential increase for -1.0 line (decay rate: 0.72)"
+Pavel Dorofeyev,VGK,UNK,shots,1.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (81.9%), exponential increase for -1.0 line (decay rate: 0.72)"
+Jack Eichel,VGK,UNK,points,0.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,1.90 PPG | Favorite (GS: 1.08x)
+Nathan MacKinnon,COL,UNK,points,0.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,1.55 PPG | Underdog (GS: 1.05x)
+Bo Horvat,NYI,UNK,shots,1.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (73.2%), exponential increase for -1.0 line (decay rate: 0.72)"
+Leo Carlsson,ANA,UNK,shots,1.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (73.8%), exponential increase for -1.0 line (decay rate: 0.72)"
+Dylan Larkin,DET,UNK,points,0.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,1.45 PPG
+Cutter Gauthier,ANA,UNK,shots,3.5,demon,66.9%,50.0%,+16.9%,0.3370582967569742,+33.7%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (92.9%), exponential decay for +1.0 line (decay rate: 0.72)"
+Leo Carlsson,ANA,UNK,points,0.5,goblin,93.8%,70.7%,+23.1%,0.32621416666666647,+32.6%,1.414,20%,fallback_assumption,1.22 PPG
+Cale Makar,COL,UNK,shots,1.5,goblin,93.5%,70.7%,+22.8%,0.3220717587363291,+32.2%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (67.3%), exponential increase for -1.0 line (decay rate: 0.72)"
+Cutter Gauthier,ANA,UNK,shots,2.5,goblin,92.9%,70.7%,+22.1%,0.312916966398862,+31.3%,1.414,20%,fallback_assumption,5.0 SOG/G
+Jack Eichel,VGK,UNK,shots,3.5,demon,65.1%,50.0%,+15.1%,0.3027413650391375,+30.3%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (90.5%), exponential decay for +1.0 line (decay rate: 0.72)"
+Emmitt Finnie,DET,UNK,points,0.5,demon,65.0%,50.0%,+15.0%,0.2991999999999999,+29.9%,2.0,20%,fallback_assumption,0.80 PPG
+Valeri Nichushkin,COL,UNK,shots,2.5,demon,64.9%,50.0%,+14.9%,0.29796231051915534,+29.8%,2.0,20%,fallback_assumption,2.8 SOG/G | Underdog (GS: 1.05x)
+Mitch Marner,VGK,UNK,points,0.5,goblin,91.5%,70.7%,+20.8%,0.29439292150000007,+29.4%,1.414,20%,fallback_assumption,1.20 PPG | Favorite (GS: 1.08x)
+Cale Makar,COL,UNK,points,0.5,goblin,91.4%,70.7%,+20.7%,0.2925647159090907,+29.3%,1.414,20%,fallback_assumption,1.36 PPG | Underdog (GS: 1.05x)
+Dylan Larkin,DET,UNK,shots,1.5,goblin,91.2%,70.7%,+20.4%,0.28888484812492043,+28.9%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (65.6%), exponential increase for -1.0 line (decay rate: 0.72)"
+Jack Eichel,VGK,UNK,shots,2.5,goblin,90.5%,70.7%,+19.7%,0.2792196459481531,+27.9%,1.414,20%,fallback_assumption,4.4 SOG/G | Favorite (GS: 1.08x)
+Anders Lee,NYI,UNK,points,0.5,demon,63.8%,50.0%,+13.8%,0.27555555555555555,+27.6%,2.0,20%,fallback_assumption,0.89 PPG | Underdog (GS: 1.00x)
+Valeri Nichushkin,COL,UNK,shots,1.5,goblin,90.1%,70.7%,+19.4%,0.27452687991255953,+27.5%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (64.9%), exponential increase for -1.0 line (decay rate: 0.72)"
+Bo Horvat,NYI,UNK,shots,2.5,standard,73.2%,57.7%,+15.5%,0.26863821319089065,+26.9%,1.732,20%,fallback_assumption,3.5 SOG/G | Underdog (GS: 1.00x)
+Artturi Lehkonen,COL,UNK,points,0.5,standard,72.4%,57.7%,+14.6%,0.2534267499999998,+25.3%,1.732,20%,fallback_assumption,1.00 PPG | Underdog (GS: 1.05x)
+Anders Lee,NYI,UNK,shots,2.5,demon,62.1%,50.0%,+12.1%,0.24116998137219636,+24.1%,2.0,20%,fallback_assumption,3.0 SOG/G | Underdog (GS: 1.00x)
+Nathan MacKinnon,COL,UNK,shots,2.5,goblin,87.7%,70.7%,+17.0%,0.24015924617353268,+24.0%,1.414,20%,fallback_assumption,4.5 SOG/G | Underdog (GS: 1.05x)
+Troy Terry,ANA,UNK,points,0.5,goblin,87.1%,70.7%,+16.4%,0.2313583333333331,+23.1%,1.414,20%,fallback_assumption,1.11 PPG
+Anders Lee,NYI,UNK,shots,1.5,goblin,86.2%,70.7%,+15.5%,0.2187599678196428,+21.9%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (62.1%), exponential increase for -1.0 line (decay rate: 0.72)"
+John Carlson,WSH,UNK,shots,2.5,demon,59.4%,50.0%,+9.4%,0.18862146842403682,+18.9%,2.0,20%,fallback_assumption,2.6 SOG/G | Favorite (GS: 1.03x)
+Pavel Dorofeyev,VGK,UNK,shots,3.5,demon,59.0%,50.0%,+9.0%,0.17937339412693332,+17.9%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (81.9%), exponential decay for +1.0 line (decay rate: 0.72)"
+Tomas Hertl,VGK,UNK,shots,2.5,demon,58.7%,50.0%,+8.7%,0.1748963950027973,+17.5%,2.0,20%,fallback_assumption,2.3 SOG/G | Favorite (GS: 1.08x)
+John Carlson,WSH,UNK,shots,1.5,goblin,82.5%,70.7%,+11.8%,0.1671602474663807,+16.7%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (59.4%), exponential increase for -1.0 line (decay rate: 0.72)"
+Pavel Dorofeyev,VGK,UNK,shots,2.5,goblin,81.9%,70.7%,+11.2%,0.1580791522885303,+15.8%,1.414,20%,fallback_assumption,3.3 SOG/G | Favorite (GS: 1.08x)
+Martin Necas,COL,UNK,points,0.5,goblin,81.9%,70.7%,+11.2%,0.1579294204545454,+15.8%,1.414,20%,fallback_assumption,1.18 PPG | Underdog (GS: 1.05x)
+Tomas Hertl,VGK,UNK,shots,1.5,goblin,81.6%,70.7%,+10.9%,0.15368298787080237,+15.4%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (58.7%), exponential increase for -1.0 line (decay rate: 0.72)"
+Alex DeBrincat,DET,UNK,shots,3.5,demon,57.6%,50.0%,+7.6%,0.1529467858291429,+15.3%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (80.1%), exponential decay for +1.0 line (decay rate: 0.72)"
+Aliaksei Protas,WSH,UNK,shots,2.5,demon,57.5%,50.0%,+7.5%,0.14943356631540472,+14.9%,2.0,20%,fallback_assumption,2.5 SOG/G | Favorite (GS: 1.03x)
+Jack Eichel,VGK,UNK,points,1.5,demon,57.0%,50.0%,+7.0%,0.1399999999999999,+14.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), exponential decay for +1.0 line (decay rate: 0.6)"
+Nathan MacKinnon,COL,UNK,points,1.5,demon,57.0%,50.0%,+7.0%,0.1399999999999999,+14.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), exponential decay for +1.0 line (decay rate: 0.6)"
+Dylan Larkin,DET,UNK,points,1.5,demon,57.0%,50.0%,+7.0%,0.1399999999999999,+14.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), exponential decay for +1.0 line (decay rate: 0.6)"
+Alex DeBrincat,DET,UNK,shots,2.5,goblin,80.1%,70.7%,+9.3%,0.1321296910850056,+13.2%,1.414,20%,fallback_assumption,3.5 SOG/G
+Aliaksei Protas,WSH,UNK,shots,1.5,goblin,79.8%,70.7%,+9.1%,0.12867990470137647,+12.9%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (57.5%), exponential increase for -1.0 line (decay rate: 0.72)"
+Leo Carlsson,ANA,UNK,points,1.5,demon,56.3%,50.0%,+6.3%,0.12549999999999994,+12.5%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (93.8%), exponential decay for +1.0 line (decay rate: 0.6)"
+Alex DeBrincat,DET,UNK,points,0.5,goblin,79.6%,70.7%,+8.9%,0.12541545454545422,+12.5%,1.414,20%,fallback_assumption,1.09 PPG
+Tom Wilson,WSH,UNK,points,0.5,goblin,79.5%,70.7%,+8.8%,0.12388255000000004,+12.4%,1.414,20%,fallback_assumption,1.10 PPG | Favorite (GS: 1.03x)
+John Carlson,WSH,UNK,points,0.5,standard,63.6%,57.7%,+5.9%,0.10236026666666675,+10.2%,1.732,20%,fallback_assumption,0.78 PPG | Favorite (GS: 1.03x)
+Mitch Marner,VGK,UNK,points,1.5,demon,54.9%,50.0%,+4.9%,0.09849470000000005,+9.8%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (91.5%), exponential decay for +1.0 line (decay rate: 0.6)"
+Cale Makar,COL,UNK,points,1.5,demon,54.8%,50.0%,+4.8%,0.09694318181818162,+9.7%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (91.4%), exponential decay for +1.0 line (decay rate: 0.6)"
+Nathan MacKinnon,COL,UNK,shots,3.5,standard,63.1%,57.7%,+5.4%,0.09372573291954889,+9.4%,1.732,20%,fallback_assumption,"Extrapolated from 2.5 (87.7%), exponential decay for +1.0 line (decay rate: 0.72)"
+Leo Carlsson,ANA,UNK,shots,3.5,demon,53.1%,50.0%,+3.1%,0.062464054961597126,+6.2%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (73.8%), exponential decay for +1.0 line (decay rate: 0.72)"
+Lucas Raymond,DET,UNK,points,0.5,goblin,74.6%,70.7%,+3.9%,0.05519749999999979,+5.5%,1.414,20%,fallback_assumption,1.00 PPG
+Artturi Lehkonen,COL,UNK,shots,2.5,demon,52.7%,50.0%,+2.7%,0.05491335204472225,+5.5%,2.0,20%,fallback_assumption,2.5 SOG/G | Underdog (GS: 1.05x)
+Bo Horvat,NYI,UNK,shots,3.5,demon,52.7%,50.0%,+2.7%,0.054756943992426255,+5.5%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (73.2%), exponential decay for +1.0 line (decay rate: 0.72)"
+Troy Terry,ANA,UNK,points,1.5,demon,52.2%,50.0%,+2.2%,0.04499999999999993,+4.5%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (87.1%), exponential decay for +1.0 line (decay rate: 0.6)"
+Tomas Hertl,VGK,UNK,points,0.5,goblin,73.7%,70.7%,+2.9%,0.04149469112500004,+4.1%,1.414,20%,fallback_assumption,0.90 PPG | Favorite (GS: 1.08x)
+Troy Terry,ANA,UNK,shots,2.5,demon,51.9%,50.0%,+1.9%,0.038457791535001284,+3.8%,2.0,20%,fallback_assumption,2.1 SOG/G
+Artturi Lehkonen,COL,UNK,shots,1.5,goblin,73.3%,70.7%,+2.5%,0.035866305410581445,+3.6%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (52.7%), exponential increase for -1.0 line (decay rate: 0.72)"
