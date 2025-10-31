@@ -148,18 +148,30 @@ class MultiLineEVCalculator:
     """
     Calculates EV for ALL available PrizePicks lines.
     Uses our model's predictions to estimate probability at each line.
+    Uses LEARNED individual multipliers when available (more accurate than generic assumptions).
     """
 
-    # PrizePicks payout multipliers
-    PAYOUT_MULTIPLIERS = {
-        'standard': 3.0,   # 2-pick power play
-        'goblin': 2.0,     # Easier line, lower payout
-        'demon': 4.0       # Harder line, higher payout
+    # FALLBACK payout multipliers (used only when we don't have learned data)
+    # These are LOW CONFIDENCE estimates
+    FALLBACK_MULTIPLIERS = {
+        'standard': 1.732,  # √3 ≈ 1.732x individual (57.7% implied)
+        'goblin': 1.414,    # √2 ≈ 1.414x individual (70.7% implied)
+        'demon': 2.0        # Rough estimate (50% implied)
     }
 
     def __init__(self, conn):
         self.conn = conn
         self.predictions_cache = {}
+        self.multiplier_learner = None
+
+        # Load multiplier learner
+        try:
+            from prizepicks_multiplier_learner import PrizePicksMultiplierLearner
+            self.multiplier_learner = PrizePicksMultiplierLearner()
+            print("[+] Loaded multiplier learner - will use ACTUAL learned multipliers")
+        except:
+            print("[WARNING] Multiplier learner not available - using fallback assumptions")
+            self.multiplier_learner = None
 
     def load_predictions(self, date: str = None) -> pd.DataFrame:
         """Load our model's predictions for the date"""
@@ -256,10 +268,38 @@ class MultiLineEVCalculator:
 
         return None, "No prediction available"
 
+    def _get_individual_multiplier(self, player_name: str, prop_type: str, line: float,
+                                   odds_type: str, date: str = None) -> Dict:
+        """
+        Get ACTUAL individual multiplier for a pick.
+        Priority:
+        1. Learned from observations (HIGH confidence)
+        2. Historical learned data (MEDIUM confidence)
+        3. Fallback assumption (LOW confidence)
+        """
+
+        if self.multiplier_learner:
+            # Try to get learned multiplier
+            learned = self.multiplier_learner.get_learned_multiplier(player_name, prop_type, line, date)
+
+            if learned:
+                return learned
+
+        # Fallback to generic assumption (LOW confidence)
+        return self.multiplier_learner.get_fallback_multiplier(odds_type) if self.multiplier_learner else {
+            'individual_multiplier': self.FALLBACK_MULTIPLIERS.get(odds_type, 1.732),
+            'implied_probability': 1.0 / self.FALLBACK_MULTIPLIERS.get(odds_type, 1.732),
+            'confidence': 0.2,
+            'observations': 0,
+            'source': 'fallback_assumption'
+        }
+
     def calculate_edge_for_line(self, player_name: str, team: str, opponent: str,
-                                prop_type: str, line: float, odds_type: str) -> Dict:
+                                prop_type: str, line: float, odds_type: str, date: str = None) -> Dict:
         """
         Calculate edge and EV for a specific PrizePicks line.
+        Uses LEARNED individual multipliers when available (accurate).
+        Falls back to generic assumptions when not learned yet (low confidence).
         """
 
         # Get our probability estimate
@@ -268,15 +308,17 @@ class MultiLineEVCalculator:
         if our_prob is None:
             return None
 
-        # Get payout multiplier
-        payout = self.PAYOUT_MULTIPLIERS.get(odds_type, 3.0)
+        # Get ACTUAL individual multiplier (this is the key improvement!)
+        multiplier_info = self._get_individual_multiplier(player_name, prop_type, line, odds_type, date)
 
-        # Market's implied probability
-        pp_implied_prob = 1.0 / payout
+        individual_mult = multiplier_info['individual_multiplier']
+        pp_implied_prob = multiplier_info['implied_probability']
+        confidence = multiplier_info['confidence']
+        source = multiplier_info['source']
 
-        # Calculate edge and EV
+        # Calculate edge and EV using ACTUAL multiplier
         edge = (our_prob - pp_implied_prob) * 100
-        ev = (our_prob * payout) - 1.0
+        ev = (our_prob * individual_mult) - 1.0
         ev_pct = ev * 100
 
         return {
@@ -291,7 +333,9 @@ class MultiLineEVCalculator:
             'edge': edge,
             'expected_value': ev,
             'ev_pct': ev_pct,
-            'payout_multiplier': payout,
+            'individual_multiplier': individual_mult,
+            'confidence': confidence,
+            'multiplier_source': source,
             'reasoning': reasoning
         }
 
@@ -352,7 +396,7 @@ def save_multi_line_edges_to_db(edge_plays: List[Dict], date: str = None):
     # Insert all edges
     for play in edge_plays:
         cursor.execute("""
-            INSERT INTO prizepicks_edges
+            INSERT OR REPLACE INTO prizepicks_edges
             (date, player_name, team, opponent, prop_type, line, odds_type,
              our_probability, pp_implied_probability, edge, expected_value,
              kelly_score, payout_multiplier, created_at)
@@ -363,7 +407,7 @@ def save_multi_line_edges_to_db(edge_plays: List[Dict], date: str = None):
             play['our_probability'], play['pp_implied_probability'],
             play['edge'], play['expected_value'],
             0.0,  # Kelly score (placeholder)
-            play['payout_multiplier'],
+            play['individual_multiplier'],
             datetime.now().isoformat()
         ))
 
@@ -389,15 +433,18 @@ def export_to_csv(edge_plays: List[Dict], filename: str = None):
     # Reorder columns for readability
     cols = ['player_name', 'team', 'opponent', 'prop_type', 'line', 'odds_type',
             'our_probability', 'pp_implied_probability', 'edge',
-            'expected_value', 'ev_pct', 'payout_multiplier', 'reasoning']
+            'expected_value', 'ev_pct', 'individual_multiplier', 'confidence',
+            'multiplier_source', 'reasoning']
 
     df = df[[c for c in cols if c in df.columns]]
 
-    # Format percentages
+    # Format percentages and numbers
     df['our_probability'] = df['our_probability'].apply(lambda x: f"{x:.1%}")
     df['pp_implied_probability'] = df['pp_implied_probability'].apply(lambda x: f"{x:.1%}")
     df['edge'] = df['edge'].apply(lambda x: f"{x:+.1f}%")
     df['ev_pct'] = df['ev_pct'].apply(lambda x: f"{x:+.1f}%")
+    if 'confidence' in df.columns:
+        df['confidence'] = df['confidence'].apply(lambda x: f"{x:.0%}")
 
     df.to_csv(filename, index=False)
     print(f"[SUCCESS] Exported to {filename}")
@@ -423,9 +470,18 @@ def display_top_edges(edge_plays: List[Dict], top_n: int = 30):
             'demon': '[DEM]'
         }.get(play['odds_type'], '[STD]')
 
+        # Confidence indicator
+        conf_pct = play.get('confidence', 0.2) * 100
+        if conf_pct >= 70:
+            conf_icon = "[LEARNED]"  # High confidence (learned)
+        elif conf_pct >= 50:
+            conf_icon = "[HIST]"  # Medium confidence (historical)
+        else:
+            conf_icon = "[EST]"  # Low confidence (fallback estimate)
+
         print(f"{i:3}. {play['player_name']:25} ({play['team']}) vs {play['opponent']}")
-        print(f"     {play['prop_type'].upper():7} O{play['line']:.1f} {odds_label:5}")
-        print(f"     EV: {play['ev_pct']:+6.1f}% | Edge: {play['edge']:+6.1f}% | Prob: {play['our_probability']:.1%} | Payout: {play['payout_multiplier']:.1f}x")
+        print(f"     {play['prop_type'].upper():7} O{play['line']:.1f} {odds_label:5} {conf_icon}")
+        print(f"     EV: {play['ev_pct']:+6.1f}% | Edge: {play['edge']:+6.1f}% | Prob: {play['our_probability']:.1%} | Mult: {play['individual_multiplier']:.3f}x | Conf: {conf_pct:.0f}%")
         print(f"     {play['reasoning']}")
         print()
 

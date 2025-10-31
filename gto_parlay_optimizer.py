@@ -503,10 +503,24 @@ class GTOParleyOptimizer:
 
         return bet_size
 
+    def calculate_minimum_payout(self, probability: float, target_ev: float = 0.10) -> float:
+        """
+        Calculate MINIMUM payout needed to achieve target EV.
+
+        Formula: Required_Payout = (1 + Target_EV) / Probability
+
+        Example:
+            - Probability: 60%
+            - Target EV: 10%
+            - Required: (1.10) / 0.60 = 1.83x minimum
+        """
+        return (1 + target_ev) / probability
+
     def generate_betting_recommendations(self, bankroll: float = 1000,
                                         kelly_fraction: float = 0.25):
         """
-        Generate betting recommendations with Kelly sizing.
+        Generate betting recommendations with MINIMUM PAYOUT thresholds.
+        User validates actual payout on PrizePicks before betting.
 
         Args:
             bankroll: Total bankroll in dollars
@@ -520,11 +534,24 @@ class GTOParleyOptimizer:
         print(f"BETTING RECOMMENDATIONS (Bankroll: ${bankroll:.0f})")
         print("="*80)
         print()
+        print("INSTRUCTIONS:")
+        print("  1. Go to PrizePicks and add parlay picks to your slip")
+        print("  2. Check the ACTUAL payout displayed")
+        print("  3. Compare to minimum required payout below")
+        print("  4. BET if actual >= minimum, SKIP if actual < minimum")
+        print()
+        print("="*80)
+        print()
 
         total_risk = 0
 
         for i, parlay in enumerate(self.selected_parlays, 1):
-            # Calculate Kelly bet size
+            # Calculate minimum required payouts at different EV thresholds
+            min_payout_10 = self.calculate_minimum_payout(parlay['probability'], 0.10)
+            min_payout_5 = self.calculate_minimum_payout(parlay['probability'], 0.05)
+            min_payout_breakeven = self.calculate_minimum_payout(parlay['probability'], 0.0)
+
+            # Calculate Kelly bet size (using assumed payout for now)
             bet_size = self.kelly_criterion(
                 parlay['probability'],
                 parlay['actual_payout'],
@@ -537,35 +564,61 @@ class GTOParleyOptimizer:
 
             total_risk += bet_size
 
-            # Display parlay
+            # Display parlay with MINIMUM PAYOUT THRESHOLDS
             print(f"PARLAY #{i} ({parlay['legs']}-leg)")
-            print(f"{'-'*80}")
+            print(f"{'='*80}")
 
             for j, idx in enumerate(parlay['picks'], 1):
                 pick = self.picks_df.iloc[idx]
-                odds_label = f"[{pick['odds_type']}]" if pick['odds_type'] != 'standard' else ""
-                print(f"  Leg {j}: {pick['player_name']:20} {pick['prop_type'].upper():7} O{pick['line']:.1f} {odds_label}")
 
-            print(f"\n  Probability: {parlay['probability']:.1%}")
-            print(f"  Payout:      {parlay['actual_payout']:.1f}x")
-            print(f"  EV:          {parlay['ev']:+.1%}")
-            print(f"  Kelly Bet:   ${bet_size:.2f} ({bet_size/bankroll:.1%} of bankroll)")
-            print(f"  Expected:    ${expected_profit:+.2f}")
+                # Format odds type prominently
+                odds_type = pick['odds_type'].upper()
+                odds_icon = {
+                    'DEMON': '[DEM]',
+                    'GOBLIN': '[GOB]',
+                    'STANDARD': '[STD]'
+                }.get(odds_type, f"[{odds_type[:3]}]")
+
+                print(f"  Leg {j}: {pick['player_name']:25} ({pick['team']}) vs {pick['opponent']}")
+                print(f"         {pick['prop_type'].upper():7} OVER {pick['line']:.1f} {odds_icon}")
+
+            print()
+            print(f"  Combined Probability: {parlay['probability']:.1%}")
+            print()
+            print(f"  MINIMUM REQUIRED PAYOUT:")
+            print(f"    For 10% EV:  {min_payout_10:.2f}x  <- IDEAL")
+            print(f"    For  5% EV:  {min_payout_5:.2f}x  <- ACCEPTABLE")
+            print(f"    Break-even:  {min_payout_breakeven:.2f}x  <- MINIMUM")
+            print()
+            print(f"  YOUR ACTION:")
+            print(f"    1. Add picks to PrizePicks slip")
+            print(f"    2. Check displayed payout: _____x")
+            print(f"    3. If >= {min_payout_10:.2f}x -> BET ${bet_size:.2f} (EXCELLENT)")
+            print(f"       If >= {min_payout_5:.2f}x  -> BET smaller or SKIP")
+            print(f"       If <  {min_payout_5:.2f}x  -> SKIP (no edge)")
+            print()
+            print(f"  Estimated EV (if payout = {parlay['actual_payout']:.1f}x): {parlay['ev']:+.1%}")
+            print(f"  Expected profit: ${expected_profit:+.2f}")
             print()
 
         print(f"{'='*80}")
-        print(f"TOTAL RISK: ${total_risk:.2f} ({total_risk/bankroll:.1%} of bankroll)")
+        print(f"TOTAL ESTIMATED RISK: ${total_risk:.2f} ({total_risk/bankroll:.1%} of bankroll)")
         print(f"{'='*80}")
         print()
 
     def export_to_csv(self, filename: str = "gto_parlays.csv"):
-        """Export selected parlays to CSV for easy reference."""
+        """Export selected parlays with minimum payout thresholds."""
         if not self.selected_parlays:
             print("[WARNING] No parlays to export")
             return
 
         rows = []
         for i, parlay in enumerate(self.selected_parlays, 1):
+            # Calculate minimum payouts
+            min_payout_10 = self.calculate_minimum_payout(parlay['probability'], 0.10)
+            min_payout_5 = self.calculate_minimum_payout(parlay['probability'], 0.05)
+            min_payout_breakeven = self.calculate_minimum_payout(parlay['probability'], 0.0)
+
             for j, idx in enumerate(parlay['picks'], 1):
                 pick = self.picks_df.iloc[idx]
                 rows.append({
@@ -575,11 +628,17 @@ class GTOParleyOptimizer:
                     'Player': pick['player_name'],
                     'Prop_Type': pick['prop_type'].upper(),
                     'Line': pick['line'],
+                    'Odds_Type': pick['odds_type'].upper(),
                     'Team': pick['team'],
                     'Opponent': pick['opponent'],
-                    'Parlay_Probability': parlay['probability'],
-                    'Parlay_Payout': parlay['actual_payout'],
-                    'Parlay_EV': parlay['ev']
+                    'Combined_Probability': f"{parlay['probability']:.1%}",
+                    'Min_Payout_10pct_EV': f"{min_payout_10:.2f}x",
+                    'Min_Payout_5pct_EV': f"{min_payout_5:.2f}x",
+                    'Min_Payout_Breakeven': f"{min_payout_breakeven:.2f}x",
+                    'Estimated_Payout': f"{parlay['actual_payout']:.1f}x",
+                    'Estimated_EV': f"{parlay['ev']:+.1%}",
+                    'Actual_Payout': '',  # User fills this in
+                    'Action': ''  # User fills: BET or SKIP
                 })
 
         df = pd.DataFrame(rows)
