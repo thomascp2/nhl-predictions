@@ -20,11 +20,19 @@ cd C:\Users\thoma\PrizePicks-Research-Lab
 python run_complete_workflow_gto.py
 ```
 
-### What It Does (4 Steps):
+### What It Does (5 Steps):
+
+**STEP 0: Fetch Daily Game Odds** ⭐ NEW!
+- Fetches real betting lines from The Odds API
+- Gets moneylines, spreads, and totals for all NHL games
+- Uses 1 API call per day (30/month, stays under 500 limit)
+- Saves to database for TOI predictions and game script analysis
+- Provides betting context for all predictions
 
 **STEP 1: Generate Predictions**
 - Smart data refresh (only if >2 hours old)
 - Runs statistical + ensemble models
+- Uses real betting lines from The Odds API
 - Generates T1-ELITE picks
 - Creates LATEST_PICKS.txt and LATEST_PICKS.csv
 - Auto-commits timestamped picks to GitHub
@@ -45,7 +53,7 @@ python run_complete_workflow_gto.py
 - **Uses real PrizePicks payouts** (not hardcoded)
 - Exports to GTO_PARLAYS_*.csv
 
-**STEP 4: Commit to GitHub** ⭐ NEW!
+**STEP 4: Commit to GitHub**
 - Finds latest GTO parlay CSV file
 - Commits latest picks + GTO parlays together
 - Pushes to GitHub with timestamp
@@ -210,7 +218,8 @@ git log --oneline -5
 ### Morning Routine (9:00 AM):
 
 1. **Automation Runs** (Task Scheduler)
-   - Generates predictions
+   - Fetches daily game odds from The Odds API
+   - Generates predictions with real betting lines
    - Finds PrizePicks edge
    - Builds GTO parlays
    - Commits to GitHub

@@ -44,7 +44,14 @@
 ### End-to-End Pipeline
 
 ```
-NHL API
+NHL API + THE ODDS API
+   |
+   v
+[0] GAME ODDS FETCH (fetch_daily_odds.py) ⭐ NEW!
+   - Fetches real betting lines (ML, spreads, totals)
+   - Uses The Odds API (500 free calls/month)
+   - Smart caching (1 call per day = 30/month)
+   - Saves to odds_api_game_odds table
    |
    v
 [1] DATA FETCH (smart_data_refresh.py)
@@ -55,6 +62,7 @@ NHL API
    |
    v
 DATABASE (nhl_predictions.db)
+   - odds_api_game_odds ⭐ NEW!
    - player_stats
    - team_stats
    - goalie_stats
@@ -64,7 +72,7 @@ DATABASE (nhl_predictions.db)
 [2] PREDICTION GENERATION (generate_picks_to_file.py)
    - Statistical model (weighted averages)
    - ML ensemble (XGBoost + LightGBM)
-   - Matchup adjustments
+   - Matchup adjustments (uses real betting lines) ⭐ ENHANCED!
    - Confidence scoring
    |
    v
@@ -556,9 +564,17 @@ PARLAY #1 (2-leg)
 
 **What It Does**:
 
+**Step 0 (Optional): Fetch Daily Game Odds** ⭐ NEW!
+- Can be run separately: `fetch_daily_odds.py`
+- Fetches real betting lines from The Odds API
+- Moneylines, spreads, totals for all NHL games
+- Uses 1 API call (stays under 500/month limit)
+- Saves to database for TOI and game script analysis
+
 **Step 1: Generate Predictions**
 - Runs `generate_picks_to_file.py`
 - Smart data refresh included
+- Uses real betting lines from database
 - Saves predictions to database
 - Exports LATEST_PICKS files
 
