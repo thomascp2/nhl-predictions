@@ -1,0 +1,51 @@
+player_name,team,opponent,prop_type,line,odds_type,our_probability,pp_implied_probability,edge,expected_value,ev_pct,individual_multiplier,confidence,multiplier_source,reasoning
+Matthew Schaefer,NYI,UNK,shots,2.5,demon,69.7%,50.0%,+19.7%,0.3940568982659758,+39.4%,2.0,20%,fallback_assumption,3.0 SOG/G
+Anthony Cirelli,TB,UNK,shots,0.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (9.5%), normal distribution (mean=1.6, sd=0.7)"
+Macklin Celebrini,SJ,UNK,points,0.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,1.50 PPG
+Leo Carlsson,ANA,UNK,points,0.5,goblin,95.0%,70.7%,+24.3%,0.34329999999999994,+34.3%,1.414,20%,fallback_assumption,1.50 PPG
+Bo Horvat,NYI,UNK,shots,1.5,goblin,92.9%,70.7%,+22.1%,0.3131795174341354,+31.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (78.1%), normal distribution (mean=3.6, sd=1.5)"
+Cutter Gauthier,ANA,UNK,shots,4.5,demon,65.5%,50.0%,+15.5%,0.31022443784581455,+31.0%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (90.9%), normal distribution (mean=5.4, sd=2.1)"
+Kirill Marchenko,CBJ,UNK,shots,1.5,goblin,92.1%,70.7%,+21.4%,0.30284343179658646,+30.3%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (75.5%), normal distribution (mean=3.5, sd=1.4)"
+Kyle Palmieri,NYI,UNK,shots,1.5,goblin,91.7%,70.7%,+21.0%,0.29636910867481414,+29.6%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (73.9%), normal distribution (mean=3.4, sd=1.3)"
+Cutter Gauthier,ANA,UNK,shots,2.5,goblin,90.9%,70.7%,+20.1%,0.2849190335191689,+28.5%,1.414,20%,fallback_assumption,5.1 SOG/G
+Matthew Schaefer,NYI,UNK,shots,1.5,goblin,90.5%,70.7%,+19.8%,0.2794176165586053,+27.9%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (69.7%), normal distribution (mean=3.2, sd=1.3)"
+Jake Guentzel,TB,UNK,shots,1.5,goblin,90.2%,70.7%,+19.5%,0.27563026953533587,+27.6%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (68.8%), normal distribution (mean=3.1, sd=1.2)"
+Anders Lee,NYI,UNK,shots,1.5,goblin,89.8%,70.7%,+19.1%,0.2702959308571844,+27.0%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (67.5%), normal distribution (mean=3.1, sd=1.2)"
+Troy Terry,ANA,UNK,points,0.5,goblin,88.2%,70.7%,+17.5%,0.24785499999999994,+24.8%,1.414,20%,fallback_assumption,1.30 PPG
+Leo Carlsson,ANA,UNK,shots,1.5,goblin,88.0%,70.7%,+17.3%,0.2449589406363637,+24.5%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (61.6%), normal distribution (mean=2.8, sd=1.1)"
+Dawson Mercer,NJ,UNK,points,0.5,standard,71.5%,57.7%,+13.7%,0.23765833333333308,+23.8%,1.732,20%,fallback_assumption,1.08 PPG
+Dylan Larkin,DET,UNK,points,0.5,goblin,87.3%,70.7%,+16.6%,0.23430416666666654,+23.4%,1.414,20%,fallback_assumption,1.42 PPG
+Leo Carlsson,ANA,UNK,shots,2.5,demon,61.6%,50.0%,+11.6%,0.23232271311510289,+23.2%,2.0,20%,fallback_assumption,2.7 SOG/G
+Dmitry Orlov,SJ,UNK,points,0.5,demon,61.5%,50.0%,+11.5%,0.22999999999999998,+23.0%,2.0,20%,fallback_assumption,0.75 PPG
+William Eklund,SJ,UNK,shots,1.5,goblin,86.8%,70.7%,+16.1%,0.22751059675805196,+22.8%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (57.8%), normal distribution (mean=2.7, sd=1.1)"
+Charlie Coyle,CBJ,UNK,points,0.5,demon,61.1%,50.0%,+11.1%,0.22181818181818191,+22.2%,2.0,20%,fallback_assumption,0.82 PPG
+Dylan Larkin,DET,UNK,shots,1.5,goblin,85.6%,70.7%,+14.9%,0.21104857121295173,+21.1%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (54.3%), normal distribution (mean=2.6, sd=1.0)"
+Anders Lee,NYI,UNK,points,0.5,demon,60.5%,50.0%,+10.5%,0.21090909090909093,+21.1%,2.0,20%,fallback_assumption,0.73 PPG
+Matthew Schaefer,NYI,UNK,points,0.5,demon,60.5%,50.0%,+10.5%,0.21090909090909093,+21.1%,2.0,20%,fallback_assumption,0.73 PPG
+Troy Terry,ANA,UNK,shots,1.5,goblin,82.8%,70.7%,+12.1%,0.1711212188898208,+17.1%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (46.5%), normal distribution (mean=2.4, sd=1.0)"
+Trevor Zegras,PHI,UNK,points,0.5,goblin,82.0%,70.7%,+11.3%,0.16012272727272725,+16.0%,1.414,20%,fallback_assumption,1.18 PPG
+William Eklund,SJ,UNK,shots,2.5,demon,57.8%,50.0%,+7.8%,0.15527441039351597,+15.5%,2.0,20%,fallback_assumption,2.6 SOG/G
+Andrei Vasilevskiy,TB,UNK,goalie_saves,29.5,demon,57.6%,50.0%,+7.6%,0.1522201047160623,+15.2%,2.0,20%,fallback_assumption,"Saves model: 27.1 saves (SV%=0.899, std=6.0, confidence=75%) | Distance: -2.4 saves from 29.5 line"
+Timo Meier,NJ,UNK,shots,1.5,goblin,80.7%,70.7%,+10.0%,0.1409864131928491,+14.1%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (41.2%), normal distribution (mean=2.3, sd=0.9)"
+Macklin Celebrini,SJ,UNK,points,1.5,demon,57.0%,50.0%,+7.0%,0.1399999999999999,+14.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), exponential decay for +1.0 line (decay rate: 0.6)"
+Leo Carlsson,ANA,UNK,points,1.5,demon,57.0%,50.0%,+7.0%,0.1399999999999999,+14.0%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (95.0%), exponential decay for +1.0 line (decay rate: 0.6)"
+Will Smith,SJ,UNK,points,0.5,standard,65.0%,57.7%,+7.3%,0.12580000000000013,+12.6%,1.732,20%,fallback_assumption,0.83 PPG
+Jack Hughes,NJ,UNK,points,0.5,goblin,79.4%,70.7%,+8.7%,0.12236249999999993,+12.2%,1.414,20%,fallback_assumption,1.25 PPG
+Anthony Cirelli,TB,UNK,points,0.5,standard,64.5%,57.7%,+6.8%,0.11792727272727266,+11.8%,1.732,20%,fallback_assumption,0.91 PPG
+Dmitri Voronkov,CBJ,UNK,points,0.5,standard,64.5%,57.7%,+6.8%,0.11792727272727266,+11.8%,1.732,20%,fallback_assumption,0.91 PPG
+Bo Horvat,NYI,UNK,shots,2.5,goblin,78.1%,70.7%,+7.4%,0.10490470430580467,+10.5%,1.414,20%,fallback_assumption,3.5 SOG/G
+Bo Horvat,NYI,UNK,points,0.5,goblin,77.3%,70.7%,+6.6%,0.09263636363636363,+9.3%,1.414,20%,fallback_assumption,1.09 PPG
+Alex DeBrincat,DET,UNK,shots,2.5,goblin,77.2%,70.7%,+6.5%,0.09167827430180142,+9.2%,1.414,20%,fallback_assumption,3.8 SOG/G
+Andrei Vasilevskiy,TB,UNK,goalie_saves,28.5,demon,54.5%,50.0%,+4.5%,0.08972010471606229,+9.0%,2.0,20%,fallback_assumption,Interpolated between 27.5 (51.4%) and 29.5 (57.6%)
+Will Smith,SJ,UNK,shots,1.5,goblin,76.2%,70.7%,+5.5%,0.07813927949385513,+7.8%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (31.7%), normal distribution (mean=2.1, sd=0.8)"
+Bo Horvat,NYI,UNK,shots,3.5,demon,53.5%,50.0%,+3.5%,0.06990021903357446,+7.0%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (78.1%), normal distribution (mean=3.6, sd=1.5)"
+Zach Werenski,CBJ,UNK,shots,2.5,goblin,75.5%,70.7%,+4.8%,0.06778361894620288,+6.8%,1.414,20%,fallback_assumption,3.6 SOG/G
+Alex DeBrincat,DET,UNK,points,0.5,goblin,75.4%,70.7%,+4.7%,0.06639166666666663,+6.6%,1.414,20%,fallback_assumption,1.17 PPG
+Nico Hischier,NJ,UNK,shots,1.5,goblin,75.1%,70.7%,+4.4%,0.062137115296615475,+6.2%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (29.6%), normal distribution (mean=2.1, sd=0.8)"
+Troy Terry,ANA,UNK,points,1.5,demon,52.9%,50.0%,+2.9%,0.05899999999999994,+5.9%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (88.2%), exponential decay for +1.0 line (decay rate: 0.6)"
+Dylan Larkin,DET,UNK,points,1.5,demon,52.4%,50.0%,+2.4%,0.047499999999999876,+4.7%,2.0,20%,fallback_assumption,"Extrapolated from 0.5 (87.3%), exponential decay for +1.0 line (decay rate: 0.6)"
+Trevor Zegras,PHI,UNK,shots,1.5,goblin,73.5%,70.7%,+2.8%,0.03986670953308402,+4.0%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (26.8%), normal distribution (mean=2.0, sd=0.8)"
+Mathew Barzal,NYI,UNK,shots,1.5,goblin,73.2%,70.7%,+2.5%,0.035712721392562985,+3.6%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (26.3%), normal distribution (mean=2.0, sd=0.8)"
+Jack Hughes,NJ,UNK,shots,2.5,goblin,73.2%,70.7%,+2.5%,0.035712721392562985,+3.6%,1.414,20%,fallback_assumption,3.5 SOG/G
+Alex DeBrincat,DET,UNK,shots,3.5,demon,51.7%,50.0%,+1.7%,0.03498372033588648,+3.5%,2.0,20%,fallback_assumption,"Extrapolated from 2.5 (77.2%), normal distribution (mean=3.6, sd=1.4)"
+Dmitri Voronkov,CBJ,UNK,shots,1.5,goblin,73.0%,70.7%,+2.3%,0.03189974555474895,+3.2%,1.414,20%,fallback_assumption,"Extrapolated from 2.5 (25.9%), normal distribution (mean=2.0, sd=0.8)"
