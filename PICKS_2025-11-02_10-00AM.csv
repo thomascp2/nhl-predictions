@@ -1,0 +1,6 @@
+Player,Team,Opponent,Prop Type,Line,Probability (%),Expected Value,Confidence Tier,Model,Reasoning
+Macklin Celebrini,SJS,DET,POINTS,0.5,95.0,1.58,T1-ELITE,Statistical,1.50 PPG
+Leo Carlsson,ANA,NJD,POINTS,0.5,95.0,1.58,T1-ELITE,Statistical,1.50 PPG
+Cutter Gauthier,ANA,NJD,SHOTS,2.5,90.9,5.35,T1-ELITE,Statistical,5.1 SOG/G
+Troy Terry,ANA,NJD,POINTS,0.5,88.2,1.37,T1-ELITE,Statistical,1.30 PPG
+Dylan Larkin,DET,SJS,POINTS,0.5,87.3,1.35,T1-ELITE,Statistical,1.42 PPG
