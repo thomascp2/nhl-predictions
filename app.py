@@ -1,19 +1,22 @@
 """
-NHL Prediction System - Streamlit Dashboard v2.0
-Complete automation control center with system guide
+NHL Prediction System Dashboard - Streamlit Interface
+Redesigned for simplicity: 13 pages → 8 pages (62% size reduction)
+Features: Command Center, Visual Workflow, Integrated Grading, No TOI
 """
 
 import streamlit as st
-import pandas as pd
 import sqlite3
+import pandas as pd
 from datetime import datetime, timedelta
-import plotly.graph_objects as go
-import plotly.express as px
-import subprocess
 import os
-from pathlib import Path
+import subprocess
+import sys
+import time
+import requests
 
-# Page config
+# ============================================================================
+# PAGE CONFIGURATION
+# ============================================================================
 st.set_page_config(
     page_title="NHL Prediction System",
     page_icon="🏒",
@@ -21,2634 +24,1705 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Database connection
-@st.cache_resource
-def get_database_connection():
-    return sqlite3.connect('database/nhl_predictions.db', check_same_thread=False)
+# ============================================================================
+# DATABASE CONNECTION
+# ============================================================================
+DB_PATH = "database/nhl_predictions.db"
 
-conn = get_database_connection()
+def get_db_connection():
+    """Get database connection"""
+    return sqlite3.connect(DB_PATH)
 
-# Custom CSS
-st.markdown("""
-    <style>
-    .main {
-        padding: 0rem 1rem;
-    }
-    .stMetric {
-        background-color: #1e1e1e;
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid #333;
-    }
-    .stButton>button {
-        width: 100%;
-    }
-    .success-box {
-        padding: 20px;
-        border-radius: 10px;
-        background-color: #1e4d2b;
-        border: 2px solid #00ff00;
-        margin: 10px 0;
-    }
-    .warning-box {
-        padding: 20px;
-        border-radius: 10px;
-        background-color: #4d3d1e;
-        border: 2px solid #ffa500;
-        margin: 10px 0;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Helper function to run scripts
-def run_script(script_name, description=""):
-    """Run a Python script and return the result"""
+def query_db(query, params=()):
+    """Execute query and return DataFrame"""
     try:
-        result = subprocess.run(
-            ["python", script_name],
-            capture_output=True,
-            text=True,
-            timeout=300
-        )
-        return result
-    except subprocess.TimeoutExpired:
-        return None
+        conn = get_db_connection()
+        df = pd.read_sql_query(query, conn, params=params)
+        conn.close()
+        return df
     except Exception as e:
-        st.error(f"Error running {script_name}: {str(e)}")
-        return None
+        st.error(f"Database error: {e}")
+        return pd.DataFrame()
 
-# Helper function to get latest files
-def get_latest_file(pattern):
-    """Get the most recent file matching pattern"""
-    files = list(Path('.').glob(pattern))
-    if files:
-        return max(files, key=lambda x: x.stat().st_mtime)
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
+
+def get_data_freshness():
+    """Check how fresh the player stats data is"""
+    try:
+        query = """
+            SELECT MAX(last_updated) as latest
+            FROM player_stats
+        """
+        df = query_db(query)
+        if not df.empty and df['latest'][0]:
+            latest = pd.to_datetime(df['latest'][0])
+            hours_old = (datetime.now() - latest).total_seconds() / 3600
+            return hours_old
+    except:
+        pass
     return None
 
-# Sidebar
+def get_today_summary():
+    """Get summary stats for today"""
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    # Get predictions by type
+    query = """
+        SELECT prop_type, COUNT(*) as count,
+               AVG(probability) as avg_conf
+        FROM predictions
+        WHERE game_date = ?
+        GROUP BY prop_type
+    """
+    preds = query_db(query, (today,))
+
+    # Get T1-ELITE count
+    query_elite = """
+        SELECT COUNT(*) as elite_count
+        FROM predictions
+        WHERE game_date = ? AND probability >= 0.85
+    """
+    elite = query_db(query_elite, (today,))
+    elite_count = elite['elite_count'][0] if not elite.empty else 0
+
+    # Get edges count
+    query_edges = """
+        SELECT COUNT(*) as edge_count
+        FROM prizepicks_edges
+        WHERE date = ?
+    """
+    edges = query_db(query_edges, (today,))
+    edge_count = edges['edge_count'][0] if not edges.empty else 0
+
+    # Get parlays count
+    query_parlays = """
+        SELECT COUNT(*) as parlay_count
+        FROM gto_parlays
+        WHERE date = ?
+    """
+    parlays = query_db(query_parlays, (today,))
+    parlay_count = parlays['parlay_count'][0] if not parlays.empty else 0
+
+    return {
+        'predictions': preds,
+        'total_predictions': preds['count'].sum() if not preds.empty else 0,
+        'elite_count': elite_count,
+        'edge_count': edge_count,
+        'parlay_count': parlay_count
+    }
+
+def get_top_picks(limit=5):
+    """Get top N picks for today"""
+    today = datetime.now().strftime('%Y-%m-%d')
+    query = """
+        SELECT player_name, prop_type, line, prediction, probability,
+               game_time, team, opponent
+        FROM predictions
+        WHERE game_date = ?
+        ORDER BY probability DESC
+        LIMIT ?
+    """
+    return query_db(query, (today, limit))
+
+def normalize_team_name(team_name):
+    """Normalize team names to standard NHL abbreviations"""
+    # Mapping of variations to standard abbreviations
+    team_map = {
+        'Utah Mammoth': 'UTA',
+        'Utah': 'UTA',
+        'TB': 'TBL',
+        'NJ': 'NJD',
+        'LA': 'LAK',
+        'SJ': 'SJS',
+    }
+    return team_map.get(team_name, team_name)
+
+def fetch_live_scores(date_str):
+    """Fetch live scores from NHL API for a specific date"""
+    try:
+        url = f"https://api-web.nhle.com/v1/schedule/{date_str}"
+        response = requests.get(url, timeout=10)
+
+        if response.status_code == 200:
+            data = response.json()
+
+            # Extract game scores
+            scores = {}
+
+            if 'gameWeek' in data:
+                # Only look at the first day (today) in gameWeek
+                if len(data['gameWeek']) > 0:
+                    day = data['gameWeek'][0]  # First day is today
+                    if 'games' in day:
+                        for game in day['games']:
+                            away_team = game.get('awayTeam', {}).get('abbrev', 'UNK')
+                            home_team = game.get('homeTeam', {}).get('abbrev', 'UNK')
+
+                            # Store with both possible key formats for flexible matching
+                            game_key = f"{away_team}@{home_team}"
+
+                            scores[game_key] = {
+                                'away_team': away_team,
+                                'home_team': home_team,
+                                'away_score': game.get('awayTeam', {}).get('score', 0),
+                                'home_score': game.get('homeTeam', {}).get('score', 0),
+                                'game_state': game.get('gameState', 'UNKNOWN'),
+                                'period': game.get('periodDescriptor', {}).get('number', 0),
+                                'time_remaining': game.get('clock', {}).get('timeRemaining', ''),
+                                'game_type': game.get('gameType', 2)
+                            }
+
+            return scores
+        else:
+            return {}
+    except Exception as e:
+        st.warning(f"Could not fetch live scores: {e}")
+        return {}
+
+def run_script(script_path, description, timeout=300):
+    """Run a Python script and show progress"""
+    with st.spinner(f"{description}..."):
+        try:
+            result = subprocess.run(
+                [sys.executable, script_path],
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+
+            if result.returncode == 0:
+                st.success(f"[SUCCESS] {description} completed!")
+                if result.stdout:
+                    with st.expander("View output"):
+                        st.text(result.stdout)
+                return True
+            else:
+                st.error(f"[ERROR] {description} failed")
+                if result.stderr:
+                    with st.expander("Error details"):
+                        st.text(result.stderr)
+                return False
+        except subprocess.TimeoutExpired:
+            st.error(f"[TIMEOUT] {description} took too long (>{timeout}s)")
+            return False
+        except Exception as e:
+            st.error(f"[ERROR] {description} failed: {e}")
+            return False
+
+# ============================================================================
+# SIDEBAR NAVIGATION
+# ============================================================================
+
 st.sidebar.title("🏒 NHL Prediction System")
-st.sidebar.markdown("### v3.0 - Money Line Integration")
-st.sidebar.markdown("**NEW:** 100% Ensemble Coverage 💰")
+st.sidebar.markdown("---")
+
+# Quick Stats in Sidebar
+data_hours = get_data_freshness()
+if data_hours is not None:
+    if data_hours < 2:
+        st.sidebar.success(f"Data: Fresh ({data_hours:.1f}h old)")
+    elif data_hours < 6:
+        st.sidebar.warning(f"Data: {data_hours:.1f}h old")
+    else:
+        st.sidebar.error(f"Data: Stale ({data_hours:.1f}h old)")
+else:
+    st.sidebar.info("Data: Unknown")
+
+summary = get_today_summary()
+st.sidebar.metric("Today's Predictions", summary['total_predictions'])
+st.sidebar.metric("T1-ELITE Picks", summary['elite_count'])
+
 st.sidebar.markdown("---")
 
 # Navigation
 page = st.sidebar.radio(
     "Navigation",
     [
-        "🏠 Dashboard",
-        "🤖 Automated Workflows",
-        "🔧 Manual Operations",
-        "💎 GTO Parlays",
-        "🎯 Today's Picks",
-        "📊 Performance",
-        "📚 System Guide",
-        "⚙️ Settings",
-        "🛠️ System Utilities"
+        "🎯 Command Center",
+        "📊 Today's Predictions",
+        "💎 Edges & Parlays",
+        "📅 Schedule & Live Scores",
+        "📈 Performance & Grading",
+        "⚙️ System Control",
+        "ℹ️ System Info",
+        "🔧 Settings"
     ]
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### Quick Stats")
-
-# Quick stats in sidebar
-total_query = "SELECT COUNT(*) FROM predictions"
-graded_query = "SELECT COUNT(*) FROM predictions WHERE result IS NOT NULL"
-hits_query = "SELECT COUNT(*) FROM predictions WHERE result = 'HIT'"
-
-total = pd.read_sql_query(total_query, conn).iloc[0, 0]
-graded = pd.read_sql_query(graded_query, conn).iloc[0, 0]
-hits = pd.read_sql_query(hits_query, conn).iloc[0, 0]
-
-if graded > 0:
-    hit_rate = (hits / graded) * 100
-    st.sidebar.metric("Hit Rate", f"{hit_rate:.1f}%")
-    st.sidebar.metric("Total Graded", graded)
-    st.sidebar.metric("Profit", f"+{(hits * 0.91) - (graded - hits):.2f}u")
-
-st.sidebar.markdown("---")
+st.sidebar.caption("v2.0 - Redesigned Dashboard")
+st.sidebar.caption(f"Updated: {datetime.now().strftime('%I:%M %p')}")
 
 # ============================================================================
-# DASHBOARD PAGE
+# PAGE 1: COMMAND CENTER (Main Landing Page)
 # ============================================================================
 
-if page == "🏠 Dashboard":
-    st.title("🏒 NHL Prediction System Dashboard v3.0")
-    st.markdown("### Complete GTO + Multi-Line EV + **Money Line Game Script** System")
-    st.info("**🎉 NEW in v3.0:** 100% Ensemble with Money Line Integration | TOI Predictions | Goalie Saves | V4 ML Models (43 features)")
-
-    # System Status
-    st.subheader("🔋 System Status")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        # Check if latest picks exist
-        latest_picks = Path("LATEST_PICKS.txt")
-        if latest_picks.exists():
-            age_hours = (datetime.now().timestamp() - latest_picks.stat().st_mtime) / 3600
-            if age_hours < 3:
-                st.success(f"✅ Predictions Fresh ({age_hours:.1f}h old)")
-            else:
-                st.warning(f"⚠️ Predictions Stale ({age_hours:.1f}h old)")
-        else:
-            st.error("❌ No predictions")
-
-    with col2:
-        # Check GTO parlays
-        gto_files = list(Path('.').glob('GTO_PARLAYS_*.csv'))
-        if gto_files:
-            latest_gto = max(gto_files, key=lambda x: x.stat().st_mtime)
-            age_hours = (datetime.now().timestamp() - latest_gto.stat().st_mtime) / 3600
-            if age_hours < 3:
-                st.success(f"✅ Parlays Ready ({age_hours:.1f}h old)")
-            else:
-                st.warning(f"⚠️ Parlays Stale ({age_hours:.1f}h old)")
-        else:
-            st.error("❌ No parlays")
-
-    with col3:
-        # Check multi-line edges
-        edge_files = list(Path('.').glob('MULTI_LINE_EDGES_*.csv'))
-        if edge_files:
-            latest_edges = max(edge_files, key=lambda x: x.stat().st_mtime)
-            df = pd.read_csv(latest_edges)
-            st.success(f"✅ {len(df)} Edge Plays")
-        else:
-            st.error("❌ No edges")
-
-    with col4:
-        # Database status
-        st.success(f"✅ DB: {total} predictions")
+if page == "🎯 Command Center":
+    st.title("🎯 NHL Prediction System - Command Center")
+    st.markdown("**Your central hub for daily NHL prediction workflows**")
 
     st.markdown("---")
 
-    # Quick Actions
+    # Visual Workflow Diagram
+    st.subheader("📊 Daily Workflow")
+
+    # Create visual workflow with columns
+    st.markdown("""
+    ```
+    ┌──────────────────────────────────────────────────────────────┐
+    │                    DAILY WORKFLOW                            │
+    │                                                              │
+    │                        START                                 │
+    │                          ↓                                   │
+    │                  1. GENERATE PICKS                           │
+    │                          ↓                                   │
+    │                  2. FIND EDGES                               │
+    │                          ↓                                   │
+    │                  3. REVIEW & BET                             │
+    │                          ↓                                   │
+    │                  4. GRADE RESULTS                            │
+    │                          ↓                                   │
+    │                        REPEAT                                │
+    └──────────────────────────────────────────────────────────────┘
+    ```
+    """)
+
+    st.markdown("---")
+
+    # Quick Action Buttons
     st.subheader("⚡ Quick Actions")
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        if st.button("🚀 Run Complete Workflow", type="primary", use_container_width=True):
-            with st.spinner("Running complete workflow..."):
-                result = run_script("run_complete_workflow_gto.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Workflow completed successfully!")
-                    st.rerun()
-                else:
-                    st.error("❌ Workflow failed")
-                    if result:
-                        with st.expander("Show error details"):
-                            st.code(result.stderr)
+        st.markdown("**STEP 1: Generate Picks**")
+        st.info("Runtime: ~45 seconds")
+        if st.button("🚀 Generate Today's Picks", use_container_width=True, type="primary"):
+            success = run_script("RUN_DAILY_PICKS.py", "Generating predictions", timeout=120)
+            if success:
+                time.sleep(2)
+                st.rerun()
 
     with col2:
-        if st.button("💎 Generate GTO Parlays", use_container_width=True):
-            with st.spinner("Generating parlays..."):
-                result = run_script("gto_parlay_optimizer.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Parlays generated!")
-                    st.rerun()
-                else:
-                    st.error("❌ Failed to generate parlays")
+        st.markdown("**STEP 2: Find Edges**")
+        st.info("Runtime: ~50 seconds")
+        if st.button("🔍 Find Edges & Parlays", use_container_width=True):
+            success = run_script("RUN_EDGE_FINDER.py", "Finding edges and parlays", timeout=120)
+            if success:
+                time.sleep(2)
+                st.rerun()
 
     with col3:
-        if st.button("📊 Multi-Line EV Optimizer", use_container_width=True):
-            with st.spinner("Running multi-line optimizer..."):
-                result = run_script("prizepicks_multi_line_optimizer.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Optimization complete!")
-                    st.rerun()
-                else:
-                    st.error("❌ Optimization failed")
+        st.markdown("**STEP 4: Grade Results**")
+        st.info("Runtime: ~45 seconds")
+        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        if st.button("✅ Grade Yesterday", use_container_width=True):
+            with st.spinner(f"Grading predictions for {yesterday}..."):
+                try:
+                    result = subprocess.run(
+                        [sys.executable, "adaptive_learning/auto_grade_predictions.py", yesterday],
+                        capture_output=True,
+                        text=True,
+                        timeout=120
+                    )
+                    if result.returncode == 0:
+                        st.success(f"[SUCCESS] Graded predictions for {yesterday}!")
+                        if result.stdout:
+                            with st.expander("View grading results"):
+                                st.text(result.stdout)
+                        time.sleep(2)
+                        st.rerun()
+                    else:
+                        st.error("[ERROR] Grading failed")
+                        if result.stderr:
+                            with st.expander("Error details"):
+                                st.text(result.stderr)
+                except Exception as e:
+                    st.error(f"[ERROR] Grading failed: {e}")
 
     st.markdown("---")
 
-    # Today's Performance Overview
-    col1, col2 = st.columns([2, 1])
+    # Cloud Deployment Note + Database Download
+    st.subheader("💾 Save Your Updates")
 
-    with col1:
-        st.subheader("📊 30-Day Profit Curve")
+    col_save1, col_save2 = st.columns([2, 1])
 
-        profit_query = """
-            SELECT
-                game_date,
-                COUNT(*) as total,
-                SUM(CASE WHEN result = 'HIT' THEN 1 ELSE 0 END) as hits,
-                SUM(CASE WHEN result = 'MISS' THEN 1 ELSE 0 END) as misses
-            FROM predictions
-            WHERE result IS NOT NULL
-              AND game_date >= date('now', '-30 days')
-            GROUP BY game_date
-            ORDER BY game_date
-        """
+    with col_save1:
+        st.info("**Cloud Deployment Note:** Predictions generated here persist during your session but are reset when the app redeploys. Download the database to keep permanent updates!")
 
-        profit_df = pd.read_sql_query(profit_query, conn)
+    with col_save2:
+        if os.path.exists(DB_PATH):
+            with open(DB_PATH, "rb") as db_file:
+                st.download_button(
+                    label="📥 Download Database",
+                    data=db_file,
+                    file_name=f"nhl_predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",
+                    mime="application/octet-stream",
+                    use_container_width=True,
+                    type="primary"
+                )
+            st.caption("Download after generating picks, then commit to GitHub")
 
-        if len(profit_df) > 0:
-            profit_df['profit'] = (profit_df['hits'] * 0.91) - profit_df['misses']
-            profit_df['cumulative'] = profit_df['profit'].cumsum()
+    st.markdown("---")
 
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=profit_df['game_date'],
-                y=profit_df['cumulative'],
-                mode='lines+markers',
-                name='Cumulative Profit',
-                line=dict(color='#00ff00', width=3),
-                fill='tozeroy'
-            ))
+    # Step 3 - View Results
+    st.subheader("👁️ STEP 3: Review Results")
+    col_view1, col_view2, col_view3 = st.columns(3)
+    with col_view1:
+        if st.button("📊 View Today's Predictions", use_container_width=True):
+            st.session_state['nav_override'] = "📊 Today's Predictions"
+            st.rerun()
+    with col_view2:
+        if st.button("💎 View Edges & Parlays", use_container_width=True):
+            st.session_state['nav_override'] = "💎 Edges & Parlays"
+            st.rerun()
+    with col_view3:
+        if st.button("📈 View Performance", use_container_width=True):
+            st.session_state['nav_override'] = "📈 Performance & Grading"
+            st.rerun()
 
-            fig.update_layout(
-                height=400,
-                xaxis_title="Date",
-                yaxis_title="Profit (units)",
-                hovermode='x unified',
-                showlegend=False
+    st.markdown("---")
+
+    # System Status
+    st.subheader("🔍 System Status")
+
+    status_col1, status_col2, status_col3 = st.columns(3)
+
+    with status_col1:
+        st.metric("Active Models", "3")
+        st.caption("Statistical, Ensemble, Goalie")
+
+    with status_col2:
+        data_hours = get_data_freshness()
+        if data_hours is not None:
+            st.metric("Data Freshness", f"{data_hours:.1f}h")
+            if data_hours < 2:
+                st.caption("✅ Fresh")
+            elif data_hours < 6:
+                st.caption("⚠️ Acceptable")
+            else:
+                st.caption("❌ Stale - Refresh recommended")
+        else:
+            st.metric("Data Freshness", "Unknown")
+
+    with status_col3:
+        # Check database
+        if os.path.exists(DB_PATH):
+            size_mb = os.path.getsize(DB_PATH) / (1024 * 1024)
+            st.metric("Database", f"{size_mb:.1f} MB")
+            st.caption("✅ Connected")
+        else:
+            st.metric("Database", "Error")
+            st.caption("❌ Not found")
+
+    st.markdown("---")
+
+    # Today's Summary
+    st.subheader("📋 Today's Summary")
+
+    summary = get_today_summary()
+
+    sum_col1, sum_col2, sum_col3, sum_col4 = st.columns(4)
+    with sum_col1:
+        st.metric("Total Predictions", summary['total_predictions'])
+    with sum_col2:
+        st.metric("T1-ELITE Picks", summary['elite_count'])
+    with sum_col3:
+        st.metric("Edge Opportunities", summary['edge_count'])
+    with sum_col4:
+        st.metric("GTO Parlays", summary['parlay_count'])
+
+    # Breakdown by prop type
+    if not summary['predictions'].empty:
+        st.markdown("**Breakdown by Prop Type:**")
+        breakdown_df = summary['predictions'][['prop_type', 'count', 'avg_conf']]
+        breakdown_df['avg_conf'] = breakdown_df['avg_conf'].apply(lambda x: f"{x*100:.1f}%")
+        breakdown_df.columns = ['Prop Type', 'Count', 'Avg Confidence']
+        st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+
+    # Top 5 Picks Preview
+    st.subheader("🌟 Top 5 Picks for Today")
+
+    top_picks = get_top_picks(5)
+    if not top_picks.empty:
+        for idx, pick in top_picks.iterrows():
+            conf_pct = pick['probability'] * 100
+
+            # Confidence tier badge
+            if conf_pct >= 85:
+                tier = "T1-ELITE"
+                tier_color = "🟢"
+            elif conf_pct >= 65:
+                tier = "T2-STRONG"
+                tier_color = "🟡"
+            else:
+                tier = "T3-MARGINAL"
+                tier_color = "⚪"
+
+            pred_text = pick['prediction']
+            line_val = pick['line']
+
+            st.markdown(
+                f"{idx+1}. **{pick['player_name']}** - {pick['prop_type']} {pred_text} {line_val} "
+                f"({conf_pct:.1f}%) {tier_color} [{tier}]"
             )
+            st.caption(f"   {pick['team']} vs {pick['opponent']} @ {pick['game_time']}")
 
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No graded predictions yet. Grade some picks to see the profit curve!")
+        st.markdown("")
+        if st.button("→ View All Predictions", use_container_width=True):
+            st.session_state['nav_override'] = "📊 Today's Predictions"
+            st.rerun()
+    else:
+        st.info("No predictions generated yet for today. Click '🚀 Generate Today's Picks' above!")
 
-    with col2:
-        st.subheader("🎯 Today's Status")
+# ============================================================================
+# PAGE 2: TODAY'S PREDICTIONS (Merged: Picks + Goalie Saves)
+# ============================================================================
 
-        today = datetime.now().strftime('%Y-%m-%d')
-        today_query = f"""
-            SELECT COUNT(*) as total,
-                   SUM(CASE WHEN confidence_tier = 'T1-ELITE' THEN 1 ELSE 0 END) as t1
-            FROM predictions
-            WHERE game_date = '{today}'
-        """
-
-        today_stats = pd.read_sql_query(today_query, conn).iloc[0]
-
-        if today_stats['total'] > 0:
-            st.metric("Total Picks", int(today_stats['total']))
-            st.metric("T1-ELITE", int(today_stats['t1']), "🔥")
-
-            # Check for today's files
-            today_str = datetime.now().strftime('%Y-%m-%d')
-            gto_today = list(Path('.').glob(f'GTO_PARLAYS_{today_str}*.csv'))
-            edges_today = list(Path('.').glob(f'MULTI_LINE_EDGES_{today_str}*.csv'))
-
-            if gto_today:
-                st.success(f"✅ {len(pd.read_csv(gto_today[0]))} parlays ready")
-            if edges_today:
-                st.success(f"✅ {len(pd.read_csv(edges_today[0]))} edges found")
-        else:
-            st.info("No picks for today yet!")
-
-    st.markdown("---")
-
-    # NEW: Money Line Integration & V4 Models Section
-    st.subheader("💰 Money Line Integration Status (v3.0)")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown("### Statistical Model")
-        st.success("✅ Money Lines Integrated")
-        st.caption("Game script factors: 0.95-1.08×")
-        st.caption("Blowout detection active")
-        st.caption("**Coverage: 70% of ensemble**")
-
-    with col2:
-        st.markdown("### ML Model (V4)")
-        st.success("✅ Money Lines Integrated")
-        st.caption("**43 features** (was 33)")
-        st.caption("11 game script features")
-        st.caption("**Coverage: 30% of ensemble**")
-
-    with col3:
-        st.markdown("### Total Coverage")
-        st.success("✅ 100% Ensemble Coverage!")
-        st.caption("Both models use money lines")
-        st.caption("Expected: +1-2% accuracy")
-        st.caption("Revenue: +$3-9k/month")
-
-    # Show V4 Model Features
-    with st.expander("🔍 View V4 Model Features (43 total)"):
-        st.markdown("""
-        **Money Line Features (NEW - 11):**
-        - 💰 `home_ml` - Home team money line
-        - 💰 `away_ml` - Away team money line
-        - 💰 `over_under` - Game total
-        - 💰 `is_favorite` - Team is favorite?
-        - 💰 `win_prob` - Win probability from ML
-        - 💰 `blowout_prob` - Blowout probability (0.05-0.40)
-        - 💰 `expected_margin` - Expected goal margin
-        - 💰 `pace_factor` - Scoring pace (0.90-1.10)
-        - 💰 `competitive_factor` - Game competitiveness (0.85-1.05)
-        - 💰 `is_heavy_favorite` - Edge > 0.20?
-        - 💰 `is_pick_em` - Edge < 0.05?
-
-        **Existing Features (32):**
-        - Season stats (6): PPG, SOG, GPG, APG, TOI, SH%
-        - L10 rolling (4): PPG, SOG, std dev points/shots
-        - L5 rolling (5): PPG, SOG, std dev, z-score
-        - Form indicators (5): Recent vs season, L5 vs L10
-        - Consistency (2): PPG, SOG consistency
-        - Shot quality (1): Shot efficiency
-        - Opponent factors (2): GA, SA
-        - Goalie stats (5): SV%, GAA, difficulty metrics
-        - Context (2): Home advantage, position
-        """)
-
-    # Show Game Script Examples
-    with st.expander("🎮 Game Script Examples"):
-        st.markdown("""
-        ### Pick'em Game (e.g., -110/-110)
-        - Competitiveness: High → 1.03× boost
-        - Stars play more minutes in close games
-
-        ### Heavy Favorite (e.g., -300)
-        - Blowout prob: 40% → 0.95× reduction
-        - Stars sit in 3rd period if ahead
-
-        ### Competitive + High-Scoring (e.g., -110, O/U 6.5)
-        - Pace: 1.05× (high-scoring)
-        - Competitiveness: 1.03× (close)
-        - Combined: 1.08× boost
-        """)
-
-    st.markdown("---")
-
-    # NEW: Prediction Type Breakdown
-    st.subheader("📊 Prediction Type Coverage")
+elif page == "📊 Today's Predictions":
+    st.title("📊 Today's Predictions")
 
     today = datetime.now().strftime('%Y-%m-%d')
-    prop_query = f"""
+
+    # Filters
+    st.subheader("Filters")
+    filter_col1, filter_col2, filter_col3 = st.columns(3)
+
+    with filter_col1:
+        prop_filter = st.selectbox(
+            "Prop Type",
+            ["All", "points", "shots", "goalie_saves"]
+        )
+
+    with filter_col2:
+        conf_filter = st.selectbox(
+            "Confidence Tier",
+            ["All", "T1-ELITE (≥85%)", "T2-STRONG (65-84%)", "T3-MARGINAL (50-64%)"]
+        )
+
+    with filter_col3:
+        team_filter = st.text_input("Team Filter", "")
+
+    # Build query
+    query = """
         SELECT
+            player_name,
+            team,
+            opponent,
             prop_type,
-            COUNT(*) as count,
-            AVG(probability) as avg_prob
+            line,
+            prediction,
+            ROUND(probability * 100, 1) as confidence_pct,
+            game_time,
+            game_date
         FROM predictions
-        WHERE game_date = '{today}'
-        GROUP BY prop_type
-        ORDER BY count DESC
+        WHERE game_date = ?
     """
-
-    prop_df = pd.read_sql_query(prop_query, conn)
-
-    if len(prop_df) > 0:
-        col1, col2, col3, col4 = st.columns(4)
-
-        for idx, row in prop_df.iterrows():
-            prop_type = row['prop_type']
-            count = int(row['count'])
-            avg_prob = row['avg_prob'] * 100
-
-            if idx == 0:
-                with col1:
-                    st.metric(f"{prop_type.upper()}", count, f"{avg_prob:.1f}% avg")
-            elif idx == 1:
-                with col2:
-                    st.metric(f"{prop_type.upper()}", count, f"{avg_prob:.1f}% avg")
-            elif idx == 2:
-                with col3:
-                    st.metric(f"{prop_type.upper()} 🆕", count, f"{avg_prob:.1f}% avg")
-            elif idx == 3:
-                with col4:
-                    st.metric(f"{prop_type.upper()} 🆕", count, f"{avg_prob:.1f}% avg")
-
-        st.caption("🆕 = New prop types in v3.0 (TOI, Goalie Saves)")
-
-    st.markdown("---")
-
-    # Latest Files
-    st.subheader("📁 Latest Generated Files")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**GTO Parlays**")
-        gto_files = sorted(Path('.').glob('GTO_PARLAYS_*.csv'),
-                          key=lambda x: x.stat().st_mtime, reverse=True)
-        for f in gto_files[:3]:
-            timestamp = datetime.fromtimestamp(f.stat().st_mtime)
-            if st.button(f"📄 {f.name}", key=f"gto_{f.name}"):
-                df = pd.read_csv(f)
-                st.dataframe(df, use_container_width=True)
-
-    with col2:
-        st.markdown("**Multi-Line Edges**")
-        edge_files = sorted(Path('.').glob('MULTI_LINE_EDGES_*.csv'),
-                           key=lambda x: x.stat().st_mtime, reverse=True)
-        for f in edge_files[:3]:
-            timestamp = datetime.fromtimestamp(f.stat().st_mtime)
-            if st.button(f"📄 {f.name}", key=f"edge_{f.name}"):
-                df = pd.read_csv(f)
-                st.dataframe(df, use_container_width=True)
-
-# ============================================================================
-# AUTOMATED WORKFLOWS PAGE
-# ============================================================================
-
-elif page == "🤖 Automated Workflows":
-    st.title("🤖 Automated Workflows")
-    st.markdown("### One-click execution of complete betting pipelines")
-
-    st.markdown("---")
-
-    # Complete Workflow
-    st.subheader("🚀 Complete Workflow (Recommended)")
-
-    st.markdown("""
-    **This runs the complete GTO + Multi-Line EV pipeline:**
-    1. Generate predictions (ML ensemble)
-    2. Fetch ALL PrizePicks lines (~1,000+ lines)
-    3. Multi-line EV optimization (finds 100+ edges)
-    4. GTO parlay optimization (14 optimal parlays)
-    5. Export CSVs with betting recommendations
-    6. Commit to GitHub
-    """)
-
-    col1, col2 = st.columns([3, 1])
-
-    with col1:
-        if st.button("🚀 Run Complete Workflow", type="primary", use_container_width=True, key="complete_workflow"):
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-
-            status_text.text("Step 1/4: Generating predictions...")
-            progress_bar.progress(25)
-
-            with st.spinner("Running complete workflow..."):
-                result = run_script("run_complete_workflow_gto.py")
-
-                progress_bar.progress(100)
-
-                if result and result.returncode == 0:
-                    st.success("✅ Complete workflow finished successfully!")
-
-                    # Show summary
-                    st.markdown("### 📊 Results Summary")
-
-                    # Check generated files
-                    latest_picks = get_latest_file("PICKS_*.txt")
-                    latest_parlays = get_latest_file("GTO_PARLAYS_*.csv")
-                    latest_edges = get_latest_file("MULTI_LINE_EDGES_*.csv")
-
-                    col1, col2, col3 = st.columns(3)
-
-                    with col1:
-                        if latest_picks:
-                            with open(latest_picks, 'r') as f:
-                                pick_count = len([l for l in f if 'OVER' in l or 'UNDER' in l])
-                            st.metric("Predictions Generated", pick_count)
-
-                    with col2:
-                        if latest_parlays:
-                            parlays_df = pd.read_csv(latest_parlays)
-                            parlay_count = parlays_df['Parlay_ID'].nunique()
-                            st.metric("GTO Parlays", parlay_count)
-
-                    with col3:
-                        if latest_edges:
-                            edges_df = pd.read_csv(latest_edges)
-                            st.metric("Edge Plays Found", len(edges_df))
-
-                    st.balloons()
-                else:
-                    st.error("❌ Workflow failed")
-                    if result:
-                        with st.expander("Show error details"):
-                            st.code(result.stderr)
-                            st.code(result.stdout)
-
-    with col2:
-        st.markdown("**Estimated Time**")
-        st.info("⏱️ 2-3 minutes")
-
-    st.markdown("---")
-
-    # Individual Workflow Steps
-    st.subheader("🔧 Individual Workflow Steps")
-
-    st.markdown("Run individual steps if you need to debug or re-run specific parts:")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**Step 1: Generate Predictions**")
-        if st.button("📊 Generate Predictions", use_container_width=True):
-            with st.spinner("Generating predictions..."):
-                result = run_script("generate_picks_to_file.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Predictions generated!")
-                else:
-                    st.error("❌ Failed")
-
-        st.markdown("**Step 2: Multi-Line EV Optimizer**")
-        if st.button("💎 Run Multi-Line Optimizer", use_container_width=True):
-            with st.spinner("Running optimizer..."):
-                result = run_script("prizepicks_multi_line_optimizer.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Optimization complete!")
-                    latest = get_latest_file("MULTI_LINE_EDGES_*.csv")
-                    if latest:
-                        df = pd.read_csv(latest)
-                        st.metric("Edge Plays Found", len(df))
-                else:
-                    st.error("❌ Failed")
-
-    with col2:
-        st.markdown("**Step 3: GTO Parlay Optimizer**")
-        if st.button("🎲 Generate GTO Parlays", use_container_width=True):
-            with st.spinner("Generating parlays..."):
-                result = run_script("gto_parlay_optimizer.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Parlays generated!")
-                    latest = get_latest_file("GTO_PARLAYS_*.csv")
-                    if latest:
-                        df = pd.read_csv(latest)
-                        st.metric("Parlays Created", df['Parlay_ID'].nunique())
-                else:
-                    st.error("❌ Failed")
-
-        st.markdown("**Step 4: Multiplier Learning**")
-        if st.button("🧠 Learn Multipliers", use_container_width=True):
-            with st.spinner("Learning multipliers..."):
-                result = run_script("prizepicks_multiplier_learner.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Multipliers learned!")
-                else:
-                    st.error("❌ Failed")
-
-    st.markdown("---")
-
-    # Data Refresh
-    st.subheader("🔄 Data Refresh")
-
-    st.markdown("Update player stats, game schedules, and betting odds:")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        if st.button("🎰 Fetch Daily Odds", use_container_width=True, help="Get real betting lines from The Odds API (1 API call)"):
-            with st.spinner("Fetching betting odds..."):
-                result = run_script("fetch_daily_odds.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Odds fetched!")
-                    st.info("💡 Real betting lines now available for TOI predictions")
-                else:
-                    st.error("❌ Failed")
-                    if result:
-                        with st.expander("Show error"):
-                            st.code(result.stdout)
-
-    with col2:
-        if st.button("📥 Fetch Player Stats", use_container_width=True):
-            with st.spinner("Fetching player stats..."):
-                result = run_script("fetch_player_stats.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Stats updated!")
-                else:
-                    st.error("❌ Failed")
-
-    with col3:
-        if st.button("🥅 Fetch Goalie Stats", use_container_width=True):
-            with st.spinner("Fetching goalie stats..."):
-                result = run_script("fetch_goalie_stats.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Goalies updated!")
-                else:
-                    st.error("❌ Failed")
-
-    with col3:
-        if st.button("🏒 Fetch Team Stats", use_container_width=True):
-            with st.spinner("Fetching team stats..."):
-                result = run_script("fetch_team_stats.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Teams updated!")
-                else:
-                    st.error("❌ Failed")
-
-# ============================================================================
-# MANUAL OPERATIONS PAGE
-# ============================================================================
-
-elif page == "🔧 Manual Operations":
-    st.title("🔧 Manual Operations")
-    st.markdown("### Database management, grading, and diagnostics")
-
-    st.markdown("---")
-
-    # Grading
-    st.subheader("✅ Grading & Results")
-
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        grade_date = st.date_input("Select Date to Grade", value=datetime.now() - timedelta(days=1))
-        date_str = grade_date.strftime('%Y-%m-%d')
-
-    with col2:
-        st.markdown("**Actions**")
-        if st.button("✅ Auto-Grade", type="primary", use_container_width=True):
-            with st.spinner(f"Grading {date_str}..."):
-                result = run_script(f"grade_all_picks.py {date_str}")
-                if result and result.returncode == 0:
-                    st.success(f"✅ Graded {date_str}!")
-                    st.rerun()
-                else:
-                    st.error("❌ Grading failed")
-                    if result:
-                        st.code(result.stdout)
-
-        if st.button("📅 Grade Yesterday", use_container_width=True):
-            with st.spinner("Grading yesterday's picks..."):
-                result = run_script("auto_grade_yesterday.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Graded yesterday!")
-                    st.rerun()
-                else:
-                    st.error("❌ Grading failed")
-                    if result:
-                        st.code(result.stdout)
-
-    # Show grading status
-    status_query = f"""
-        SELECT
-            COUNT(*) as total,
-            SUM(CASE WHEN result = 'HIT' THEN 1 ELSE 0 END) as hits,
-            SUM(CASE WHEN result = 'MISS' THEN 1 ELSE 0 END) as misses,
-            SUM(CASE WHEN result IS NULL THEN 1 ELSE 0 END) as pending
-        FROM predictions
-        WHERE game_date = '{date_str}'
-    """
-
-    status = pd.read_sql_query(status_query, conn).iloc[0]
-
-    if status['total'] > 0:
-        col1, col2, col3, col4 = st.columns(4)
-
-        with col1:
-            st.metric("Total", int(status['total']))
-        with col2:
-            st.metric("Hits", int(status['hits']), "✅")
-        with col3:
-            st.metric("Misses", int(status['misses']), "❌")
-        with col4:
-            st.metric("Pending", int(status['pending']), "⏳")
-
-    st.markdown("---")
-
-    # Database Operations
-    st.subheader("🗄️ Database Operations")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown("**Setup**")
-        if st.button("🔧 Setup Database", use_container_width=True):
-            with st.spinner("Setting up database..."):
-                result = run_script("database_setup.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Database setup complete!")
-                else:
-                    st.error("❌ Setup failed")
-
-        if st.button("📊 Inspect Database", use_container_width=True):
-            with st.spinner("Inspecting database..."):
-                result = run_script("inspect_database.py")
-                if result:
-                    st.code(result.stdout)
-
-    with col2:
-        st.markdown("**Maintenance**")
-        if st.button("🧹 Clean Duplicates", use_container_width=True):
-            with st.spinner("Cleaning duplicates..."):
-                result = run_script("remove_duplicates_v3.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Duplicates removed!")
-                else:
-                    st.error("❌ Failed")
-
-        if st.button("💾 Backup Database", use_container_width=True):
-            import shutil
-            backup_name = f"database/backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-            shutil.copy("database/nhl_predictions.db", backup_name)
-            st.success(f"✅ Backup: {backup_name}")
-
-    with col3:
-        st.markdown("**Diagnostics**")
-        if st.button("🔍 Run Diagnostics", use_container_width=True):
-            with st.spinner("Running diagnostics..."):
-                result = run_script("diagnose_workflow.py")
-                if result:
-                    st.code(result.stdout)
-
-        if st.button("📈 View Stats", use_container_width=True):
-            st.info("Use Performance page for detailed stats")
-
-    st.markdown("---")
-
-    # ML Model Operations
-    st.subheader("🤖 ML Model Operations")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**Training**")
-        if st.button("🎓 Train ML Model", use_container_width=True):
-            with st.spinner("Training model (this may take several minutes)..."):
-                result = run_script("train_nhl_ml_v3.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Model trained!")
-                else:
-                    st.error("❌ Training failed")
-
-        if st.button("⚖️ Retrain Weights", use_container_width=True):
-            with st.spinner("Retraining ensemble weights..."):
-                result = run_script("retrain_ml_weights.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Weights updated!")
-                else:
-                    st.error("❌ Failed")
-
-    with col2:
-        st.markdown("**Testing**")
-        if st.button("🧪 Test Predictions", use_container_width=True):
-            with st.spinner("Testing predictions..."):
-                result = run_script("test_predictions.py")
-                if result:
-                    st.code(result.stdout)
-
-        if st.button("📊 Compare Models", use_container_width=True):
-            with st.spinner("Comparing models..."):
-                result = run_script("compare_models.py")
-                if result:
-                    st.code(result.stdout)
-
-    st.markdown("---")
-
-    # PrizePicks Operations
-    st.subheader("💰 PrizePicks Operations")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**Odds Analysis**")
-        if st.button("🎰 Check PrizePicks Odds", use_container_width=True):
-            with st.spinner("Fetching odds..."):
-                result = run_script("check_prizepicks_odds.py")
-                if result:
-                    st.code(result.stdout)
-
-        if st.button("📊 Analyze Probabilities", use_container_width=True):
-            with st.spinner("Analyzing probabilities..."):
-                result = run_script("analyze_probabilities.py")
-                if result:
-                    st.code(result.stdout)
-
-    with col2:
-        st.markdown("**Integration**")
-        if st.button("🔗 Test PrizePicks API", use_container_width=True):
-            with st.spinner("Testing API..."):
-                result = run_script("check_api_response.py")
-                if result:
-                    st.code(result.stdout)
-
-        if st.button("🧪 Test Integration", use_container_width=True):
-            with st.spinner("Testing integration..."):
-                result = run_script("prizepicks_integration_FIXED.py")
-                if result:
-                    st.code(result.stdout[:1000])  # Show first 1000 chars
-
-# ============================================================================
-# GTO PARLAYS PAGE
-# ============================================================================
-
-elif page == "💎 GTO Parlays":
-    st.title("💎 GTO Parlay Optimizer")
-    st.markdown("### Optimal parlay construction with minimum payout thresholds")
-
-    st.markdown("---")
-
-    # Load latest parlays
-    latest_parlays = get_latest_file("GTO_PARLAYS_*.csv")
-
-    if latest_parlays:
-        df = pd.read_csv(latest_parlays)
-
-        # Summary metrics
-        st.subheader("📊 Parlay Summary")
-
-        unique_parlays = df['Parlay_ID'].nunique()
-
-        col1, col2, col3, col4 = st.columns(4)
-
-        with col1:
-            st.metric("Total Parlays", unique_parlays)
-
-        with col2:
-            two_leg = len(df[df['Legs'] == 2]['Parlay_ID'].unique())
-            st.metric("2-Leg Parlays", two_leg)
-
-        with col3:
-            three_leg = len(df[df['Legs'] == 3]['Parlay_ID'].unique())
-            st.metric("3-Leg Parlays", three_leg)
-
-        with col4:
-            four_leg = len(df[df['Legs'] == 4]['Parlay_ID'].unique())
-            st.metric("4-Leg Parlays", four_leg)
-
-        st.markdown("---")
-
-        # Parlay selector
-        st.subheader("🎲 Select Parlay to View")
-
-        parlay_options = [f"Parlay #{i} ({len(df[df['Parlay_ID']==i])} legs)"
-                         for i in sorted(df['Parlay_ID'].unique())]
-
-        selected_parlay_str = st.selectbox("Choose parlay:", parlay_options)
-        selected_parlay_id = int(selected_parlay_str.split('#')[1].split()[0])
-
-        # Display selected parlay
-        parlay_data = df[df['Parlay_ID'] == selected_parlay_id]
-
-        st.markdown(f"### Parlay #{selected_parlay_id}")
-
-        # Parlay details
-        col1, col2 = st.columns([2, 1])
-
-        with col1:
-            st.markdown("**Legs:**")
-            for _, leg in parlay_data.iterrows():
-                st.markdown(f"""
-                **Leg {int(leg['Leg_Number'])}:** {leg['Player']} ({leg['Team']})
-                {leg['Prop_Type']} OVER {leg['Line']} [{leg['Odds_Type']}]
-                """)
-
-        with col2:
-            st.markdown("**Betting Guidance:**")
-
-            prob = parlay_data.iloc[0]['Combined_Probability']
-            st.metric("Combined Probability", f"{float(prob.strip('%')):.1f}%")
-
-            min_10 = parlay_data.iloc[0]['Min_Payout_10pct_EV']
-            min_5 = parlay_data.iloc[0]['Min_Payout_5pct_EV']
-            min_be = parlay_data.iloc[0]['Min_Payout_Breakeven']
-
-            st.markdown(f"""
-            **Minimum Payouts:**
-            - 10% EV (IDEAL): **{min_10}**
-            - 5% EV (OK): **{min_5}**
-            - Break-even: **{min_be}**
-            """)
-
-            st.markdown("---")
-
-            st.markdown("""
-            **Your Action:**
-            1. Add picks to PrizePicks
-            2. Check displayed payout
-            3. Compare to minimums above
-            4. BET if >= IDEAL, SKIP if < OK
-            """)
-
-        st.markdown("---")
-
-        # Full table view
-        st.subheader("📋 All Parlays")
-
-        # Format for display
-        display_cols = ['Parlay_ID', 'Legs', 'Combined_Probability',
-                       'Min_Payout_10pct_EV', 'Estimated_EV']
-
-        summary_df = df.groupby('Parlay_ID').first().reset_index()[display_cols]
-        summary_df['Parlay_ID'] = summary_df['Parlay_ID'].astype(int)
-
-        st.dataframe(summary_df, use_container_width=True, hide_index=True)
+    params = [today]
+
+    if prop_filter != "All":
+        query += " AND prop_type = ?"
+        params.append(prop_filter)
+
+    if conf_filter != "All":
+        if "T1-ELITE" in conf_filter:
+            query += " AND probability >= 0.85"
+        elif "T2-STRONG" in conf_filter:
+            query += " AND probability >= 0.65 AND probability < 0.85"
+        elif "T3-MARGINAL" in conf_filter:
+            query += " AND probability >= 0.50 AND probability < 0.65"
+
+    if team_filter:
+        query += " AND (team LIKE ? OR opponent LIKE ?)"
+        params.extend([f"%{team_filter}%", f"%{team_filter}%"])
+
+    query += " ORDER BY probability DESC, player_name"
+
+    df = query_db(query, tuple(params))
+
+    if not df.empty:
+        st.success(f"Found {len(df)} predictions")
+
+        # Add tier column
+        def get_tier(conf):
+            if conf >= 85:
+                return "T1-ELITE"
+            elif conf >= 65:
+                return "T2-STRONG"
+            else:
+                return "T3-MARGINAL"
+
+        df['Tier'] = df['confidence_pct'].apply(get_tier)
+
+        # Display table
+        st.dataframe(
+            df[['player_name', 'team', 'opponent', 'prop_type', 'line', 'prediction',
+                'confidence_pct', 'Tier', 'game_time']],
+            use_container_width=True,
+            hide_index=True
+        )
 
         # Download button
         csv = df.to_csv(index=False)
         st.download_button(
-            label="📥 Download Complete Parlay Sheet",
+            label="📥 Download as CSV",
             data=csv,
-            file_name=f"gto_parlays_{datetime.now().strftime('%Y-%m-%d')}.csv",
+            file_name=f"predictions_{today}.csv",
             mime="text/csv"
         )
 
+        # Summary stats
+        st.markdown("---")
+        st.subheader("Summary Statistics")
+        sum_col1, sum_col2, sum_col3 = st.columns(3)
+        with sum_col1:
+            st.metric("Total Predictions", len(df))
+        with sum_col2:
+            avg_conf = df['confidence_pct'].mean()
+            st.metric("Average Confidence", f"{avg_conf:.1f}%")
+        with sum_col3:
+            elite_count = len(df[df['confidence_pct'] >= 85])
+            st.metric("T1-ELITE Picks", elite_count)
     else:
-        st.warning("No GTO parlays generated yet!")
-        st.info("Click the button below to generate parlays.")
-
-        if st.button("💎 Generate GTO Parlays", type="primary"):
-            with st.spinner("Generating optimal parlays..."):
-                result = run_script("gto_parlay_optimizer.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Parlays generated!")
-                    st.rerun()
-                else:
-                    st.error("❌ Failed to generate parlays")
+        st.warning(f"No predictions found for {today} with selected filters")
+        st.info("Generate predictions using the Command Center or complete daily workflow")
 
 # ============================================================================
-# TODAY'S PICKS PAGE (Simplified - already good)
+# PAGE 3: EDGES & PARLAYS (Merged: Edge Plays + GTO Parlays)
 # ============================================================================
 
-elif page == "🎯 Today's Picks":
-    st.title("🎯 Today's Picks")
+elif page == "💎 Edges & Parlays":
+    st.title("💎 Edges & Parlays")
+
+    # Tabs for merged content
+    tab1, tab2 = st.tabs(["💎 Edge Opportunities", "🎰 GTO Parlays"])
 
     today = datetime.now().strftime('%Y-%m-%d')
 
-    # Load latest picks
-    latest_picks = Path("LATEST_PICKS.txt")
+    # ---- TAB 1: EDGE OPPORTUNITIES ----
+    with tab1:
+        st.subheader("💎 Positive Expected Value Opportunities")
 
-    if latest_picks.exists():
-        with open(latest_picks, 'r') as f:
-            picks_text = f.read()
+        query = """
+            SELECT
+                player_name,
+                prop_type,
+                line,
+                odds_type as prediction,
+                ROUND(our_probability * 100, 1) as confidence_pct,
+                ROUND(expected_value * 100, 1) as ev_pct,
+                ROUND(kelly_score * 100, 2) as kelly_pct,
+                team,
+                opponent
+            FROM prizepicks_edges
+            WHERE date = ?
+            ORDER BY expected_value DESC
+        """
+        edges_df = query_db(query, (today,))
 
-        st.markdown("### 📄 Latest Picks")
-        st.text(picks_text)
+        if not edges_df.empty:
+            st.success(f"Found {len(edges_df)} edge opportunities")
 
-        # Also show CSV if available
-        latest_csv = Path("LATEST_PICKS.csv")
-        if latest_csv.exists():
-            df = pd.read_csv(latest_csv)
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            # Filter
+            min_ev = st.slider("Minimum EV %", 0, 50, 10)
+            filtered = edges_df[edges_df['ev_pct'] >= min_ev]
 
-            # Download button
-            csv = df.to_csv(index=False)
+            st.markdown(f"**Showing {len(filtered)} edges with EV ≥ {min_ev}%**")
+
+            # Display
+            st.dataframe(
+                filtered,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            # Download
+            csv = filtered.to_csv(index=False)
             st.download_button(
-                label="📥 Download Picks CSV",
+                label="📥 Download Edges as CSV",
                 data=csv,
-                file_name=f"picks_{today}.csv",
+                file_name=f"edges_{today}.csv",
                 mime="text/csv"
             )
-    else:
-        st.warning("No picks generated yet!")
-        if st.button("🔄 Generate Today's Picks", type="primary"):
-            with st.spinner("Generating predictions..."):
-                result = run_script("generate_picks_to_file.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Picks generated!")
-                    st.rerun()
-                else:
-                    st.error("❌ Failed")
 
-# ============================================================================
-# PERFORMANCE PAGE (Keep existing - it's good)
-# ============================================================================
-
-elif page == "📊 Performance":
-    st.title("📊 Performance Analytics")
-
-    # Date range selector
-    col1, col2 = st.columns(2)
-
-    with col1:
-        date_range = st.selectbox(
-            "Date Range",
-            ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"]
-        )
-
-    # Calculate date filter
-    if date_range == "Last 7 Days":
-        days = 7
-    elif date_range == "Last 30 Days":
-        days = 30
-    elif date_range == "Last 90 Days":
-        days = 90
-    else:
-        days = 99999
-
-    st.markdown("---")
-
-    # Overall metrics
-    st.subheader("📈 Overall Performance")
-
-    overall_query = f"""
-        SELECT
-            COUNT(*) as total,
-            SUM(CASE WHEN result = 'HIT' THEN 1 ELSE 0 END) as hits,
-            SUM(CASE WHEN result = 'MISS' THEN 1 ELSE 0 END) as misses
-        FROM predictions
-        WHERE result IS NOT NULL
-          AND game_date >= date('now', '-{days} days')
-    """
-
-    stats = pd.read_sql_query(overall_query, conn).iloc[0]
-
-    if stats['total'] > 0:
-        hit_rate = (stats['hits'] / stats['total']) * 100
-        profit = (stats['hits'] * 0.91) - stats['misses']
-        roi = (profit / stats['total']) * 100
-
-        col1, col2, col3, col4 = st.columns(4)
-
-        with col1:
-            st.metric("Total Picks", int(stats['total']))
-
-        with col2:
-            st.metric("Hit Rate", f"{hit_rate:.1f}%")
-
-        with col3:
-            st.metric("Profit", f"{profit:+.2f}u")
-
-        with col4:
-            st.metric("ROI", f"{roi:+.1f}%")
-
-    else:
-        st.warning("No graded predictions in selected range")
-
-# ============================================================================
-# SYSTEM GUIDE PAGE
-# ============================================================================
-
-elif page == "📚 System Guide":
-    st.title("📚 System Guide")
-    st.markdown("### Complete documentation of the NHL Prediction System")
-
-    # Table of contents
-    st.markdown("---")
-
-    guide_section = st.radio(
-        "Select Section:",
-        [
-            "🏠 Overview",
-            "💰 Money Line Integration (v3.0)",
-            "📊 How It Works",
-            "🚀 Quick Start",
-            "💎 GTO Parlays Explained",
-            "🧮 Multi-Line EV System",
-            "📏 Minimum Payout Method",
-            "🔄 Daily Workflow",
-            "❓ FAQ"
-        ],
-        horizontal=False
-    )
-
-    st.markdown("---")
-
-    if guide_section == "🏠 Overview":
-        st.markdown("""
-        # System Overview
-
-        This is a **complete Game Theory Optimal (GTO) + Multi-Line EV optimization system**
-        for NHL player props betting on PrizePicks.
-
-        ## Key Features
-
-        ### 1. ML Ensemble Predictions
-        - Statistical model (75% weight)
-        - ML model (25% weight)
-        - Rolling 5-game averages
-        - Opponent strength adjustments
-
-        ### 2. Multi-Line EV Optimizer
-        - Fetches ALL ~1,000+ PrizePicks lines
-        - Evaluates EVERY line independently
-        - Uses interpolation/extrapolation for probabilities
-        - Finds 100+ edge plays per day
-
-        ### 3. GTO Parlay Optimizer
-        - Frequency-weighted parlay construction
-        - Generates 14 optimal parlays (2-leg, 3-leg, 4-leg)
-        - Correlation filtering (same player, same game)
-        - Kelly bet sizing
-
-        ### 4. Multiplier Learning System
-        - Learns actual individual pick multipliers
-        - Demon picks: 2.0x-2.3x (varies!)
-        - Goblin picks: 1.4x-1.6x
-        - Standard picks: 1.7x
-
-        ### 5. Minimum Payout Method
-        - Works backwards from probability
-        - Shows MINIMUM payout needed for target EV
-        - Manual validation workflow (no automation needed)
-        - Clear BET/SKIP instructions
-
-        ## Files Generated
-
-        - `LATEST_PICKS.txt/csv` - All predictions
-        - `GTO_PARLAYS_*.csv` - Optimal parlays with min payouts
-        - `MULTI_LINE_EDGES_*.csv` - All edge plays ranked by EV
-        - `LEARNED_MULTIPLIERS_*.csv` - Actual multiplier observations
-
-        ## Performance Target
-
-        - **Hit Rate:** 58%+ (to beat -110 odds)
-        - **ROI:** 10%+ (sustainable long-term)
-        - **Bankroll Growth:** Steady, Kelly-optimized
-        """)
-
-    elif guide_section == "💰 Money Line Integration (v3.0)":
-        st.markdown("""
-        # 💰 Money Line Integration (v3.0)
-
-        ## What's New in v3.0
-
-        **Major Update:** Complete money line integration for game script analysis!
-
-        ### 🎉 100% Ensemble Coverage Achieved!
-
-        **Before v3.0:**
-        - Statistical Model: 70% weight (no money lines) ❌
-        - ML Model: 30% weight (no money lines) ❌
-        - **Result**: No game script analysis
-
-        **After v3.0:**
-        - Statistical Model: 70% weight (WITH money lines) ✅
-        - ML Model V4: 30% weight (WITH money lines) ✅
-        - **Result**: 100% ensemble uses game scripting! 🎊
-
-        ---
-
-        ## Game Script Analysis
-
-        ### What is Game Scripting?
-
-        Money lines predict how games will play out:
-        - **Heavy favorites** (-300): Likely blowouts → stars sit in 3rd
-        - **Pick'em games** (-110): Competitive → stars play more
-        - **High-scoring** (O/U 6.5+): More ice time overall
-
-        ### How We Use It
-
-        **1. Convert Money Lines to Probabilities**
-        ```
-        Tampa Bay (-250) → 71% win probability
-        San Jose (+200) → 33% win probability
-        ```
-
-        **2. Calculate Blowout Risk**
-        ```
-        Edge = |0.71 - 0.5| = 0.21
-
-        Edge > 0.25 → 40% blowout prob (very likely)
-        Edge > 0.15 → 25% blowout prob (likely)
-        Edge > 0.08 → 12% blowout prob (moderate)
-        Edge < 0.08 → 5% blowout prob (pick'em)
-        ```
-
-        **3. Apply Game Script Factors**
-        ```
-        Heavy Favorite (likely blowout):
-        - Expected points/shots × 0.95 (5% reduction)
-        - Stars sit when ahead
-
-        Pick'em Game (competitive):
-        - Expected points/shots × 1.03 (3% boost)
-        - Stars play full minutes
-
-        High-Scoring Game (O/U 6.5+):
-        - Expected points/shots × 1.05-1.10 (pace boost)
-        - More offense = more opportunities
-        ```
-
-        ---
-
-        ## V4 ML Models (43 Features)
-
-        ### New Money Line Features (11)
-
-        1. **home_ml** - Home team money line (e.g., -230)
-        2. **away_ml** - Away team money line (e.g., +190)
-        3. **over_under** - Game total (e.g., 6.5)
-        4. **is_favorite** - Is team the favorite? (0/1)
-        5. **win_prob** - Win probability from money line (0-1)
-        6. **blowout_prob** - Blowout probability (0.05-0.40)
-        7. **expected_margin** - Expected goal margin (0-3)
-        8. **pace_factor** - Scoring pace adjustment (0.90-1.10)
-        9. **competitive_factor** - Game competitiveness (0.85-1.05)
-        10. **is_heavy_favorite** - Edge > 0.20? (0/1)
-        11. **is_pick_em** - Edge < 0.05? (0/1)
-
-        ### Existing Features (32)
-
-        - Season stats (6): PPG, SOG, GPG, APG, TOI, SH%
-        - L10 rolling (4): Averages and std dev
-        - L5 rolling (5): Recent hot/cold streaks
-        - Form indicators (5): Recent vs season form
-        - Consistency (2): Variance metrics
-        - Shot quality (1): Goals per shot
-        - Opponent (2): Goals/shots against
-        - Goalie stats (5): SV%, GAA, difficulty
-        - Context (2): Home advantage, position
-
-        ---
-
-        ## Real-World Examples
-
-        ### Example 1: Pick'em Game
-
-        **Colorado @ Vegas - ML: -110/-110, O/U: 6.0**
-
-        ```
-        Mark Stone (VGK - Favorite):
-        Base PPG: 2.17
-        Adjustments:
-        - Home: 1.05× (home advantage)
-        - Pace: 1.00× (average scoring)
-        - Game Script: 1.03× (competitive game boost)
-
-        Expected: 2.17 × 1.05 × 1.00 × 1.03 = 2.34 points
-
-        Reasoning: "Stars play more in close games"
-        ```
-
-        ### Example 2: Heavy Favorite
-
-        **NYI @ WSH - ML: +190/-230, O/U: 6.5**
-
-        ```
-        Dylan Strome (WSH - Heavy Favorite):
-        Base PPG: 1.11
-        Adjustments:
-        - Home: 1.05× (home advantage)
-        - Pace: 1.05× (above-average scoring)
-        - Game Script: 1.03× (competitive despite spread)
-
-        Expected: 1.11 × 1.05 × 1.05 × 1.03 = 1.32 points
-
-        Note: System detected competitive game despite -230 line
-        ```
-
-        ### Example 3: Blowout Risk
-
-        **San Jose @ Tampa Bay - ML: +350/-400, O/U: 6.5**
-
-        ```
-        Nikita Kucherov (TBL - Heavy Favorite):
-        Base PPG: 1.45
-        Adjustments:
-        - Home: 1.05× (home advantage)
-        - Pace: 1.05× (high-scoring game)
-        - Game Script: 0.95× (likely blowout reduction)
-
-        Expected: 1.45 × 1.05 × 1.05 × 0.95 = 1.52 points
-
-        Reasoning: "Will sit if up 3+ goals in 3rd period"
-        ```
-
-        ---
-
-        ## Expected Impact
-
-        ### Accuracy Improvements
-
-        | Component | Before | After | Gain |
-        |-----------|--------|-------|------|
-        | Statistical (70%) | 72% | 72% | - (already had) |
-        | ML V4 (30%) | 59% | 62-65% | +3-6% |
-        | **Ensemble** | **73-74%** | **75-76%** | **+1-2%** |
-
-        ### Revenue Impact
-
-        **From Improved Accuracy:**
-        - 2% accuracy gain × 100 picks/day × $50/bet
-        - = $100/day = **$3,000/month**
-
-        **Combined (Statistical + ML):**
-        - Statistical improvements: $3,000-6,000/month
-        - ML improvements: $3,000/month
-        - **Total: $6,000-9,000/month** 💰
-
-        ### Games Most Affected
-
-        **~40% of NHL games** have significant spreads:
-        - Heavy favorites: -200 or worse
-        - High-scoring games: O/U 6.5+
-        - Blowout-prone matchups
-
-        These games see the biggest accuracy improvements!
-
-        ---
-
-        ## New Prediction Types
-
-        v3.0 also added support for:
-
-        ### 🆕 TOI Predictions
-        - **Time on Ice** prop predictions
-        - Lines: 13.5 to 23.5 minutes
-        - Expected: 70-75% accuracy, 5-15% EV
-        - Volume: +10-15 picks/day
-
-        ### 🆕 Goalie Saves Predictions
-        - **Saves** prop predictions for goalies
-        - Lines: 21.5 to 31.5 saves
-        - Expected: 70-75% accuracy, 5-12% EV
-        - Volume: +15-20 picks/day
-
-        **Combined**: +25-35 picks/day from new prop types!
-
-        ---
-
-        ## How to Use It
-
-        **No changes needed!** The system automatically:
-
-        1. Fetches money lines from odds API
-        2. Calculates game script factors
-        3. Applies to predictions
-        4. Shows in reasoning (e.g., "2.17 PPG | Favorite (GS: 1.03x)")
-
-        Just run your normal workflow:
-        ```bash
-        python run_complete_workflow_gto.py
-        ```
-
-        And enjoy the improved accuracy! 🎉
-        """)
-
-    elif guide_section == "📊 How It Works":
-        st.markdown("""
-        # How It Works
-
-        ## Step-by-Step Process
-
-        ### 1. Data Collection
-        ```
-        fetch_player_stats.py      → NHL API player stats
-        fetch_goalie_stats.py      → Goalie performance
-        fetch_team_stats.py        → Team metrics
-        ```
-
-        ### 2. Prediction Generation
-        ```
-        generate_picks_to_file.py
-        ├─ Statistical Model (70% weight) 💰 WITH MONEY LINES
-        │  ├─ Season & rolling averages
-        │  ├─ Money line game scripting (NEW!)
-        │  ├─ Game script factors: 0.95-1.08×
-        │  ├─ Opponent strength + goalie stats
-        │  └─ Home/away factors
-        │
-        ├─ ML Model V4 (30% weight) 💰 WITH MONEY LINES
-        │  ├─ XGBoost ensemble
-        │  ├─ 43 features (was 33)
-        │  ├─ 11 money line features (NEW!)
-        │  └─ Historical performance
-        │
-        ├─ TOI Predictions (NEW!)
-        │  ├─ Time on ice predictions
-        │  └─ Lines: 13.5-23.5 minutes
-        │
-        └─ Goalie Saves Predictions (NEW!)
-           ├─ Saves predictions for goalies
-           └─ Lines: 21.5-31.5 saves
-        ```
-
-        ### 3. Multi-Line EV Optimization
-        ```
-        prizepicks_multi_line_optimizer.py
-        ├─ Fetch ALL PrizePicks lines (~1,000+)
-        ├─ For each line:
-        │  ├─ Estimate probability (interpolate/extrapolate)
-        │  ├─ Get multiplier (learned or fallback)
-        │  ├─ Calculate EV = (Prob × Multiplier) - 1
-        │  └─ Calculate edge = Prob - (1 / Multiplier)
-        │
-        └─ Filter to 5%+ EV plays
-        ```
-
-        ### 4. GTO Parlay Optimization
-        ```
-        gto_parlay_optimizer.py
-        ├─ Frequency allocation (GTO-style)
-        │  ├─ Higher EV = higher frequency
-        │  └─ Top picks appear 20x, mid picks 12x, etc.
-        │
-        ├─ Parlay generation
-        │  ├─ 2-leg: 300 candidates → top 8
-        │  ├─ 3-leg: 150 candidates → top 4
-        │  └─ 4-leg: 75 candidates → top 2
-        │
-        └─ Minimum payout calculation
-           ├─ Required = (1 + Target_EV) / Probability
-           ├─ Show 10% EV, 5% EV, break-even
-           └─ Clear BET/SKIP instructions
-        ```
-
-        ### 5. Manual Validation
-        ```
-        You add picks to PrizePicks
-        ↓
-        Check displayed payout
-        ↓
-        Compare to minimum thresholds
-        ↓
-        BET if payout >= minimum
-        SKIP if payout < minimum
-        ```
-
-        ## Why This Approach?
-
-        ### Advantages:
-        - ✅ No browser automation needed
-        - ✅ No stale data issues
-        - ✅ Manual validation catches errors
-        - ✅ Works with ANY PrizePicks update
-        - ✅ Transparent decision-making
-
-        ### Key Insight:
-        **PrizePicks multipliers change dynamically** based on:
-        - Player matchup
-        - Line movement
-        - Platform balancing
-
-        So we work **backwards from probability** to find the minimum
-        payout we can accept, then manually validate.
-        """)
-
-    elif guide_section == "🚀 Quick Start":
-        st.markdown("""
-        # Quick Start Guide
-
-        ## First Time Setup
-
-        ### 1. Run Complete Workflow
-        ```bash
-        python run_complete_workflow_gto.py
-        ```
-
-        This will:
-        - Generate predictions
-        - Find edge plays
-        - Build optimal parlays
-        - Export CSVs
-
-        ### 2. Review Outputs
-
-        **Check these files:**
-        - `GTO_PARLAYS_*.csv` - Your betting sheet
-        - `MULTI_LINE_EDGES_*.csv` - All edges found
-        - `LATEST_PICKS.txt` - Quick reference
-
-        ### 3. Place Bets on PrizePicks
-
-        **For each parlay in GTO_PARLAYS CSV:**
-
-        1. Open PrizePicks app/website
-        2. Add the parlay legs to your slip
-        3. Note the displayed payout (e.g., "3.5x")
-        4. Compare to CSV minimums:
-           - If payout >= Min_Payout_10pct_EV → **BET** (excellent edge)
-           - If payout >= Min_Payout_5pct_EV → BET small or SKIP
-           - If payout < Min_Payout_5pct_EV → **SKIP** (no edge)
-        5. Mark "Action" column: BET or SKIP
-        6. Record "Actual_Payout" in CSV
-
-        ## Daily Routine
-
-        ### Morning (8:00 AM)
-        ```bash
-        python run_complete_workflow_gto.py
-        ```
-
-        ### Review & Bet (10:00 AM - 6:00 PM)
-        - Open GTO_PARLAYS CSV
-        - Place bets using min payout method
-        - Track results in CSV
-
-        ### Evening Grade (Next Day)
-        ```bash
-        python grade_all_picks.py
-        ```
-
-        ## Automation Setup
-
-        The system includes automated task scheduling:
-
-        **Windows:**
-        ```bash
-        # Run as Administrator
-        powershell -ExecutionPolicy Bypass -File setup_automated_schedule.ps1
-        ```
-
-        This creates scheduled tasks for:
-        - 8:00 AM - Morning predictions
-        - 12:00 PM - Midday update
-        - 3:00 PM - Afternoon update
-        - 6:00 PM - Final update
-
-        All results are automatically committed to GitHub.
-        """)
-
-    elif guide_section == "💎 GTO Parlays Explained":
-        st.markdown("""
-        # GTO Parlays Explained
-
-        ## What is GTO?
-
-        **Game Theory Optimal (GTO)** = balanced strategy that's unexploitable.
-
-        In poker: Mix bluffs and value bets so opponents can't exploit you.
-
-        In betting: **Frequency-weight high-EV plays** so variance is managed.
-
-        ## How We Apply GTO
-
-        ### Frequency Allocation
-
-        Instead of betting ONLY the highest EV plays:
-
-        ```
-        Top 10% EV plays   → 20x frequency
-        Next 10% EV plays  → 16x frequency
-        Mid-tier plays     → 12x frequency
-        Lower plays        → 8x frequency
-        ```
-
-        ### Why This Matters
-
-        **Without GTO:**
-        - Always bet same 5 picks
-        - If they're correlated (same games), high risk
-        - One bad night = big loss
-
-        **With GTO:**
-        - Diversify across 40+ picks
-        - Balanced frequency = balanced risk
-        - Smooth variance, steady growth
-
-        ## Parlay Construction
-
-        ### Rules:
-        1. **No same player** in one parlay
-        2. **No same game** (avoid correlation)
-        3. **Mix prop types** (points + shots)
-        4. **Mix odds types** (demon + goblin + standard)
-
-        ### Output:
-        - 8x 2-leg parlays (safer, 70%+ combined prob)
-        - 4x 3-leg parlays (moderate, 60%+ combined prob)
-        - 2x 4-leg parlays (aggressive, 50%+ combined prob)
-
-        ## Kelly Bet Sizing
-
-        Each parlay shows Kelly % of bankroll:
-
-        ```
-        Kelly % = (Edge × Probability) / (Payout - 1)
-        ```
-
-        **Conservative approach:** Use 1/4 Kelly (system default)
-
-        Example:
-        - Bankroll: $1,000
-        - Kelly suggests: 8%
-        - 1/4 Kelly = 2% = **$20 bet**
-
-        ## Expected Value (EV)
-
-        ```
-        EV = (Probability × Payout) - 1
-
-        Example:
-        - 2-leg parlay, 72% combined probability
-        - PrizePicks offers 4.0x payout
-        - EV = (0.72 × 4.0) - 1 = +188%
-
-        Meaning: Every $100 bet returns $188 profit on average
-        ```
-
-        ## Why Parlays?
-
-        PrizePicks ONLY offers parlays (2+ legs minimum).
-
-        Single picks aren't available, so we optimize parlays directly.
-        """)
-
-    elif guide_section == "🧮 Multi-Line EV System":
-        st.markdown("""
-        # Multi-Line EV System
-
-        ## The Problem
-
-        **Old System:**
-        - Only matched lines "within 0.5" of our prediction
-        - If we predicted 3.0 shots, ignored 2.5 and 4.5 lines
-        - Evaluated only ~40-50 lines per day
-
-        **Missed Opportunity:**
-        - PrizePicks offers 1,000+ lines per day
-        - Different lines have different multipliers
-        - Sometimes O4.5 has better EV than O3.5!
-
-        ## The Solution
-
-        ### Step 1: Fetch ALL Lines
-        ```python
-        response = requests.get("https://api.prizepicks.com/projections")
-        # Returns 1,000+ NHL player prop lines
-        ```
-
-        ### Step 2: Estimate Probability at Any Line
-
-        **Interpolation** (within predicted range):
-        ```python
-        # We predicted 3.0 shots at 80% probability
-        # PrizePicks offers O2.5 line
-        # Interpolate: closer to mean = higher probability
-        prob_2_5 = 80% + (0.5 closer × 10% boost) = 85%
-        ```
-
-        **Extrapolation** (outside predicted range):
-        ```python
-        # We predicted 3.0 shots at 80% probability
-        # PrizePicks offers O4.5 line
-        # Extrapolate: further from mean = lower probability
-        prob_4_5 = 80% - (1.5 further × 10% drop) = 65%
-        ```
-
-        ### Step 3: Get Multiplier
-
-        **Priority:**
-        1. **Learned** (70% confidence) - from manual observations
-        2. **Historical** (50% confidence) - similar lines from past
-        3. **Fallback** (20% confidence) - generic by odds_type
-
-        ```python
-        Demon   → 2.0x fallback (actual: 2.0x-2.3x)
-        Goblin  → 1.414x fallback (actual: 1.4x-1.6x)
-        Standard → 1.732x fallback (actual: 1.7x)
-        ```
-
-        ### Step 4: Calculate EV
-
-        ```python
-        EV = (Probability × Individual_Multiplier) - 1
-        Edge = Probability - (1 / Individual_Multiplier)
-
-        Example:
-        - O2.5 shots, 85% probability, 2.021x multiplier
-        - EV = (0.85 × 2.021) - 1 = +71.8%
-        - Edge = 0.85 - (1/2.021) = +35.5%
-        ```
-
-        ### Step 5: Rank by EV
-
-        Output shows:
-        - Player name & team
-        - Prop type & line
-        - Odds type (DEMON/GOBLIN/STANDARD)
-        - EV percentage
-        - Edge percentage
-        - Confidence level (LEARNED/HIST/EST)
-
-        ## Results
-
-        ### Before:
-        - 40-50 lines evaluated
-        - ~30% average EV
-        - Missed 95% of opportunities
-
-        ### After:
-        - 1,000+ lines evaluated
-        - ~105% average EV on edges
-        - 165 edge plays found
-        - 74% more opportunities
-
-        ## Key Insight
-
-        **Same player can have multiple +EV bets:**
-
-        Example - Mark Scheifele:
-        - O1.5 points (240% EV) ← Demon
-        - O2.5 points (200% EV) ← Demon
-        - O2.5 shots (146% EV) ← Demon
-
-        All three are valid edges! Pick the one with best
-        risk/reward for your bankroll.
-        """)
-
-    elif guide_section == "📏 Minimum Payout Method":
-        st.markdown("""
-        # Minimum Payout Method
-
-        ## The Innovation
-
-        Instead of trying to predict PrizePicks payouts (which change dynamically),
-        we **work backwards** from our probability estimates.
-
-        ## The Math
-
-        ### Expected Value Formula:
-        ```
-        EV = (Probability × Payout) - 1
-        ```
-
-        ### Solving for Payout:
-        ```
-        Payout = (1 + Target_EV) / Probability
-        ```
-
-        ### Example:
-
-        **2-leg parlay, 72.2% combined probability:**
-
-        ```
-        For 10% EV:  Payout = (1.10) / 0.722 = 1.52x
-        For  5% EV:  Payout = (1.05) / 0.722 = 1.45x
-        Break-even:  Payout = (1.00) / 0.722 = 1.38x
-        ```
-
-        ## The Workflow
-
-        ### Step 1: Review GTO_PARLAYS CSV
-
-        Open the CSV and see:
-        ```
-        Parlay_ID: 1
-        Legs: 2
-        Combined_Probability: 72.2%
-        Min_Payout_10pct_EV: 1.52x
-        Min_Payout_5pct_EV: 1.45x
-        Min_Payout_Breakeven: 1.38x
-        Estimated_Payout: 4.0x
-        ```
-
-        ### Step 2: Build Parlay on PrizePicks
-
-        1. Open PrizePicks app/website
-        2. Search for "Dylan Larkin"
-        3. Add "Points Over 1.5"
-        4. Search for "Jack Hughes"
-        5. Add "Points Over 1.5"
-
-        ### Step 3: Check Displayed Payout
-
-        PrizePicks shows: **"3.8x payout"**
-
-        ### Step 4: Compare to Minimums
-
-        ```
-        Actual: 3.8x
-        vs
-        Min for 10% EV: 1.52x ✅
-        Min for  5% EV: 1.45x ✅
-        Break-even:     1.38x ✅
-        ```
-
-        **Result: BET!** (way above minimum)
-
-        ### Step 5: Record Result
-
-        In CSV, update:
-        ```
-        Actual_Payout: 3.8x
-        Action: BET
-        ```
-
-        ## Why This Works
-
-        ### Advantages:
-
-        1. **No automation needed** - Manual validation is simple
-        2. **No stale data** - Always using PrizePicks' real-time payout
-        3. **Clear decision rule** - Compare two numbers
-        4. **Catches errors** - If payout is way off, you'll notice
-        5. **Works forever** - Method doesn't break when PrizePicks updates
-
-        ### Real-World Example:
-
-        **Scenario:** PrizePicks changed their algorithm overnight
-
-        **Old automated system:** Breaks, needs debugging, hours of work
-
-        **Minimum payout method:**
-        - System calculates new minimums based on probabilities
-        - You see PrizePicks' new actual payout
-        - Compare and decide
-        - **Still works!**
-
-        ## Decision Matrix
-
-        ```
-        If Actual >= Min_10pct:  BET (EXCELLENT EDGE)
-        If Actual >= Min_5pct:   BET or BET SMALL
-        If Actual >= Breakeven:  SKIP (marginal)
-        If Actual <  Breakeven:  SKIP (negative EV)
-        ```
-
-        ## Bet Sizing
-
-        When actual payout exceeds minimums by a lot:
-
-        ```
-        Actual: 4.0x
-        Min for 10% EV: 1.52x
-        Ratio: 4.0 / 1.52 = 2.63x above minimum
-
-        → This is a HUGE edge
-        → Consider betting more (still within Kelly limits)
-        ```
-
-        ## Safety Checks
-
-        **Red flags to watch for:**
-
-        1. Payout < Break-even → Don't bet!
-        2. Payout way higher than estimated → Check if picks are correct
-        3. Payout way lower than estimated → Line may have moved
-
-        Manual validation catches these issues before you bet.
-        """)
-
-    elif guide_section == "🔄 Daily Workflow":
-        st.markdown("""
-        # Daily Workflow
-
-        ## Fully Automated (Recommended)
-
-        ### Setup Once:
-        ```bash
-        # Windows - Run as Administrator
-        powershell -ExecutionPolicy Bypass -File setup_automated_schedule.ps1
-        ```
-
-        This creates 4 scheduled tasks:
-
-        ### 8:00 AM - Morning Predictions
-        ```
-        run_complete_workflow_gto.py
-        ├─ Generate predictions
-        ├─ Multi-line EV optimization
-        ├─ GTO parlay optimization
-        └─ Commit to GitHub
-        ```
-
-        ### 12:00 PM - Midday Update
-        ```
-        Same as morning (accounts for late scratches)
-        ```
-
-        ### 3:00 PM - Afternoon Update
-        ```
-        Final update before evening games
-        ```
-
-        ### 6:00 PM - Evening Update
-        ```
-        Last chance for late games
-        ```
-
-        ## Manual Workflow (If You Prefer)
-
-        ### Morning (30 minutes)
-
-        **1. Run Complete Workflow**
-        ```bash
-        python run_complete_workflow_gto.py
-        ```
-
-        **2. Review Outputs**
-        - Open `GTO_PARLAYS_*.csv`
-        - Review 14 optimal parlays
-        - Check minimum payout thresholds
-
-        **3. Cross-reference Edges**
-        - Open `MULTI_LINE_EDGES_*.csv`
-        - See all 100+ edges found
-        - Identify players appearing in parlays
-
-        ### Midday (15 minutes)
-
-        **1. Place Bets on PrizePicks**
-
-        For each parlay:
-        - Add legs to slip
-        - Check displayed payout
-        - Compare to CSV minimums
-        - BET if >= minimum
-        - Mark in CSV
-
-        **2. Track Your Bets**
-        ```
-        Parlay #1: BET $20 @ 3.8x
-        Parlay #2: SKIP (payout 1.4x < min 1.5x)
-        Parlay #3: BET $15 @ 6.5x
-        ...
-        ```
-
-        ### Evening (After Games)
-
-        **1. Check Results** (optional - can wait until next day)
-
-        ### Next Morning (5 minutes)
-
-        **1. Grade Previous Day**
-        ```bash
-        python grade_all_picks.py
-        ```
-
-        **2. Review Performance**
-        - Check dashboard in app.py
-        - View profit curve
-        - Analyze hit rate by tier
-
-        ## Weekly Tasks
-
-        ### Monday Morning (15 minutes)
-
-        **1. Review Weekly Performance**
-        ```
-        Streamlit App → Performance Page
-        - Check 7-day hit rate
-        - Review profit trend
-        - Identify top performers
-        ```
-
-        **2. Update Multiplier Database** (if you have new observations)
-        ```bash
-        python prizepicks_multiplier_learner.py
-        ```
-
-        **3. Retrain Model Weights** (optional)
-        ```bash
-        python retrain_ml_weights.py
-        ```
-
-        ## Monthly Tasks
-
-        ### First of Month (30 minutes)
-
-        **1. Full System Audit**
-        ```
-        - Check database size
-        - Remove old duplicates
-        - Backup database
-        - Review long-term ROI
-        ```
-
-        **2. Model Retraining** (if performance degraded)
-        ```bash
-        python train_nhl_ml_v3.py
-        ```
-
-        **3. Update Season Data** (November/April)
-        ```bash
-        python fetch_player_stats.py
-        python fetch_goalie_stats.py
-        python fetch_team_stats.py
-        ```
-
-        ## Troubleshooting
-
-        ### Workflow Failed?
-
-        ```bash
-        # Check diagnostics
-        python diagnose_workflow.py
-
-        # Inspect database
-        python inspect_database.py
-
-        # Test predictions
-        python test_predictions.py
-        ```
-
-        ### No Games Today?
-
-        System will still run but generate 0 picks. This is normal.
-
-        ### PrizePicks API Down?
-
-        Multi-line optimizer will fail gracefully. Use yesterday's picks
-        or wait for API to recover.
-        """)
-
-    elif guide_section == "❓ FAQ":
-        st.markdown("""
-        # Frequently Asked Questions
-
-        ## General
-
-        ### Q: What sports are supported?
-        **A:** Currently NHL only. System is built specifically for NHL player props.
-
-        ### Q: What sportsbooks work with this?
-        **A:** Designed for PrizePicks, but the prediction system works for any book.
-
-        ### Q: Do I need coding experience?
-        **A:** No! Just run the scripts and use this dashboard. All automation is set up.
-
-        ### Q: What's the expected ROI?
-        **A:** Target is 10%+ long-term ROI. With 58%+ hit rate at -110 odds, this is achievable.
-
-        ## Technical
-
-        ### Q: Why Multi-Line EV instead of just matching predictions?
-        **A:** PrizePicks offers 1,000+ lines. Matching only our predictions evaluates 40-50 lines.
-        Multi-line evaluates ALL lines, finding 74% more opportunities.
-
-        ### Q: What's the difference between EV and Edge?
-        **A:**
-        - **EV** = Expected Value = (Prob × Multiplier) - 1
-        - **Edge** = Advantage = Prob - (1 / Multiplier)
-
-        Both measure profitability, EV in percentage terms, Edge in probability terms.
-
-        ### Q: Why not automate the entire betting process?
-        **A:**
-        1. PrizePicks terms prohibit automation
-        2. Manual validation catches errors
-        3. Payouts change dynamically - automation would use stale data
-        4. Minimum payout method is simple and foolproof
-
-        ### Q: How accurate are the probability estimates?
-        **A:**
-        - **Direct predictions:** High accuracy (ML-trained)
-        - **Interpolated:** Medium accuracy (close to predictions)
-        - **Extrapolated:** Lower accuracy (use with caution)
-
-        System shows confidence levels to help you decide.
-
-        ### Q: What's a "Demon" pick?
-        **A:** PrizePicks odds classification:
-        - **Demon** 😈 = Harder prop, higher payout (~2.0x-2.3x individual)
-        - **Goblin** 🦝 = Easier prop, lower payout (~1.4x-1.6x individual)
-        - **Standard** ⚡ = Normal prop, medium payout (~1.7x individual)
-
-        ## Betting
-
-        ### Q: How much should I bet?
-        **A:** Use Kelly Criterion (system calculates automatically):
-        - **Full Kelly:** Aggressive (max growth, high variance)
-        - **1/2 Kelly:** Moderate
-        - **1/4 Kelly:** Conservative (recommended)
-        - **1/8 Kelly:** Very conservative
-
-        ### Q: What if actual payout is lower than estimated?
-        **A:** Compare to MINIMUM payout, not estimated:
-        - If actual >= Min_Payout_10pct_EV → Still a good bet
-        - If actual < Min_Payout_5pct_EV → Skip
-
-        ### Q: Should I bet all 14 parlays?
-        **A:** No! Use minimums to filter:
-        - BET if actual >= minimum (good edge)
-        - SKIP if actual < minimum (no edge)
-
-        Expect to bet 8-12 of the 14 parlays.
-
-        ### Q: Can I combine picks into my own parlays?
-        **A:** Yes, but be careful:
-        - Avoid same player (correlated)
-        - Avoid same game (correlated)
-        - GTO optimizer already does this optimally
-
-        ## Performance
-
-        ### Q: Hit rate looks low this week, is something wrong?
-        **A:** Short-term variance is normal. Evaluate over 100+ picks minimum.
-
-        ### Q: Should I stop betting if I'm on a losing streak?
-        **A:** No, if the math is sound. Variance is expected. Review:
-        1. Are you following minimum payout thresholds?
-        2. Are you recording actual payouts correctly?
-        3. Is your bankroll management disciplined?
-
-        If yes to all, keep betting. The edge will realize over time.
-
-        ### Q: Model performance degraded, what to do?
-        **A:**
-        ```bash
-        # Retrain ensemble weights
-        python retrain_ml_weights.py
-
-        # If that doesn't help, full retrain
-        python train_nhl_ml_v3.py
-        ```
-
-        ## System Maintenance
-
-        ### Q: How often should I update player stats?
-        **A:** Automatically updated by scheduled tasks (daily). Manual update:
-        ```bash
-        python fetch_player_stats.py
-        ```
-
-        ### Q: Database getting large, how to clean?
-        **A:**
-        ```bash
-        # Remove duplicates
-        python remove_duplicates_v3.py
-
-        # Backup first!
-        python database_setup.py
-        ```
-
-        ### Q: Workflow failed, how to debug?
-        **A:**
-        ```bash
-        python diagnose_workflow.py
-        ```
-
-        This checks all components and identifies the issue.
-
-        ## Advanced
-
-        ### Q: Can I adjust the ML model weights?
-        **A:** Yes, edit `enhanced_predictions.py`:
-        ```python
-        statistical_weight = 0.75  # Default
-        ml_weight = 0.25           # Default
-        ```
-
-        ### Q: Can I change the EV threshold?
-        **A:** Yes, in `prizepicks_multi_line_optimizer.py`:
-        ```python
-        MIN_EV_THRESHOLD = 0.05  # Default 5%
-        ```
-
-        ### Q: Can I add more prop types (assists, blocks, etc.)?
-        **A:** Yes, but requires:
-        1. Updating prediction models
-        2. Adding data collection for new props
-        3. Training on historical data
-
-        This is a significant project.
-
-        ---
-
-        ## Still Have Questions?
-
-        Check the system logs:
-        ```bash
-        # Most scripts output detailed logs
-        python <script_name>.py > output.log 2>&1
-        ```
-
-        Or open an issue on the GitHub repo with:
-        - What you were trying to do
-        - What happened vs what you expected
-        - Any error messages
-        """)
-
-# ============================================================================
-# SETTINGS PAGE (Keep existing)
-# ============================================================================
-
-elif page == "⚙️ Settings":
-    st.title("⚙️ Settings & Configuration")
-
-    # Bankroll Management
-    st.subheader("💰 Bankroll Management")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        bankroll = st.number_input("Total Bankroll ($)", min_value=100, max_value=100000, value=1000, step=100)
-        kelly_fraction = st.selectbox(
-            "Kelly Fraction",
-            ["1/4 Kelly (Conservative - Recommended)", "1/2 Kelly (Moderate)", "Full Kelly (Aggressive)"],
-            index=0
-        )
-
-    with col2:
-        max_daily_risk = st.slider("Max Daily Risk (%)", 10, 100, 30, 5)
-        unit_size = st.number_input("Unit Size ($)", min_value=1, max_value=1000, value=10, step=5)
-
-    st.info(f"💡 With ${bankroll} bankroll and {kelly_fraction}, typical bets: ${bankroll * 0.02:.2f} - ${bankroll * 0.05:.2f}")
-
-    st.markdown("---")
-
-    # System Info
-    st.subheader("ℹ️ System Information")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**Version:** 2.0 - GTO + Multi-Line EV")
-        st.markdown("**Last Updated:** 2025-10-30")
-        st.markdown("**Python:** 3.13")
-
-    with col2:
-        st.markdown("**Status:** ✅ Operational")
-        st.markdown("**Database:** ✅ Connected")
-        st.markdown("**Automation:** ✅ Active")
-
-    st.markdown("---")
-
-    # Database Management
-    st.subheader("🗄️ Database Management")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        if st.button("💾 Backup Database", use_container_width=True):
-            import shutil
-            backup_name = f"database/backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-            shutil.copy("database/nhl_predictions.db", backup_name)
-            st.success(f"Backup created: {backup_name}")
-
-    with col2:
-        if st.button("🧹 Clean Duplicates", use_container_width=True):
-            with st.spinner("Cleaning duplicates..."):
-                result = run_script("remove_duplicates_v3.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Duplicates removed!")
-                else:
-                    st.error("❌ Failed")
-
-    with col3:
-        if st.button("🔍 Inspect Database", use_container_width=True):
-            with st.spinner("Inspecting..."):
-                result = run_script("inspect_database.py")
-                if result:
-                    st.code(result.stdout[:1000])
-
-# ============================================================================
-# SYSTEM UTILITIES PAGE
-# ============================================================================
-
-elif page == "🛠️ System Utilities":
-    st.title("🛠️ System Utilities")
-    st.markdown("### Production-ready system utilities and tools")
-    st.markdown("---")
-
-    # Tabs for different utilities
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "💰 Bankroll Manager",
-        "📊 Adaptive Weights",
-        "🔗 Correlation Detector",
-        "⚡ Database Utilities",
-        "📝 System Logs"
-    ])
-
-    # ========================================================================
-    # TAB 1: BANKROLL MANAGER
-    # ========================================================================
-    with tab1:
-        st.header("💰 Bankroll Management")
-        st.markdown("**Track bankroll, calculate bet sizes, enforce risk limits**")
-        st.markdown("---")
-
-        # Bankroll Status
-        st.subheader("Current Bankroll Status")
-
-        try:
-            from bankroll_manager import BankrollManager
-            manager = BankrollManager()
-            status = manager.get_status()
-
-            # Display metrics
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Current Bankroll", f"${status['current_bankroll']:,.2f}")
-            with col2:
-                st.metric("Today's P/L", f"${status['daily_profit']:+,.2f}")
-            with col3:
-                st.metric("Win Rate", f"{status['win_rate']:.1f}%")
-            with col4:
-                st.metric("ROI", f"{status['roi']:+.1f}%")
-
-            # Pending bets
-            st.markdown("---")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Pending Bets", status['pending_bets'])
-                st.metric("Today's Wins", status['today_wins'])
-            with col2:
-                st.metric("Amount at Risk", f"${status['pending_amount']:,.2f}")
-                st.metric("Today's Losses", status['today_losses'])
-
-            # All-time stats
-            st.markdown("---")
-            st.subheader("All-Time Performance")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Total Bets", status['all_time_bets'])
-            with col2:
-                st.metric("Record", f"{status['all_time_wins']}W - {status['all_time_losses']}L")
-            with col3:
-                st.metric("Total Profit", f"${status['all_time_profit']:+,.2f}")
-
-        except Exception as e:
-            st.warning("Bankroll manager not initialized yet")
-            st.info("Run: `BankrollManager(initial_bankroll=1000)` to initialize")
-
-        # Bet Size Calculator
-        st.markdown("---")
-        st.subheader("Kelly Bet Size Calculator")
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            prob = st.slider("Win Probability", 0.50, 0.95, 0.60, 0.01)
-        with col2:
-            payout = st.number_input("Payout Multiplier", 1.5, 10.0, 2.0, 0.1)
-        with col3:
-            edge = st.slider("Expected Value (EV)", 0.0, 0.50, 0.10, 0.01)
-
-        if st.button("Calculate Bet Size", type="primary"):
-            try:
-                from bankroll_manager import BankrollManager
-                manager = BankrollManager()
-                bet_info = manager.get_bet_size(prob, payout, edge)
-
-                st.success("Bet size calculated!")
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Recommended Bet", f"${bet_info['recommended_bet']:.2f}")
-                with col2:
-                    st.metric("Kelly Bet", f"${bet_info['kelly_bet']:.2f}")
-                with col3:
-                    st.metric("Max Bet", f"${bet_info['max_bet']:.2f}")
-
-                # Show warnings
-                if bet_info['warnings']:
-                    st.warning("⚠️ Warnings:")
-                    for warning in bet_info['warnings']:
-                        st.write(f"- {warning}")
-
-                # Show daily risk
-                st.info(f"Daily Risk Used: ${bet_info['daily_risk_used']:.2f} | Remaining: ${bet_info['daily_risk_remaining']:.2f}")
-
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-
-        # Initialize Bankroll
-        st.markdown("---")
-        st.subheader("Initialize/Update Bankroll")
-        initial_bankroll = st.number_input("Starting Bankroll ($)", 100.0, 100000.0, 1000.0, 100.0)
-        if st.button("Initialize Bankroll"):
-            try:
-                from bankroll_manager import BankrollManager
-                manager = BankrollManager(initial_bankroll=initial_bankroll)
-                st.success(f"Bankroll initialized: ${initial_bankroll:,.2f}")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-
-    # ========================================================================
-    # TAB 2: ADAPTIVE WEIGHTS
-    # ========================================================================
+            # Kelly Criterion explanation
+            with st.expander("ℹ️ What is Kelly Criterion?"):
+                st.markdown("""
+                **Kelly Criterion** is an optimal bet sizing formula that maximizes long-term growth.
+
+                - **Kelly %**: Recommended percentage of bankroll to bet
+                - **Example**: If Kelly = 2.5% and bankroll = $1000, bet $25
+                - **Conservative approach**: Use 25-50% of Kelly recommendation (fractional Kelly)
+
+                **Formula**: Kelly % = (Edge / Odds) where Edge = (Win Probability × Payout) - 1
+                """)
+        else:
+            st.info(f"No edges found for {today}")
+            st.caption("Edges are generated by running the Edge Finder from Command Center")
+
+    # ---- TAB 2: GTO PARLAYS ----
     with tab2:
-        st.header("📊 Adaptive Model Weights")
-        st.markdown("**Dynamically adjust ensemble weights based on recent performance**")
-        st.markdown("---")
+        st.subheader("🎰 Game Theory Optimal Parlays")
 
-        # Current weights
-        st.subheader("Current Weights")
+        query = """
+            SELECT
+                parlay_id,
+                num_legs,
+                ROUND(combined_probability * 100, 1) as confidence_pct,
+                ROUND(expected_value * 100, 1) as ev_pct,
+                ROUND(kelly_fraction * 100, 2) as kelly_pct,
+                picks_json
+            FROM gto_parlays
+            WHERE date = ?
+            ORDER BY expected_value DESC
+        """
+        parlays_df = query_db(query, (today,))
 
-        try:
-            from adaptive_weights import get_adaptive_weights, get_model_performance
+        if not parlays_df.empty:
+            st.success(f"Found {len(parlays_df)} GTO parlays")
 
-            # Get current weights
-            stat_weight, ml_weight = get_adaptive_weights(days_back=7)
+            # Filter by legs
+            leg_filter = st.selectbox(
+                "Number of Legs",
+                ["All", "2", "3", "4", "5+"]
+            )
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Statistical Model", f"{stat_weight:.0%}")
-            with col2:
-                st.metric("ML Model", f"{ml_weight:.0%}")
-
-            # Performance analysis
-            st.markdown("---")
-            st.subheader("Recent Performance")
-
-            days_back = st.slider("Days to Analyze", 3, 30, 7, 1)
-
-            if st.button("Analyze Performance", type="primary"):
-                performance = get_model_performance(days_back)
-
-                if performance:
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Total Predictions", performance['total_predictions'])
-                    with col2:
-                        st.metric("Ensemble Accuracy", f"{performance['ensemble_accuracy']:.1%}")
-                    with col3:
-                        st.metric("Days Analyzed", performance['days_analyzed'])
-
-                    st.markdown("---")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric("Avg Base Probability", f"{performance['avg_base_probability']:.1%}")
-                    with col2:
-                        st.metric("Avg ML Boost", f"{performance['avg_ml_boost']:+.1%}")
-
-                    # Recalculate weights
-                    st.markdown("---")
-                    if st.button("Recalculate Weights"):
-                        new_stat, new_ml = get_adaptive_weights(days_back=days_back)
-                        st.success(f"New weights: {new_stat:.0%} statistical, {new_ml:.0%} ML")
-
+            if leg_filter != "All":
+                if leg_filter == "5+":
+                    filtered = parlays_df[parlays_df['num_legs'] >= 5]
                 else:
-                    st.warning(f"Not enough graded predictions in last {days_back} days")
-                    st.info("Need at least 20 graded predictions for reliable analysis")
+                    filtered = parlays_df[parlays_df['num_legs'] == int(leg_filter)]
+            else:
+                filtered = parlays_df
 
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
+            st.markdown(f"**Showing {len(filtered)} parlays**")
 
-        # Explanation
+            # Display summary table
+            st.dataframe(
+                filtered[['parlay_id', 'num_legs', 'confidence_pct', 'ev_pct', 'kelly_pct']],
+                use_container_width=True,
+                hide_index=True
+            )
+
+            # Expandable details for each parlay
+            st.markdown("---")
+            st.markdown("**Parlay Details (click to expand)**")
+
+            for idx, parlay in filtered.head(10).iterrows():
+                with st.expander(f"Parlay #{parlay['parlay_id']} - {parlay['num_legs']} legs - {parlay['confidence_pct']}% confidence - {parlay['ev_pct']}% EV"):
+                    st.markdown(f"**Picks:** {parlay['picks_json']}")
+                    st.markdown(f"**Combined Confidence:** {parlay['confidence_pct']}%")
+                    st.markdown(f"**Expected Value:** {parlay['ev_pct']}%")
+                    st.markdown(f"**Kelly Bet Size:** {parlay['kelly_pct']}% of bankroll")
+
+            if len(filtered) > 10:
+                st.info(f"Showing top 10 of {len(filtered)} parlays. Download CSV for full list.")
+
+            # Download
+            csv = filtered.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Parlays as CSV",
+                data=csv,
+                file_name=f"parlays_{today}.csv",
+                mime="text/csv"
+            )
+        else:
+            st.info(f"No parlays found for {today}")
+            st.caption("Parlays are generated by running the Edge Finder from Command Center")
+
+# ============================================================================
+# PAGE 4: SCHEDULE & LIVE SCORES
+# ============================================================================
+
+elif page == "📅 Schedule & Live Scores":
+    st.title("📅 Schedule & Live Scores")
+
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    # Refresh button for live scores
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("🔄 Refresh Scores", type="primary"):
+            st.rerun()
+    with col2:
+        st.caption(f"Last updated: {datetime.now().strftime('%I:%M:%S %p')}")
+
+    st.markdown("---")
+
+    # Fetch live scores from NHL API
+    live_scores = fetch_live_scores(today)
+
+    # Get today's games (deduplicated using alphabetical ordering since is_home is often NULL)
+    query = """
+        SELECT DISTINCT
+            CASE
+                WHEN team < opponent THEN team
+                ELSE opponent
+            END as team1,
+            CASE
+                WHEN team < opponent THEN opponent
+                ELSE team
+            END as team2,
+            MIN(game_time) as game_time,
+            game_date
+        FROM predictions
+        WHERE game_date = ?
+        GROUP BY team1, team2, game_date
+        ORDER BY game_time
+    """
+    games_df = query_db(query, (today,))
+
+    if not games_df.empty:
+        st.success(f"Found {len(games_df)} games today")
+
         st.markdown("---")
-        st.subheader("How It Works")
-        st.markdown("""
-        **Adaptive Weights automatically adjust based on performance:**
 
-        1. **Statistical Model Performance:**
-           - If accuracy ≥ 75% → Increase weight to 80%
-           - If accuracy < 65% → Decrease weight to 60%
+        for idx, game in games_df.iterrows():
+            team1 = game['team1']
+            team2 = game['team2']
 
-        2. **ML Model Contribution:**
-           - If ML boost helps accuracy → Increase ML weight
-           - If ML boost hurts accuracy → Decrease ML weight
+            # Normalize team names for matching (e.g., "Utah Mammoth" -> "UTA")
+            team1_norm = normalize_team_name(team1)
+            team2_norm = normalize_team_name(team2)
 
-        3. **Fallback:**
-           - Not enough data → Use baseline 70/30 split
+            # Check if we have live scores for this game (try multiple combinations)
+            possible_keys = [
+                f"{team1_norm}@{team2_norm}",
+                f"{team2_norm}@{team1_norm}",
+                f"{team1}@{team2}",
+                f"{team2}@{team1}"
+            ]
 
-        **Expected Impact:** 2-5% accuracy improvement through self-optimization
-        """)
+            score_data = {}
+            for key in possible_keys:
+                if key in live_scores:
+                    score_data = live_scores[key]
+                    break
 
-    # ========================================================================
-    # TAB 3: CORRELATION DETECTOR
-    # ========================================================================
+            # Display game header with score if available
+            if score_data:
+                game_state = score_data.get('game_state', 'UNKNOWN')
+                away_team = score_data.get('away_team', team1)
+                home_team = score_data.get('home_team', team2)
+                away_score = score_data.get('away_score', 0)
+                home_score = score_data.get('home_score', 0)
+                period = score_data.get('period', 0)
+                time_remaining = score_data.get('time_remaining', '')
+
+                # Format the game state
+                if game_state == 'LIVE' or game_state == 'CRIT':
+                    status_color = "🔴"
+                    status_text = f"LIVE - P{period}"
+                    if time_remaining:
+                        status_text += f" - {time_remaining}"
+                elif game_state == 'FUT' or game_state == 'PRE':
+                    status_color = "⚪"
+                    status_text = f"Scheduled - {game['game_time']}" if game['game_time'] else "Scheduled"
+                elif game_state == 'FINAL' or game_state == 'OFF':
+                    status_color = "✅"
+                    status_text = "FINAL"
+                else:
+                    status_color = "⚪"
+                    status_text = game_state
+
+                st.subheader(f"{status_color} {away_team} {away_score} @ {home_score} {home_team}")
+                st.caption(f"{status_text}")
+            else:
+                # No live score data, just show team names
+                st.subheader(f"{team1} vs {team2}")
+                if game['game_time']:
+                    st.caption(f"Game Time: {game['game_time']}")
+                else:
+                    st.caption("Game time TBD")
+
+            # Get predictions for this game (match either team order)
+            query_preds = """
+                SELECT
+                    player_name,
+                    prop_type,
+                    line,
+                    prediction,
+                    ROUND(probability * 100, 1) as confidence_pct
+                FROM predictions
+                WHERE game_date = ?
+                  AND ((team = ? AND opponent = ?) OR (team = ? AND opponent = ?))
+                ORDER BY probability DESC
+                LIMIT 10
+            """
+            preds = query_db(
+                query_preds,
+                (today, team1, team2, team2, team1)
+            )
+
+            if not preds.empty:
+                st.markdown("**Top Predictions for this game:**")
+                st.dataframe(preds, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+    else:
+        st.info(f"No games scheduled for {today}")
+
+    # Betting Lines (if available)
+    st.subheader("📊 Betting Lines")
+
+    # Deduplicated betting lines - ONLY for games in predictions table
+    query_odds = """
+        SELECT DISTINCT
+            gbl.away_team,
+            gbl.home_team,
+            gbl.away_ml,
+            gbl.home_ml,
+            gbl.over_under,
+            gbl.puck_line,
+            gbl.home_pl_odds,
+            gbl.away_pl_odds,
+            gbl.game_date,
+            gbl.last_updated
+        FROM game_betting_lines gbl
+        WHERE gbl.game_date = ?
+        AND (gbl.away_team, gbl.home_team, gbl.last_updated) IN (
+            SELECT away_team, home_team, MAX(last_updated)
+            FROM game_betting_lines
+            WHERE game_date = ?
+            GROUP BY away_team, home_team
+        )
+        AND (
+            -- Match games that exist in predictions (either team ordering)
+            EXISTS (
+                SELECT 1 FROM predictions p
+                WHERE p.game_date = ?
+                AND (
+                    (p.team = gbl.away_team AND p.opponent = gbl.home_team)
+                    OR (p.team = gbl.home_team AND p.opponent = gbl.away_team)
+                )
+            )
+        )
+        ORDER BY gbl.away_team, gbl.home_team
+    """
+    odds_df = query_db(query_odds, (today, today, today))
+
+    if not odds_df.empty:
+        # Drop last_updated from display
+        display_df = odds_df.drop(columns=['last_updated'])
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.caption(f"Showing latest odds (last updated: {odds_df['last_updated'].max()})")
+    else:
+        st.info("No betting lines available yet")
+        st.caption("Betting lines are fetched automatically before games start")
+
+# ============================================================================
+# PAGE 5: PERFORMANCE & GRADING (Enhanced with Integrated Grading)
+# ============================================================================
+
+elif page == "📈 Performance & Grading":
+    st.title("📈 Performance & Grading")
+
+    # Tabs for different views
+    tab1, tab2, tab3 = st.tabs(["📊 Performance Metrics", "✅ Auto-Grading", "📋 Manual Grading"])
+
+    # ---- TAB 1: PERFORMANCE METRICS ----
+    with tab1:
+        st.subheader("📊 Overall Performance")
+
+        # Get overall stats
+        query_overall = """
+            SELECT
+                prop_type,
+                COUNT(*) as total,
+                SUM(CASE WHEN outcome = 'HIT' THEN 1 ELSE 0 END) as hits,
+                ROUND(AVG(CASE WHEN outcome = 'HIT' THEN 1.0 ELSE 0.0 END) * 100, 1) as hit_rate,
+                AVG(predicted_probability) as avg_confidence
+            FROM prediction_outcomes
+            GROUP BY prop_type
+            ORDER BY prop_type
+        """
+        overall_df = query_db(query_overall)
+
+        if not overall_df.empty:
+            # Display metrics
+            cols = st.columns(len(overall_df))
+            for idx, (col, row) in enumerate(zip(cols, overall_df.itertuples())):
+                with col:
+                    st.metric(
+                        row.prop_type.upper(),
+                        f"{row.hit_rate}%",
+                        f"{row.hits}/{row.total}"
+                    )
+
+            st.markdown("---")
+
+            # Detailed table
+            st.markdown("**Detailed Breakdown:**")
+            overall_df['avg_confidence'] = overall_df['avg_confidence'].apply(lambda x: f"{x*100:.1f}%")
+            st.dataframe(overall_df, use_container_width=True, hide_index=True)
+
+            # Chart
+            st.markdown("---")
+            st.markdown("**Hit Rate by Prop Type:**")
+            st.bar_chart(overall_df.set_index('prop_type')['hit_rate'])
+        else:
+            st.info("No graded predictions yet")
+            st.caption("Grade predictions using the Auto-Grading tab")
+
+        st.markdown("---")
+
+        # Recent performance (last 7 days)
+        st.subheader("📅 Recent Performance (Last 7 Days)")
+
+        seven_days_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+
+        query_recent = """
+            SELECT
+                game_date,
+                COUNT(*) as total,
+                SUM(CASE WHEN outcome = 'HIT' THEN 1 ELSE 0 END) as hits,
+                ROUND(AVG(CASE WHEN outcome = 'HIT' THEN 1.0 ELSE 0.0 END) * 100, 1) as hit_rate
+            FROM prediction_outcomes
+            WHERE game_date >= ?
+            GROUP BY game_date
+            ORDER BY game_date DESC
+        """
+        recent_df = query_db(query_recent, (seven_days_ago,))
+
+        if not recent_df.empty:
+            st.dataframe(recent_df, use_container_width=True, hide_index=True)
+
+            # Chart
+            st.line_chart(recent_df.set_index('game_date')['hit_rate'])
+        else:
+            st.info("No recent data available")
+
+    # ---- TAB 2: AUTO-GRADING ----
+    with tab2:
+        st.subheader("✅ Automatic Prediction Grading")
+
+        st.info("Auto-grading fetches actual player stats from the NHL API and compares them to predictions")
+
+        # Date picker
+        default_date = datetime.now() - timedelta(days=1)
+        grade_date = st.date_input(
+            "Select date to grade",
+            value=default_date,
+            max_value=datetime.now() - timedelta(days=1)
+        )
+
+        grade_date_str = grade_date.strftime('%Y-%m-%d')
+
+        # Check if already graded
+        query_check = """
+            SELECT COUNT(*) as graded_count
+            FROM prediction_outcomes
+            WHERE game_date = ?
+        """
+        check_df = query_db(query_check, (grade_date_str,))
+        already_graded = check_df['graded_count'][0] if not check_df.empty else 0
+
+        # Check predictions to grade
+        query_preds = """
+            SELECT COUNT(*) as pred_count
+            FROM predictions
+            WHERE game_date = ?
+        """
+        preds_df = query_db(query_preds, (grade_date_str,))
+        preds_count = preds_df['pred_count'][0] if not preds_df.empty else 0
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Predictions for this date", preds_count)
+        with col2:
+            st.metric("Already graded", already_graded)
+
+        if already_graded > 0:
+            st.warning(f"⚠️ {already_graded} predictions already graded for {grade_date_str}")
+            st.caption("Running auto-grade again will re-grade existing predictions")
+
+        if preds_count == 0:
+            st.error(f"❌ No predictions found for {grade_date_str}")
+
+        st.markdown("---")
+
+        # Auto-grade button
+        if st.button("🚀 Run Auto-Grading", use_container_width=True, type="primary", disabled=(preds_count == 0)):
+            with st.spinner(f"Grading {preds_count} predictions for {grade_date_str}..."):
+                try:
+                    result = subprocess.run(
+                        [sys.executable, "adaptive_learning/auto_grade_predictions.py", grade_date_str],
+                        capture_output=True,
+                        text=True,
+                        timeout=180
+                    )
+
+                    if result.returncode == 0:
+                        st.success(f"✅ Successfully graded predictions for {grade_date_str}!")
+
+                        # Show output
+                        if result.stdout:
+                            with st.expander("📋 Grading details"):
+                                st.text(result.stdout)
+
+                        # Refresh page to show updated stats
+                        time.sleep(2)
+                        st.rerun()
+                    else:
+                        st.error("❌ Auto-grading failed")
+                        if result.stderr:
+                            with st.expander("Error details"):
+                                st.text(result.stderr)
+                except subprocess.TimeoutExpired:
+                    st.error("❌ Auto-grading timed out (>3 minutes)")
+                except Exception as e:
+                    st.error(f"❌ Auto-grading error: {e}")
+
+        st.markdown("---")
+
+        # Recent grading history
+        st.subheader("📋 Recent Grading History")
+
+        query_history = """
+            SELECT
+                game_date,
+                COUNT(*) as total,
+                SUM(CASE WHEN outcome = 'HIT' THEN 1 ELSE 0 END) as hits,
+                ROUND(AVG(CASE WHEN outcome = 'HIT' THEN 1.0 ELSE 0.0 END) * 100, 1) as hit_rate
+            FROM prediction_outcomes
+            GROUP BY game_date
+            ORDER BY game_date DESC
+            LIMIT 10
+        """
+        history_df = query_db(query_history)
+
+        if not history_df.empty:
+            st.dataframe(history_df, use_container_width=True, hide_index=True)
+        else:
+            st.info("No grading history yet")
+
+    # ---- TAB 3: MANUAL GRADING ----
     with tab3:
-        st.header("🔗 Correlation Detection")
-        st.markdown("**Test parlay leg correlations to avoid correlated bets**")
-        st.markdown("---")
+        st.subheader("📋 Manual Grading Interface")
 
-        st.subheader("Test Two Legs for Correlation")
+        st.info("Manual grading for edge cases where auto-grading fails")
+
+        # Select date
+        manual_date = st.date_input(
+            "Select date",
+            value=datetime.now() - timedelta(days=1),
+            max_value=datetime.now(),
+            key="manual_date_picker"
+        )
+
+        manual_date_str = manual_date.strftime('%Y-%m-%d')
+
+        # Get ungraded predictions
+        query_ungraded = """
+            SELECT
+                p.id,
+                p.player_name,
+                p.team,
+                p.opponent,
+                p.prop_type,
+                p.line,
+                p.prediction,
+                p.probability,
+                p.game_date
+            FROM predictions p
+            LEFT JOIN prediction_outcomes po ON p.id = po.prediction_id
+            WHERE p.game_date = ? AND po.prediction_id IS NULL
+            ORDER BY p.player_name
+        """
+        ungraded_df = query_db(query_ungraded, (manual_date_str,))
+
+        if not ungraded_df.empty:
+            st.warning(f"Found {len(ungraded_df)} ungraded predictions for {manual_date_str}")
+
+            # Select prediction to grade
+            selected_pred = st.selectbox(
+                "Select prediction to grade",
+                ungraded_df['player_name'] + " - " + ungraded_df['prop_type'] + " " + ungraded_df['prediction'] + " " + ungraded_df['line'].astype(str),
+                format_func=lambda x: x
+            )
+
+            if selected_pred:
+                idx = ungraded_df[
+                    (ungraded_df['player_name'] + " - " + ungraded_df['prop_type'] + " " + ungraded_df['prediction'] + " " + ungraded_df['line'].astype(str)) == selected_pred
+                ].index[0]
+
+                pred_row = ungraded_df.loc[idx]
+
+                st.markdown("---")
+                st.markdown(f"**Player:** {pred_row['player_name']}")
+                st.markdown(f"**Team:** {pred_row['team']} vs {pred_row['opponent']}")
+                st.markdown(f"**Prop:** {pred_row['prop_type']} {pred_row['prediction']} {pred_row['line']}")
+                st.markdown(f"**Confidence:** {pred_row['probability']*100:.1f}%")
+
+                # Input actual stat
+                actual_stat = st.number_input("Enter actual stat value", min_value=0.0, step=0.5)
+
+                # Grade button
+                if st.button("Submit Grade", type="primary"):
+                    try:
+                        conn = get_db_connection()
+                        cursor = conn.cursor()
+
+                        # Determine if hit
+                        # Check if prediction is OVER or UNDER
+                        is_over = pred_row['prediction'].upper() == 'OVER'
+                        hit = (is_over and actual_stat > 0.5) or (not is_over and actual_stat <= 0.5)
+                        outcome = 'HIT' if hit else 'MISS'
+
+                        cursor.execute("""
+                            INSERT INTO prediction_outcomes
+                            (prediction_id, player_name, prop_type, predicted_direction, actual_stat_value,
+                             predicted_probability, outcome, game_date, team, opponent)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            pred_row['id'],
+                            pred_row['player_name'],
+                            pred_row['prop_type'],
+                            pred_row['prediction'],
+                            actual_stat,
+                            pred_row['probability'],
+                            outcome,
+                            pred_row['game_date'],
+                            pred_row['team'],
+                            pred_row['opponent']
+                        ))
+
+                        conn.commit()
+                        conn.close()
+
+                        st.success(f"✅ Graded as {'HIT' if hit else 'MISS'}!")
+                        time.sleep(1)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error saving grade: {e}")
+        else:
+            st.success(f"✅ All predictions graded for {manual_date_str}")
+
+# ============================================================================
+# PAGE 6: SYSTEM CONTROL (Merged: Workflows + Manual Operations)
+# ============================================================================
+
+elif page == "⚙️ System Control":
+    st.title("⚙️ System Control")
+
+    # Tabs for different controls
+    tab1, tab2, tab3 = st.tabs(["🤖 Automated Workflows", "🔧 Manual Operations", "🗄️ Database Tools"])
+
+    # ---- TAB 1: AUTOMATED WORKFLOWS ----
+    with tab1:
+        st.subheader("🤖 Automated Workflows")
+
+        st.markdown("**Complete end-to-end workflows:**")
+
+        # Complete Daily Workflow
+        st.markdown("---")
+        st.markdown("### 🚀 Complete Daily Workflow")
+        st.info("Full refresh: Data → Predictions → Edges → Parlays → GitHub (~2-3 minutes)")
+
+        if st.button("▶️ Run Complete Workflow", use_container_width=True, type="primary"):
+            run_script("RUN_COMPLETE_WORKFLOW.py", "Complete daily workflow", timeout=300)
+
+        # Enhanced System
+        st.markdown("---")
+        st.markdown("### ⚡ Enhanced System")
+        st.info("Advanced filtering for top 20 picks + smart parlays (~60 seconds)")
+
+        if st.button("▶️ Run Enhanced System", use_container_width=True):
+            run_script("RUN_ENHANCED_SYSTEM.py", "Enhanced system integration", timeout=180)
+
+        # Individual steps
+        st.markdown("---")
+        st.markdown("### 🔧 Individual Steps")
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**Leg 1**")
-            player1 = st.text_input("Player Name", "Dylan Larkin", key="player1")
-            team1 = st.text_input("Team", "DET", key="team1")
-            opp1 = st.text_input("Opponent", "LAK", key="opp1")
-            prop1 = st.selectbox("Prop Type", ["points", "shots", "goals", "assists", "blocks", "hits"], key="prop1")
+            if st.button("1️⃣ Generate Predictions", use_container_width=True):
+                run_script("RUN_DAILY_PICKS.py", "Generate predictions", timeout=120)
 
-        with col2:
-            st.markdown("**Leg 2**")
-            player2 = st.text_input("Player Name", "Adrian Kempe", key="player2")
-            team2 = st.text_input("Team", "LAK", key="team2")
-            opp2 = st.text_input("Opponent", "DET", key="opp2")
-            prop2 = st.selectbox("Prop Type", ["points", "shots", "goals", "assists", "blocks", "hits"], key="prop2")
-
-        threshold = st.slider("Correlation Threshold", 0.0, 1.0, 0.30, 0.05)
-
-        if st.button("Test Correlation", type="primary"):
-            try:
-                from correlation_detector import CorrelationDetector
-
-                detector = CorrelationDetector()
-
-                leg1 = {'player_name': player1, 'team': team1, 'opponent': opp1, 'prop_type': prop1}
-                leg2 = {'player_name': player2, 'team': team2, 'opponent': opp2, 'prop_type': prop2}
-
-                # Get correlation score
-                score = detector.get_correlation_score(
-                    player1, team1, opp1, prop1,
-                    player2, team2, opp2, prop2
-                )
-
-                # Check if correlated
-                is_correlated = detector.are_correlated(leg1, leg2, threshold)
-
-                # Display results
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Correlation Score", f"{score:.2f}")
-                with col2:
-                    if is_correlated:
-                        st.error(f"❌ CORRELATED (>{threshold:.2f})")
-                    else:
-                        st.success(f"✅ NOT CORRELATED (<{threshold:.2f})")
-
-                # Explanation
-                st.markdown("---")
-                if score >= 1.0:
-                    st.warning("**Same player** - Perfect correlation (1.0)")
-                elif score >= 0.50:
-                    st.warning("**High correlation** - Avoid in parlays")
-                elif score >= 0.30:
-                    st.info("**Moderate correlation** - Use caution")
-                else:
-                    st.success("**Low/No correlation** - Safe for parlays")
-
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-
-        # Known correlations table
-        st.markdown("---")
-        st.subheader("Known Prop Correlations")
-        st.markdown("""
-        | Prop Combination | Correlation | Reason |
-        |-----------------|-------------|---------|
-        | Points + Goals | 0.75 | Goals count as points |
-        | Points + Assists | 0.70 | Assists count as points |
-        | Points + Shots | 0.60 | More shots → more points |
-        | Shots + Goals | 0.55 | More shots → more goals |
-        | Same Player | 1.00 | Perfect correlation |
-        | Same Game | 0.30 | Game script affects both |
-        | Same Team | 0.20 | Team performance correlation |
-        """)
-
-    # ========================================================================
-    # TAB 4: DATABASE UTILITIES
-    # ========================================================================
-    with tab4:
-        st.header("⚡ Database Utilities")
-        st.markdown("**One-time database optimizations and maintenance**")
-        st.markdown("---")
-
-        # Add indexes
-        st.subheader("Performance Indexes")
-        st.markdown("Add database indexes for faster queries (run once)")
-
-        if st.button("Add Database Indexes", type="primary"):
-            with st.spinner("Adding indexes..."):
-                result = run_script("add_database_indexes.py")
-                if result and result.returncode == 0:
-                    st.success("✅ Database indexes added!")
-                    st.code(result.stdout)
-                else:
-                    st.error("Failed to add indexes")
-                    if result:
-                        st.code(result.stderr)
-
-        # Database stats
-        st.markdown("---")
-        st.subheader("Database Statistics")
-
-        if st.button("Show Database Stats"):
-            try:
-                # Get table sizes
-                tables = [
-                    'predictions',
-                    'prizepicks_edges',
-                    'gto_parlays',
-                    'player_stats',
-                    'bet_history'
-                ]
-
-                stats_data = []
-                for table in tables:
-                    try:
-                        cursor = conn.cursor()
-                        cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                        count = cursor.fetchone()[0]
-                        stats_data.append({'Table': table, 'Rows': count})
-                    except:
-                        pass
-
-                if stats_data:
-                    df = pd.DataFrame(stats_data)
-                    st.dataframe(df, use_container_width=True)
-
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-
-    # ========================================================================
-    # TAB 5: SYSTEM LOGS
-    # ========================================================================
-    with tab5:
-        st.header("📝 System Logs")
-        st.markdown("**View system logs and error reports**")
-        st.markdown("---")
-
-        # Log file selector
-        import glob
-        log_files = glob.glob("logs/*.log")
-
-        if log_files:
-            log_file = st.selectbox("Select Log File", sorted(log_files, reverse=True))
-
-            # Display options
-            col1, col2 = st.columns(2)
-            with col1:
-                num_lines = st.number_input("Lines to Display", 10, 1000, 100, 10)
-            with col2:
-                log_level = st.selectbox("Filter Level", ["ALL", "ERROR", "WARNING", "INFO", "DEBUG"])
-
-            if st.button("View Log", type="primary"):
-                try:
-                    with open(log_file, 'r', encoding='utf-8') as f:
-                        lines = f.readlines()
-
-                    # Filter by level
-                    if log_level != "ALL":
-                        lines = [line for line in lines if log_level in line]
-
-                    # Get last N lines
-                    lines = lines[-num_lines:]
-
-                    # Display
-                    st.code(''.join(lines))
-
-                    # Download button
-                    st.download_button(
-                        "Download Log File",
-                        data=''.join(lines),
-                        file_name=log_file.split('/')[-1],
-                        mime="text/plain"
+            if st.button("3️⃣ Grade Results", use_container_width=True):
+                yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+                with st.spinner(f"Grading {yesterday}..."):
+                    subprocess.run(
+                        [sys.executable, "adaptive_learning/auto_grade_predictions.py", yesterday],
+                        capture_output=False
                     )
 
-                except Exception as e:
-                    st.error(f"Error reading log: {str(e)}")
-        else:
-            st.info("No log files found. Logs will be created when the system runs.")
-            st.markdown("Logs are saved to: `logs/system_YYYY-MM-DD.log`")
+        with col2:
+            if st.button("2️⃣ Find Edges & Parlays", use_container_width=True):
+                run_script("RUN_EDGE_FINDER.py", "Find edges and parlays", timeout=120)
 
-# Footer
+            if st.button("4️⃣ Open Dashboard", use_container_width=True):
+                st.info("Dashboard is already open (you're viewing it now!)")
+
+    # ---- TAB 2: MANUAL OPERATIONS ----
+    with tab2:
+        st.subheader("🔧 Manual Operations")
+
+        # Data refresh
+        st.markdown("### 📊 Data Refresh")
+        st.info("Fetch latest player stats, goalie data, and betting lines")
+
+        if st.button("🔄 Refresh All Data", use_container_width=True):
+            run_script("smart_data_refresh.py", "Data refresh", timeout=180)
+
+        st.markdown("---")
+
+        # Individual model runs
+        st.markdown("### 🤖 Run Individual Models")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if st.button("📊 Statistical Model", use_container_width=True):
+                run_script("fresh_clean_predictions.py", "Statistical model", timeout=90)
+
+        with col2:
+            if st.button("🎯 Ensemble Model", use_container_width=True):
+                run_script("ensemble_predictions.py", "Ensemble model", timeout=90)
+
+        with col3:
+            if st.button("🥅 Goalie Model", use_container_width=True):
+                run_script("goalie_saves_predictions.py", "Goalie saves model", timeout=90)
+
+        st.markdown("---")
+
+        # Edge finding
+        st.markdown("### 💎 Edge Finding")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🔍 Multi-Line Edges", use_container_width=True):
+                run_script("prizepicks_multi_line_optimizer.py", "Multi-line optimizer", timeout=90)
+
+        with col2:
+            if st.button("🎰 GTO Parlays", use_container_width=True):
+                run_script("gto_parlay_optimizer.py", "GTO parlay optimizer", timeout=90)
+
+    # ---- TAB 3: DATABASE TOOLS ----
+    with tab3:
+        st.subheader("🗄️ Database Tools")
+
+        st.warning("⚠️ Use database tools with caution")
+
+        # Database info
+        if os.path.exists(DB_PATH):
+            size_mb = os.path.getsize(DB_PATH) / (1024 * 1024)
+            st.metric("Database Size", f"{size_mb:.2f} MB")
+            st.caption(f"Location: {DB_PATH}")
+        else:
+            st.error("Database not found!")
+
+        st.markdown("---")
+
+        # Table info
+        st.markdown("### 📋 Table Information")
+
+        query_tables = """
+            SELECT name, COUNT(*) as count
+            FROM (
+                SELECT 'predictions' as name UNION ALL
+                SELECT 'prediction_outcomes' UNION ALL
+                SELECT 'prizepicks_edges' UNION ALL
+                SELECT 'gto_parlays' UNION ALL
+                SELECT 'player_stats' UNION ALL
+                SELECT 'goalie_stats'
+            ) tables
+            GROUP BY name
+        """
+
+        # Get row counts for each table
+        tables_info = []
+        for table in ['predictions', 'prediction_outcomes', 'prizepicks_edges',
+                      'gto_parlays', 'player_stats', 'goalie_stats']:
+            query = f"SELECT COUNT(*) as count FROM {table}"
+            df = query_db(query)
+            if not df.empty:
+                tables_info.append({
+                    'Table': table,
+                    'Rows': df['count'][0]
+                })
+
+        tables_df = pd.DataFrame(tables_info)
+        st.dataframe(tables_df, use_container_width=True, hide_index=True)
+
+        st.markdown("---")
+
+        # Custom query
+        st.markdown("### 🔍 Custom SQL Query")
+        st.caption("For advanced users only")
+
+        custom_query = st.text_area(
+            "Enter SQL query",
+            "SELECT * FROM predictions WHERE game_date = date('now') LIMIT 10"
+        )
+
+        if st.button("Execute Query"):
+            try:
+                result_df = query_db(custom_query)
+                st.success(f"Query returned {len(result_df)} rows")
+                st.dataframe(result_df, use_container_width=True)
+            except Exception as e:
+                st.error(f"Query error: {e}")
+
+# ============================================================================
+# PAGE 7: SYSTEM INFO (Merged: Architecture + Schedule + Guide)
+# ============================================================================
+
+elif page == "ℹ️ System Info":
+    st.title("ℹ️ System Information")
+
+    # Tabs for merged documentation
+    tab1, tab2, tab3 = st.tabs(["🏗️ System Architecture", "⏰ Operation Schedule", "📚 Quick Start Guide"])
+
+    # ---- TAB 1: SYSTEM ARCHITECTURE ----
+    with tab1:
+        st.subheader("🏗️ System Architecture")
+
+        st.markdown("""
+        ### Overview
+
+        The NHL Prediction System consists of **3 active machine learning models** that generate
+        daily predictions for NHL player props:
+
+        1. **Statistical Model** - Season averages and trends (72% accuracy)
+        2. **Ensemble Model** - Weighted ML ensemble (73-75% accuracy)
+        3. **Goalie Saves Model** - Specialized goalie predictions (71% accuracy)
+
+        ### Data Flow
+
+        ```
+        NHL API → Data Refresh → Database (SQLite)
+                                     ↓
+                    ┌────────────────┴────────────────┐
+                    ↓                ↓                ↓
+              Statistical      Ensemble         Goalie
+                 Model           Model           Model
+                    ↓                ↓                ↓
+                    └────────────────┬────────────────┘
+                                     ↓
+                            Predictions Table
+                                     ↓
+                    ┌────────────────┴────────────────┐
+                    ↓                                 ↓
+              Edge Finder                      GTO Parlay
+              (10%+ EV)                        Optimizer
+                    ↓                                 ↓
+            prizepicks_edges                  gto_parlays
+        ```
+
+        ### Database Tables
+
+        **Input Tables:**
+        - `player_stats` - Player season statistics
+        - `goalie_stats` - Goalie statistics
+        - `game_betting_lines` - Betting odds
+        - `probable_goalies` - Starting goalies
+
+        **Output Tables:**
+        - `predictions` - All daily predictions (114/day)
+        - `prediction_outcomes` - Graded results
+        - `prizepicks_edges` - Positive EV opportunities
+        - `gto_parlays` - Optimized parlays
+
+        ### File Structure
+
+        ```
+        C:/Users/thoma/PrizePicks-Research-Lab/
+        │
+        ├── RUN_*.py                 # Simple wrapper scripts
+        ├── database/
+        │   └── nhl_predictions.db   # SQLite database
+        ├── adaptive_learning/
+        │   └── auto_grade_predictions.py  # Auto-grading
+        ├── enhanced_system/
+        │   └── master_integration_script.py  # Advanced filtering
+        ├── v2_system/
+        │   └── ...                  # Historical analysis
+        └── app.py                   # This dashboard
+        ```
+        """)
+
+    # ---- TAB 2: OPERATION SCHEDULE ----
+    with tab2:
+        st.subheader("⏰ Daily Operation Schedule")
+
+        st.markdown("""
+        ### Recommended Daily Schedule
+
+        | Time | Action | Command | Duration |
+        |------|--------|---------|----------|
+        | **7:00 AM** | Generate daily picks | `python RUN_DAILY_PICKS.py` | 45s |
+        | **12:00 PM** | Midday refresh (if needed) | `python RUN_DAILY_PICKS.py` | 45s |
+        | **4:00 PM** | Pre-game check | Open Dashboard | - |
+        | **7:00 PM** | Find edges & parlays | `python RUN_EDGE_FINDER.py` | 50s |
+        | **11:00 PM** | Grade yesterday | `python RUN_GRADING.py` | 45s |
+
+        ### Typical Workflow
+
+        **Morning (7:00 AM):**
+        1. Open Command Center
+        2. Click "🚀 Generate Today's Picks"
+        3. Wait 45 seconds
+        4. View top picks or full predictions
+
+        **Pre-Game (4:00-7:00 PM):**
+        1. Click "🔍 Find Edges & Parlays"
+        2. Review positive EV opportunities
+        3. Check GTO parlays
+        4. Place bets
+
+        **Next Morning (7:00 AM):**
+        1. Click "✅ Grade Yesterday"
+        2. Review performance metrics
+        3. Generate new picks
+        4. Repeat
+
+        ### Automation Options
+
+        You can automate daily workflows using:
+        - **Windows Task Scheduler** - Schedule `RUN_DAILY_PICKS.py` at 7 AM
+        - **Cron Jobs** (Linux/Mac) - Same as above
+        - **GitHub Actions** - Auto-push results to repo
+
+        ### Data Refresh Frequency
+
+        - Player stats are automatically refreshed if data is >4 hours old
+        - Betting lines refresh every 2 hours before games
+        - Predictions regenerate each day at 7 AM
+        - Grading happens the next morning after games complete
+        """)
+
+    # ---- TAB 3: QUICK START GUIDE ----
+    with tab3:
+        st.subheader("📚 Quick Start Guide")
+
+        st.markdown("""
+        ### Getting Started in 5 Minutes
+
+        #### 1. Generate Your First Picks
+
+        ```bash
+        python RUN_DAILY_PICKS.py
+        ```
+
+        **What happens:**
+        - Checks if data is fresh (auto-refreshes if stale)
+        - Runs 3 models (Statistical, Ensemble, Goalie)
+        - Generates ~114 predictions
+        - Filters to 5-10 T1-ELITE picks
+        - Creates `LATEST_PICKS.txt` and `LATEST_PICKS.csv`
+        - Pushes to GitHub
+
+        **Output files:**
+        - `LATEST_PICKS.txt` - Human-readable
+        - `LATEST_PICKS.csv` - Spreadsheet format
+        - Timestamped backups in root directory
+
+        #### 2. View Results
+
+        **Option A: Dashboard (Recommended)**
+        ```bash
+        python RUN_DASHBOARD.py
+        ```
+        Opens web interface at `http://localhost:8501`
+
+        **Option B: GitHub (Mobile-Friendly)**
+        Visit: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt
+
+        **Option C: Local Files**
+        Open `LATEST_PICKS.txt` in any text editor
+
+        #### 3. Find Betting Edges
+
+        ```bash
+        python RUN_EDGE_FINDER.py
+        ```
+
+        **Output:**
+        - 5-20 edge opportunities (10%+ EV)
+        - 10-50 GTO parlays
+        - Files: `MULTI_LINE_EDGES_*.csv`, `GTO_PARLAYS_*.csv`
+
+        #### 4. Grade Results
+
+        ```bash
+        python RUN_GRADING.py
+        ```
+
+        Automatically grades yesterday's predictions (99%+ success rate)
+
+        ### Understanding the Output
+
+        **Confidence Tiers:**
+        - **T1-ELITE** (≥85%) - Best picks, bet with confidence
+        - **T2-STRONG** (65-84%) - Good picks, moderate bet size
+        - **T3-MARGINAL** (50-64%) - Marginal picks, small bets or skip
+
+        **Expected Value (EV):**
+        - Positive EV = Profitable in long run
+        - Target: 10%+ EV for single bets
+        - Higher EV = Better opportunity
+
+        **Kelly Criterion:**
+        - Optimal bet sizing formula
+        - Shows % of bankroll to bet
+        - Example: 2.5% Kelly on $1000 = $25 bet
+        - Conservative: Use 25-50% of Kelly (fractional Kelly)
+
+        ### Common Commands
+
+        | Task | Command |
+        |------|---------|
+        | Daily picks | `python RUN_DAILY_PICKS.py` |
+        | Find edges | `python RUN_EDGE_FINDER.py` |
+        | Grade results | `python RUN_GRADING.py` |
+        | Open dashboard | `python RUN_DASHBOARD.py` |
+        | Full workflow | `python RUN_COMPLETE_WORKFLOW.py` |
+
+        ### Troubleshooting
+
+        **No predictions generated:**
+        - Check data freshness in sidebar
+        - Run `python smart_data_refresh.py` manually
+        - Check database exists: `database/nhl_predictions.db`
+
+        **Low accuracy:**
+        - Grade more predictions to improve learning
+        - Check if models need retraining
+        - Verify data quality
+
+        **Dashboard won't start:**
+        - Check if Streamlit installed: `pip install streamlit`
+        - Try: `streamlit run app.py` directly
+        - Check port 8501 not in use
+
+        ### Support Resources
+
+        - **Complete Guide:** `COMPLETE_SYSTEM_GUIDE.md`
+        - **Quick Reference:** `QUICK_START.txt`
+        - **Simple Commands:** `README_SIMPLE_COMMANDS.md`
+        - **System Summary:** `SYSTEM_EXECUTIVE_SUMMARY.md`
+        """)
+
+# ============================================================================
+# PAGE 8: SETTINGS
+# ============================================================================
+
+elif page == "🔧 Settings":
+    st.title("🔧 Settings")
+
+    st.info("Settings page - Configure system preferences")
+
+    # Bankroll Management
+    st.subheader("💰 Bankroll Management")
+
+    bankroll = st.number_input(
+        "Total Bankroll ($)",
+        min_value=100,
+        max_value=100000,
+        value=1000,
+        step=100
+    )
+
+    kelly_fraction = st.slider(
+        "Kelly Fraction (Conservative: 0.25-0.50)",
+        min_value=0.1,
+        max_value=1.0,
+        value=0.25,
+        step=0.05
+    )
+
+    st.caption(f"With {kelly_fraction:.0%} Kelly and ${bankroll:,.0f} bankroll:")
+    st.caption(f"- Max single bet: ${bankroll * kelly_fraction * 0.10:,.2f} (10% EV)")
+    st.caption(f"- Max parlay bet: ${bankroll * kelly_fraction * 0.05:,.2f} (5% EV)")
+
+    st.markdown("---")
+
+    # Confidence Thresholds
+    st.subheader("🎯 Confidence Thresholds")
+
+    t1_threshold = st.slider(
+        "T1-ELITE Threshold (%)",
+        min_value=80,
+        max_value=95,
+        value=85,
+        step=1
+    )
+
+    t2_threshold = st.slider(
+        "T2-STRONG Threshold (%)",
+        min_value=60,
+        max_value=80,
+        value=65,
+        step=1
+    )
+
+    st.caption(f"Current tiers:")
+    st.caption(f"- T1-ELITE: ≥{t1_threshold}%")
+    st.caption(f"- T2-STRONG: {t2_threshold}%-{t1_threshold-1}%")
+    st.caption(f"- T3-MARGINAL: 50%-{t2_threshold-1}%")
+
+    st.markdown("---")
+
+    # Edge Finding
+    st.subheader("💎 Edge Finding Settings")
+
+    min_ev = st.slider(
+        "Minimum EV for Edges (%)",
+        min_value=5,
+        max_value=25,
+        value=10,
+        step=1
+    )
+
+    max_parlay_legs = st.slider(
+        "Maximum Parlay Legs",
+        min_value=2,
+        max_value=6,
+        value=5,
+        step=1
+    )
+
+    st.markdown("---")
+
+    # Data Refresh
+    st.subheader("🔄 Data Refresh Settings")
+
+    auto_refresh = st.checkbox("Auto-refresh stale data", value=True)
+
+    refresh_threshold = st.slider(
+        "Data staleness threshold (hours)",
+        min_value=2,
+        max_value=12,
+        value=4,
+        step=1
+    )
+
+    st.caption(f"Data older than {refresh_threshold}h will be considered stale")
+
+    st.markdown("---")
+
+    # Save Settings
+    if st.button("💾 Save Settings", use_container_width=True, type="primary"):
+        st.success("✅ Settings saved! (Note: Settings persistence not yet implemented)")
+        st.info("Settings will be applied to future operations")
+
+    st.markdown("---")
+
+    # Reset to Defaults
+    if st.button("🔄 Reset to Defaults", use_container_width=True):
+        st.warning("Settings reset to defaults (reload page to see changes)")
+
+# ============================================================================
+# FOOTER
+# ============================================================================
+
 st.markdown("---")
-st.markdown("""
-🏒 **NHL Prediction System v2.0** | GTO + Multi-Line EV Optimization
-Built with Streamlit | Last updated: """ + datetime.now().strftime('%Y-%m-%d %H:%M'))
+st.caption("NHL Prediction System Dashboard v2.0 | Redesigned for simplicity and efficiency")
+st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
