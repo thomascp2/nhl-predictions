@@ -40,16 +40,16 @@ def get_goalie_stats(lookback_days: int = 30) -> pd.DataFrame:
 
     query = """
         SELECT
-            player_name,
+            goalie_name as player_name,
             team,
             games_played,
             saves,
             shots_against,
             save_percentage,
-            goals_against_average,
+            goals_against_avg as goals_against_average,
             wins,
             losses,
-            shutouts
+            0 as shutouts
         FROM goalie_stats
         WHERE last_updated >= ?
         ORDER BY games_played DESC
@@ -76,10 +76,12 @@ def get_team_shots_against(lookback_games: int = 10) -> dict:
     query = """
         SELECT
             team,
-            AVG(CAST(shots_against AS FLOAT)) as avg_shots_against,
-            AVG(CAST(goals_against AS FLOAT)) as avg_goals_against
+            shots_against_per_game as avg_shots_against,
+            goals_against_per_game as avg_goals_against
         FROM team_stats
+        WHERE season = '2025-2026'
         GROUP BY team
+        HAVING MAX(as_of_date)
     """
 
     df = pd.read_sql_query(query, conn)
@@ -111,10 +113,12 @@ def get_team_shots_for(lookback_games: int = 10) -> dict:
     query = """
         SELECT
             team,
-            AVG(CAST(shots_for AS FLOAT)) as avg_shots_for,
-            AVG(CAST(goals_for AS FLOAT)) as avg_goals_for
+            shots_per_game as avg_shots_for,
+            goals_per_game as avg_goals_for
         FROM team_stats
+        WHERE season = '2025-2026'
         GROUP BY team
+        HAVING MAX(as_of_date)
     """
 
     df = pd.read_sql_query(query, conn)
@@ -149,7 +153,7 @@ def get_schedule(date: str) -> pd.DataFrame:
             game_date,
             home_team,
             away_team
-        FROM schedule
+        FROM games
         WHERE game_date = ?
     """
 
@@ -322,20 +326,22 @@ def convert_saves_to_predictions(saves_predictions: list, date: str) -> list:
                 prediction_direction = 'UNDER'
                 probability = 1.0 - probability
 
-            # Assign confidence tier
-            if probability >= 0.75:
-                tier = 'T1-ELITE'
+            # Assign confidence tier (RECALIBRATED 2025-10-31)
+            if probability >= 0.85:
+                tier = 'T1-ELITE'       # Should hit ~65-70%
+            elif probability >= 0.75:
+                tier = 'T2-STRONG'      # Should hit ~60-65%
             elif probability >= 0.65:
-                tier = 'T2-STRONG'
+                tier = 'T3-SOLID'       # Should hit ~55-60%
             elif probability >= 0.55:
-                tier = 'T3-MARGINAL'
+                tier = 'T4-DECENT'      # Should hit ~50-55%
             else:
-                tier = 'T4-FADE'
+                tier = 'T5-FADE'        # Skip these picks
 
             # Enhanced reasoning
             reasoning = (
                 f"Saves model: {predicted_saves:.1f} saves "
-                f"(SV%={save_pct:.3f}, σ={std_dev:.1f}, "
+                f"(SV%={save_pct:.3f}, std={std_dev:.1f}, "
                 f"confidence={confidence:.0f}%) | "
                 f"Distance: {distance:+.1f} saves from {line} line"
             )
@@ -351,6 +357,7 @@ def convert_saves_to_predictions(saves_predictions: list, date: str) -> list:
                 'probability': probability,
                 'confidence_tier': tier,
                 'reasoning': reasoning,
+                'expected_value': predicted_saves,  # Store predicted saves value
                 'base_probability': probability * 0.90,  # Mostly saves model
                 'ml_boost': probability * 0.10,  # ML component
             })
@@ -391,8 +398,8 @@ def add_saves_to_predictions_table(predictions: list):
             INSERT INTO predictions
             (game_date, player_name, team, opponent, prop_type, line,
              prediction, probability, confidence_tier, reasoning,
-             base_probability, ml_boost, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             expected_value, base_probability, ml_boost, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             pred['game_date'],
             pred['player_name'],
@@ -404,6 +411,7 @@ def add_saves_to_predictions_table(predictions: list):
             pred['probability'],
             pred['confidence_tier'],
             pred['reasoning'],
+            pred.get('expected_value'),  # Include expected_value
             pred['base_probability'],
             pred['ml_boost'],
             datetime.now().isoformat()

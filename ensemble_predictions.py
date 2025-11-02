@@ -11,6 +11,7 @@ import pickle
 import logging
 from datetime import datetime
 import os
+from adaptive_weights import get_adaptive_weights
 
 DB_PATH = "database/nhl_predictions.db"
 MODELS_DIR = "models"
@@ -417,13 +418,19 @@ class EnsemblePredictionEngine:
                 # ENSEMBLE: Weighted average
                 ensemble_prob = (self.stat_weight * stat_prob) + (self.ml_weight * ml_prob)
 
-                # Determine tier
-                if ensemble_prob >= 0.70:
-                    tier = 'T1-ELITE'
-                elif ensemble_prob >= 0.60:
-                    tier = 'T2-STRONG'
+                # Determine tier (RECALIBRATED 2025-10-31)
+                # Based on actual performance: T1 was hitting 40.9% at ≥70% threshold
+                # New thresholds reduce overconfidence and align with break-even requirements
+                if ensemble_prob >= 0.85:
+                    tier = 'T1-ELITE'       # Should hit ~65-70%
+                elif ensemble_prob >= 0.75:
+                    tier = 'T2-STRONG'      # Should hit ~60-65%
+                elif ensemble_prob >= 0.65:
+                    tier = 'T3-SOLID'       # Should hit ~55-60%
+                elif ensemble_prob >= 0.55:
+                    tier = 'T4-DECENT'      # Should hit ~50-55%
                 else:
-                    tier = 'T3-MARGINAL'
+                    tier = 'T5-FADE'        # Skip these picks
 
                 ensemble_predictions.append({
                     'player_name': player_name,
@@ -538,15 +545,19 @@ class EnsemblePredictionEngine:
         logger.info("=" * 80)
         logger.info("")
 
-        # Count by tier
+        # Count by tier (updated for 5-tier system)
         t1_count = sum(1 for p in predictions if p['tier'] == 'T1-ELITE')
         t2_count = sum(1 for p in predictions if p['tier'] == 'T2-STRONG')
-        t3_count = sum(1 for p in predictions if p['tier'] == 'T3-MARGINAL')
+        t3_count = sum(1 for p in predictions if p['tier'] == 'T3-SOLID')
+        t4_count = sum(1 for p in predictions if p['tier'] == 'T4-DECENT')
+        t5_count = sum(1 for p in predictions if p['tier'] == 'T5-FADE')
 
         logger.info(f"Total predictions: {len(predictions)}")
-        logger.info(f"  T1-ELITE: {t1_count}")
-        logger.info(f"  T2-STRONG: {t2_count}")
-        logger.info(f"  T3-MARGINAL: {t3_count}")
+        logger.info(f"  T1-ELITE: {t1_count} (≥85% confidence)")
+        logger.info(f"  T2-STRONG: {t2_count} (≥75% confidence)")
+        logger.info(f"  T3-SOLID: {t3_count} (≥65% confidence)")
+        logger.info(f"  T4-DECENT: {t4_count} (≥55% confidence)")
+        logger.info(f"  T5-FADE: {t5_count} (<55% confidence - skip)")
         logger.info("")
 
         # Average boost from ML
@@ -588,8 +599,13 @@ def main():
     logger.info("=" * 80)
     logger.info("")
 
-    # Initialize ensemble engine
-    engine = EnsemblePredictionEngine(stat_weight=0.70, ml_weight=0.30)
+    # Get adaptive weights based on recent performance
+    logger.info("Calculating adaptive ensemble weights...")
+    stat_weight, ml_weight = get_adaptive_weights(days_back=7, min_predictions=20)
+    logger.info("")
+
+    # Initialize ensemble engine with adaptive weights
+    engine = EnsemblePredictionEngine(stat_weight=stat_weight, ml_weight=ml_weight)
 
     # Generate ensemble predictions
     predictions = engine.generate_ensemble_predictions(date)

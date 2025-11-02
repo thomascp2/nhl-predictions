@@ -4,24 +4,26 @@ Smart NHL Picks Generator - Auto-Refreshes Data + Outputs to GitHub
 - Handles failures gracefully (uses cached data if API fails)
 - Always generates predictions (never fails completely)
 - Auto-pushes to GitHub for remote access
+- Supports custom date for next-day predictions
 """
 
 import sqlite3
 import subprocess
 import sys
+import argparse
 from datetime import datetime
 from smart_data_refresh import smart_refresh
 
 DB_PATH = "database/nhl_predictions.db"
 
-def generate_predictions():
-    """Run all prediction models"""
-    print("Generating predictions...")
+def generate_predictions(target_date):
+    """Run all prediction models for the target date"""
+    print(f"Generating predictions for {target_date}...")
+    print("NOTE: Prediction models currently use today's date (future: will support custom dates)")
 
-    today = datetime.now().strftime('%Y-%m-%d')
     success_count = 0
 
-    # Run statistical model
+    # Run statistical model (currently uses today's date internally)
     print("Running statistical model...")
     result1 = subprocess.run(
         [sys.executable, "fresh_clean_predictions.py"],
@@ -32,7 +34,7 @@ def generate_predictions():
     if result1.returncode == 0:
         success_count += 1
 
-    # Run ensemble model
+    # Run ensemble model (currently uses today's date internally)
     print("Running ensemble model...")
     result2 = subprocess.run(
         [sys.executable, "ensemble_predictions.py"],
@@ -43,59 +45,32 @@ def generate_predictions():
     if result2.returncode == 0:
         success_count += 1
 
-    # Run TOI predictions (NEW!)
-    print("Generating TOI predictions...")
-    try:
-        # First generate TOI data if not already done
-        result3a = subprocess.run(
-            [sys.executable, "generate_toi_predictions.py", today],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
-        # Then integrate into main predictions table
-        result3b = subprocess.run(
-            [sys.executable, "integrate_toi_predictions.py", today],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
-        if result3a.returncode == 0 and result3b.returncode == 0:
-            success_count += 1
-            print("✅ TOI predictions integrated!")
-        else:
-            print("⚠️  TOI predictions skipped (may not have data)")
-    except Exception as e:
-        print(f"⚠️  TOI predictions failed: {e}")
-
-    # Run Goalie Saves predictions (NEW!)
+    # Run Goalie Saves predictions (already supports date argument)
     print("Generating Goalie Saves predictions...")
     try:
-        result4 = subprocess.run(
-            [sys.executable, "goalie_saves_predictions.py", today],
+        result3 = subprocess.run(
+            [sys.executable, "goalie_saves_predictions.py", target_date],
             capture_output=True,
             text=True,
             timeout=60
         )
-        if result4.returncode == 0:
+        if result3.returncode == 0:
             success_count += 1
-            print("✅ Goalie Saves predictions integrated!")
+            print("[OK] Goalie Saves predictions generated!")
         else:
-            print("⚠️  Goalie Saves predictions skipped (may not have data)")
+            print("[WARN] Goalie Saves predictions skipped (may not have data)")
     except Exception as e:
-        print(f"⚠️  Goalie Saves predictions failed: {e}")
+        print(f"[WARN] Goalie Saves predictions failed: {e}")
 
-    print(f"Predictions generated! ({success_count}/4 models succeeded)")
+    print(f"Predictions generated! ({success_count}/3 models succeeded)")
 
     # Return True if at least the core models (statistical + ensemble) worked
     return result1.returncode == 0 and result2.returncode == 0
 
-def get_todays_picks():
-    """Get T1-ELITE picks from database"""
+def get_todays_picks(target_date):
+    """Get T1-ELITE picks from database for target date"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
-    today = datetime.now().strftime('%Y-%m-%d')
 
     query = """
         SELECT
@@ -115,7 +90,7 @@ def get_todays_picks():
         ORDER BY probability DESC
     """
 
-    cursor.execute(query, (today,))
+    cursor.execute(query, (target_date,))
     picks = cursor.fetchall()
     conn.close()
 
@@ -249,10 +224,25 @@ def push_to_github(timestamped_file, timestamped_csv):
         return False
 
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description='Generate NHL predictions with smart date selection'
+    )
+    parser.add_argument(
+        '--date',
+        type=str,
+        default=datetime.now().strftime('%Y-%m-%d'),
+        help='Target date for predictions (YYYY-MM-DD format, default: today)'
+    )
+    args = parser.parse_args()
+
+    target_date = args.date
+
     print("\n")
     print("=" * 80)
     print("SMART NHL PICKS GENERATOR")
     print("=" * 80)
+    print(f"Target Date: {target_date}")
     print()
 
     # Step 1: Smart data refresh (only if stale)
@@ -272,7 +262,7 @@ def main():
     print("=" * 80)
     print("GENERATING PREDICTIONS")
     print("=" * 80)
-    success = generate_predictions()
+    success = generate_predictions(target_date)
 
     if not success:
         print("\nWARNING: Some prediction models had issues")
@@ -280,7 +270,7 @@ def main():
 
     # Get T1-ELITE picks
     print("\nFetching T1-ELITE picks from database...")
-    picks = get_todays_picks()
+    picks = get_todays_picks(target_date)
 
     # Create timestamped filenames
     timestamp = datetime.now().strftime('%Y-%m-%d_%I-%M%p')
@@ -303,6 +293,28 @@ def main():
 
     # Push to GitHub
     github_success = push_to_github(timestamped_file, timestamped_csv)
+
+    # Archive old picks (keep directory clean)
+    print("\n" + "=" * 80)
+    print("ARCHIVING OLD PICKS")
+    print("=" * 80)
+    try:
+        archive_result = subprocess.run(
+            [sys.executable, "archive_old_picks.py"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if archive_result.returncode == 0:
+            # Print last few lines of output (summary)
+            lines = archive_result.stdout.strip().split('\n')
+            for line in lines[-3:]:
+                print(line)
+        else:
+            print("[WARN] Archival had issues, but picks are still saved")
+    except Exception as e:
+        print(f"[WARN] Could not archive old files: {e}")
+        print("Picks are still saved successfully")
 
     print("\n" + "=" * 80)
     print("DONE!")

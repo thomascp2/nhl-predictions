@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 import requests
 import json
+from scipy import stats as scipy_stats
 
 
 DB_PATH = "database/nhl_predictions.db"
@@ -121,7 +122,11 @@ class PrizePicksMultiLineClient:
                 'Goals': 'goals',
                 'Assists': 'assists',
                 'Blocked Shots': 'blocks',
-                'Hits': 'hits'
+                'Hits': 'hits',
+                'Time On Ice': 'toi',
+                'TOI': 'toi',
+                'Saves': 'goalie_saves',
+                'Goalie Saves': 'goalie_saves'
             }
 
             prop_type = stat_map.get(stat_type, stat_type.lower())
@@ -246,64 +251,104 @@ class MultiLineEVCalculator:
             return prob, reasoning
 
         # Extrapolation (beyond our predictions)
+        # Binary events (points, goals, assists) use EXPONENTIAL decay
+        # Counting stats (shots, blocks, hits, saves) use NORMAL DISTRIBUTION
+
+        binary_events = ['points', 'goals', 'assists']
+        is_binary = prop_type.lower() in binary_events
+
         if lower_preds:
             # Target line is ABOVE all our predictions
             closest = max(lower_preds, key=lambda x: x['line'])
-
-            # Use EXPONENTIAL decay (each additional unit is harder)
             line_diff = target_line - closest['line']
 
-            # Decay rate varies by stat type:
-            # - Points: aggressive decay (0.60 per point) - much harder to score multiple
-            # - Shots/Blocks/Hits: moderate decay (0.70) - volume stats
-            # - Assists: moderate-aggressive decay (0.65)
-            decay_rates = {
-                'points': 0.60,    # 2 points is MUCH harder than 1
-                'goals': 0.55,     # Even harder
-                'assists': 0.65,   # Harder but more achievable
-                'shots': 0.72,     # Volume stat
-                'blocks': 0.75,    # High volume
-                'hits': 0.75,      # High volume
-                'saves': 0.80      # Goalie volume stat
-            }
+            if is_binary:
+                # BINARY EVENTS: Use exponential decay
+                decay_rates = {
+                    'points': 0.60,    # 2 points is MUCH harder than 1
+                    'goals': 0.55,     # Even harder
+                    'assists': 0.65,   # Harder but more achievable
+                }
+                decay_rate = decay_rates.get(prop_type.lower(), 0.60)
 
-            decay_rate = decay_rates.get(prop_type.lower(), 0.65)  # Default moderate
+                prob = closest['probability'] * (decay_rate ** line_diff)
+                prob = max(0.05, prob)  # Floor at 5%
 
-            # Exponential decay: new_prob = base_prob * (decay_rate)^line_diff
-            prob = closest['probability'] * (decay_rate ** line_diff)
-            prob = max(0.05, prob)  # Floor at 5%
+                reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), exponential decay for +{line_diff:.1f} line (decay rate: {decay_rate})"
+            else:
+                # COUNTING STATS: Use normal distribution
+                # Estimate mean from closest prediction
+                # For OVER probability p at line L: mean = L + std_dev * z where z = norm.ppf(1-p)
+                # We'll use std_dev = 40% of mean (typical for shots)
 
-            prob_drop_pct = (closest['probability'] - prob) * 100
-            reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), exponential decay for +{line_diff:.1f} line (decay rate: {decay_rate})"
+                std_dev_ratios = {
+                    'shots': 0.40,
+                    'blocks': 0.45,
+                    'hits': 0.45,
+                    'saves': 0.35,
+                    'goalie_saves': 0.35,
+                    'toi': 0.30  # TOI has lower variance (more predictable)
+                }
+                std_dev_ratio = std_dev_ratios.get(prop_type.lower(), 0.40)
+
+                # Estimate mean from closest prediction
+                # If P(X > line) = p, then P(X <= line) = 1-p
+                # z = norm.ppf(1-p) means line = mean + z*std_dev
+                # So: mean = line - z*std_dev
+                z_score = scipy_stats.norm.ppf(1 - closest['probability'])
+
+                # Use iterative approach: estimate mean assuming std_dev = 0.4 * mean
+                # line = mean + z * (0.4 * mean) = mean * (1 + 0.4*z)
+                estimated_mean = closest['line'] / (1 + std_dev_ratio * z_score)
+                std_dev = estimated_mean * std_dev_ratio
+
+                # Now calculate probability for target line
+                prob = 1 - scipy_stats.norm.cdf(target_line, estimated_mean, std_dev)
+                prob = max(0.05, prob)  # Floor at 5%
+
+                reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), normal distribution (mean={estimated_mean:.1f}, sd={std_dev:.1f})"
+
             return prob, reasoning
 
         if upper_preds:
             # Target line is BELOW all our predictions
             closest = min(upper_preds, key=lambda x: x['line'])
-
-            # Use EXPONENTIAL increase (inverse of decay)
             line_diff = closest['line'] - target_line
 
-            # Same decay rates as above
-            decay_rates = {
-                'points': 0.60,
-                'goals': 0.55,
-                'assists': 0.65,
-                'shots': 0.72,
-                'blocks': 0.75,
-                'hits': 0.75,
-                'saves': 0.80
-            }
+            if is_binary:
+                # BINARY EVENTS: Use inverse exponential
+                decay_rates = {
+                    'points': 0.60,
+                    'goals': 0.55,
+                    'assists': 0.65,
+                }
+                decay_rate = decay_rates.get(prop_type.lower(), 0.60)
 
-            decay_rate = decay_rates.get(prop_type.lower(), 0.65)
+                prob = closest['probability'] / (decay_rate ** line_diff)
+                prob = min(0.95, prob)  # Cap at 95%
 
-            # Inverse exponential: prob = base_prob / (decay_rate)^line_diff
-            # Easier line = higher probability
-            prob = closest['probability'] / (decay_rate ** line_diff)
-            prob = min(0.95, prob)  # Cap at 95%
+                reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), exponential increase for -{line_diff:.1f} line (decay rate: {decay_rate})"
+            else:
+                # COUNTING STATS: Use normal distribution (same as above)
+                std_dev_ratios = {
+                    'shots': 0.40,
+                    'blocks': 0.45,
+                    'hits': 0.45,
+                    'saves': 0.35,
+                    'goalie_saves': 0.35,
+                    'toi': 0.30  # TOI has lower variance (more predictable)
+                }
+                std_dev_ratio = std_dev_ratios.get(prop_type.lower(), 0.40)
 
-            prob_increase_pct = (prob - closest['probability']) * 100
-            reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), exponential increase for -{line_diff:.1f} line (decay rate: {decay_rate})"
+                z_score = scipy_stats.norm.ppf(1 - closest['probability'])
+                estimated_mean = closest['line'] / (1 + std_dev_ratio * z_score)
+                std_dev = estimated_mean * std_dev_ratio
+
+                prob = 1 - scipy_stats.norm.cdf(target_line, estimated_mean, std_dev)
+                prob = min(0.95, prob)  # Cap at 95%
+
+                reasoning = f"Extrapolated from {closest['line']} ({closest['probability']:.1%}), normal distribution (mean={estimated_mean:.1f}, sd={std_dev:.1f})"
+
             return prob, reasoning
 
         return None, "No prediction available"
@@ -519,10 +564,13 @@ def display_top_edges(edge_plays: List[Dict], top_n: int = 30):
         else:
             conf_icon = "[EST]"  # Low confidence (fallback estimate)
 
+        # Sanitize reasoning to remove Unicode characters that cause Windows console errors
+        reasoning = play['reasoning'].replace('σ', 'sd').replace('μ', 'mean').encode('ascii', 'replace').decode('ascii')
+
         print(f"{i:3}. {play['player_name']:25} ({play['team']}) vs {play['opponent']}")
         print(f"     {play['prop_type'].upper():7} O{play['line']:.1f} {odds_label:5} {conf_icon}")
         print(f"     EV: {play['ev_pct']:+6.1f}% | Edge: {play['edge']:+6.1f}% | Prob: {play['our_probability']:.1%} | Mult: {play['individual_multiplier']:.3f}x | Conf: {conf_pct:.0f}%")
-        print(f"     {play['reasoning']}")
+        print(f"     {reasoning}")
         print()
 
 

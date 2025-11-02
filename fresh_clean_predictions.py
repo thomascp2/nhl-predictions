@@ -46,19 +46,24 @@ for pred in engine.predictions:
             line = 2.5
         
         prob = pred['probability']
-        if prob >= 0.70:
-            tier = 'T1-ELITE'
-        elif prob >= 0.60:
-            tier = 'T2-STRONG'
+        # Recalibrated tiers (2025-10-31) - was hitting only 40.9% at T1-ELITE
+        if prob >= 0.85:
+            tier = 'T1-ELITE'       # Should hit ~65-70%
+        elif prob >= 0.75:
+            tier = 'T2-STRONG'      # Should hit ~60-65%
+        elif prob >= 0.65:
+            tier = 'T3-SOLID'       # Should hit ~55-60%
+        elif prob >= 0.55:
+            tier = 'T4-DECENT'      # Should hit ~50-55%
         else:
-            tier = 'T3-MARGINAL'
+            tier = 'T5-FADE'        # Skip these picks
         
         cursor.execute("""
             INSERT INTO predictions
             (game_date, player_name, team, opponent, prop_type, line,
-             probability, expected_value, kelly_score, confidence_tier,
+             prediction, probability, expected_value, kelly_score, confidence_tier,
              reasoning, batch_id, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             today,
             pred['player'],
@@ -66,6 +71,7 @@ for pred in engine.predictions:
             pred['opponent'],
             prop_type,
             line,
+            'OVER',  # Points/Shots predictions are always OVER
             pred['probability'],
             pred['expected'],
             pred['confidence'],

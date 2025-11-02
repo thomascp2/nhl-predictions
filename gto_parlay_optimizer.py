@@ -799,11 +799,11 @@ def main():
     bankroll = float(sys.argv[2]) if len(sys.argv) > 2 else 1000
 
     # Load picks from database
-    print(f"[*] Loading edge plays from database (7%+ edge)...")
-    picks_df = load_picks_from_database(date, min_edge=0.07)
+    print(f"[*] Loading edge plays from database (3%+ edge)...")
+    picks_df = load_picks_from_database(date, min_edge=0.03)
 
     if len(picks_df) == 0:
-        print("[WARNING] No edge plays found with 7%+ edge")
+        print("[WARNING] No edge plays found with 3%+ edge")
         print("   Try running: python prizepicks_integration_v2.py")
         return
 
@@ -871,7 +871,7 @@ def main():
         num_2leg=100,
         num_3leg=50,
         num_4leg=25,
-        min_parlay_ev=0.10,  # Only parlays with 10%+ EV
+        min_parlay_ev=0.05,  # Only parlays with 5%+ EV
         max_combinations=max_combos
     )
 
