@@ -64,7 +64,14 @@ def run_command(description, command):
     print(f"{description}")
     print(f"{'='*80}\n")
 
-    result = subprocess.run(command, capture_output=False)
+    # Capture output so it gets logged by Tee classes
+    result = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace')
+
+    # Print stdout and stderr (which will be captured by Tee)
+    if result.stdout:
+        print(result.stdout, end='')
+    if result.stderr:
+        print(result.stderr, end='', file=sys.stderr)
 
     if result.returncode != 0:
         print(f"\n[WARN] {description} had issues, but continuing...\n")
@@ -80,21 +87,37 @@ def push_log_to_github(log_file):
         print("="*80 + "\n")
 
         # Add the log file
-        subprocess.run(["git", "add", log_file], check=True)
+        result = subprocess.run(["git", "add", log_file], capture_output=True, text=True, encoding='utf-8', errors='replace')
+        if result.stdout:
+            print(result.stdout, end='')
+        if result.stderr:
+            print(result.stderr, end='')
 
         # Commit with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d %I:%M %p')
-        commit_msg = f"Workflow log - {timestamp}\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
-        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+        commit_msg = f"Workflow log - {timestamp}\n\nGenerated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
+        result = subprocess.run(["git", "commit", "-m", commit_msg], capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
+        if result.stdout:
+            print(result.stdout, end='')
+        if result.stderr:
+            print(result.stderr, end='')
 
         # Push to GitHub
-        subprocess.run(["git", "push"], check=True)
+        result = subprocess.run(["git", "push"], capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
+        if result.stdout:
+            print(result.stdout, end='')
+        if result.stderr:
+            print(result.stderr, end='')
 
         print(f"[OK] Log pushed to GitHub: {log_file}\n")
         print("="*80 + "\n")
         return True
     except subprocess.CalledProcessError as e:
         print(f"[WARN] Failed to push log to GitHub: {e}\n")
+        if e.stdout:
+            print(e.stdout, end='')
+        if e.stderr:
+            print(e.stderr, end='')
         return False
 
 
