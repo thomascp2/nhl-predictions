@@ -282,19 +282,17 @@ def main():
         print("="*80)
         print()
 
-        # Push log to GitHub (do this BEFORE closing files so output gets logged)
-        push_log_to_github(log_file)
-
         return 0
 
     finally:
-        # Restore stdout/stderr
+        # Restore stdout/stderr and close log files FIRST
         sys.stdout = tee_out.terminal
         sys.stderr = tee_err.terminal
-
-        # Close log files
         tee_out.close()
         tee_err.close()
+
+        # NOW push log to GitHub (after file is fully written and closed)
+        push_log_to_github(log_file)
 
 
 if __name__ == "__main__":
