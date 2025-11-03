@@ -55,7 +55,7 @@ def main():
 
     # STEP 1: Generate predictions (ONE TIME for both strategies)
     print("\n" + "="*80)
-    print("STEP 1/4: GENERATING PREDICTIONS")
+    print("STEP 1/5: GENERATING PREDICTIONS")
     print("="*80)
     print("Running all 3 prediction models (Statistical, Ensemble, Goalie)...")
     print()
@@ -67,7 +67,7 @@ def main():
 
     # STEP 2: Fetch PrizePicks lines (for Market vs Model)
     print("\n" + "="*80)
-    print("STEP 2/4: FETCHING PRIZEPICKS LINES")
+    print("STEP 2/5: FETCHING PRIZEPICKS LINES")
     print("="*80)
     print("Getting current market lines from PrizePicks...")
     print()
@@ -79,7 +79,7 @@ def main():
 
     # STEP 3: Run Stars Filter
     print("\n" + "="*80)
-    print("STEP 3/4: STRATEGY 1 - STARS FILTER")
+    print("STEP 3/5: STRATEGY 1 - STARS FILTER")
     print("="*80)
     print("Filtering to 50 stars in favorable matchups...")
     print()
@@ -91,7 +91,7 @@ def main():
 
     # STEP 4: Run Market vs Model
     print("\n" + "="*80)
-    print("STEP 4/4: STRATEGY 2 - MARKET VS MODEL")
+    print("STEP 4/5: STRATEGY 2 - MARKET VS MODEL")
     print("="*80)
     print("Finding edges (where your model beats the market)...")
     print()
@@ -99,6 +99,18 @@ def main():
     run_command(
         "Market vs Model",
         [sys.executable, "market_vs_model.py", target_date]
+    )
+
+    # STEP 5: Export comprehensive analysis to CSV
+    print("\n" + "="*80)
+    print("STEP 5/5: EXPORTING COMPREHENSIVE ANALYSIS")
+    print("="*80)
+    print("Creating complete CSV with all data...")
+    print()
+
+    run_command(
+        "Export Complete Analysis",
+        [sys.executable, "export_complete_analysis.py", target_date]
     )
 
     # SUMMARY
@@ -139,19 +151,29 @@ def main():
     print("FILES CREATED:")
     print("="*80)
     print()
-    print("  - LATEST_PICKS.txt (all predictions)")
-    print("  - LATEST_PICKS.csv (all predictions)")
+    print("  - LATEST_PICKS.txt (T1-ELITE picks only)")
+    print("  - LATEST_PICKS.csv (T1-ELITE picks only)")
     print(f"  - PICKS_{datetime.now().strftime('%Y-%m-%d_%I-%M%p')}.txt")
+    print(f"  - COMPLETE_ANALYSIS_{datetime.now().strftime('%Y%m%d_%I%M%p')}.csv (ALL STARS + EDGES + MATCHUPS)")
     print()
     print("="*80)
     print("NEXT STEPS:")
     print("="*80)
     print()
-    print("  1. Review picks from both strategies (see output above)")
-    print("  2. Check PrizePicks for actual current lines")
-    print("  3. Place bets on:")
-    print("     - Picks in BOTH lists (max confidence)")
-    print("     - Edge picks >=10% (strong +EV)")
+    print("  1. Open COMPLETE_ANALYSIS CSV - contains ALL data:")
+    print("     - All stars picks (all tiers)")
+    print("     - Market edges (even the bad ones)")
+    print("     - Matchup data (O/U, ML, favorable/unfavorable)")
+    print("     - PrizePicks available lines")
+    print("     - Recommendations (BET/CONSIDER/SKIP)")
+    print()
+    print("  2. Filter CSV by 'Recommendation' column:")
+    print("     - BET - HIGHEST CONFIDENCE = Bet these first")
+    print("     - BET - HUGE EDGE = Bet these (>=20% edge)")
+    print("     - BET - STRONG EDGE = Bet these (>=10% edge)")
+    print()
+    print("  3. Cross-check with PrizePicks for current lines")
+    print()
     print("  4. Track results to validate edges")
     print()
     print("="*80)
