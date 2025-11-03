@@ -245,6 +245,12 @@ class PrizePicksLinesFetcher:
 
 def main():
     """Fetch and display current PrizePicks lines"""
+    import sys
+
+    # Get date from command line or use today
+    game_date = sys.argv[1] if len(sys.argv) > 1 else datetime.now().strftime('%Y-%m-%d')
+
+    print(f"Fetching PrizePicks lines for: {game_date}")
 
     fetcher = PrizePicksLinesFetcher()
 
@@ -258,10 +264,10 @@ def main():
     # Display lines
     fetcher.display_lines(lines, limit=30)
 
-    # Save to database
-    fetcher.save_to_database(lines)
+    # Save to database with specified date
+    fetcher.save_to_database(lines, game_date=game_date)
 
-    print(f"Lines saved! Use market_vs_model.py to compare with your predictions.")
+    print(f"Lines saved for {game_date}! Use market_vs_model.py to compare with your predictions.")
 
 
 if __name__ == "__main__":

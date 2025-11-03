@@ -297,11 +297,11 @@ class MarketVsModelAnalyzer:
         print(f"MARKET VS MODEL ANALYSIS - {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
         print(f"{'='*80}\n")
         print(f"Total predictions analyzed: {len(edges)}")
-        print(f"Significant edges (≥{min_edge_pct}%): {len(significant_edges)}")
+        print(f"Significant edges (>={min_edge_pct}%): {len(significant_edges)}")
         print(f"\n{'-'*80}\n")
 
         if not significant_edges:
-            print(f"No edges ≥{min_edge_pct}% found.")
+            print(f"No edges >={min_edge_pct}% found.")
             print(f"Market is efficient today - consider sitting out or lowering threshold.")
             print(f"\n{'='*80}\n")
             return
@@ -357,8 +357,8 @@ class MarketVsModelAnalyzer:
 
         print(f"{'='*80}")
         print(f"BETTING STRATEGY:")
-        print(f"  - Bet ≥20% edges with larger stakes (these are rare!)")
-        print(f"  - Bet ≥10% edges with standard stakes")
+        print(f"  - Bet >=20% edges with larger stakes (these are rare!)")
+        print(f"  - Bet >=10% edges with standard stakes")
         print(f"  - Consider 5-10% edges (small edge, lower stakes)")
         print(f"  - Skip <5% edges (not enough margin over market)")
         print(f"{'='*80}\n")
@@ -375,7 +375,7 @@ def main():
     # Get date from command line or use today
     target_date = sys.argv[1] if len(sys.argv) > 1 else datetime.now().strftime('%Y-%m-%d')
 
-    print(f"\n🎯 Market vs Model Edge Finder")
+    print(f"\nMarket vs Model Edge Finder")
     print(f"Target Date: {target_date}\n")
 
     analyzer = MarketVsModelAnalyzer()
