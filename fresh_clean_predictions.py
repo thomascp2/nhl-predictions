@@ -3,15 +3,19 @@ Clear and Resave Today's Predictions
 """
 
 import sqlite3
+import sys
 from datetime import datetime
 
 DB_PATH = "database/nhl_predictions.db"
 
-# Step 1: Clear ALL predictions for today
+# Get target date from command line or use today
+target_date = sys.argv[1] if len(sys.argv) > 1 else datetime.now().strftime('%Y-%m-%d')
+
+# Step 1: Clear ALL predictions for target date
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 
-today = datetime.now().strftime('%Y-%m-%d')
+today = target_date  # Keep variable name for compatibility
 
 cursor.execute("DELETE FROM predictions WHERE game_date = ?", (today,))
 deleted = cursor.rowcount

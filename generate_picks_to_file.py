@@ -19,14 +19,13 @@ DB_PATH = "database/nhl_predictions.db"
 def generate_predictions(target_date):
     """Run all prediction models for the target date"""
     print(f"Generating predictions for {target_date}...")
-    print("NOTE: Prediction models currently use today's date (future: will support custom dates)")
 
     success_count = 0
 
-    # Run statistical model (currently uses today's date internally)
+    # Run statistical model with target date
     print("Running statistical model...")
     result1 = subprocess.run(
-        [sys.executable, "fresh_clean_predictions.py"],
+        [sys.executable, "fresh_clean_predictions.py", target_date],
         capture_output=True,
         text=True,
         timeout=120
@@ -34,10 +33,10 @@ def generate_predictions(target_date):
     if result1.returncode == 0:
         success_count += 1
 
-    # Run ensemble model (currently uses today's date internally)
+    # Run ensemble model with target date
     print("Running ensemble model...")
     result2 = subprocess.run(
-        [sys.executable, "ensemble_predictions.py"],
+        [sys.executable, "ensemble_predictions.py", target_date],
         capture_output=True,
         text=True,
         timeout=120

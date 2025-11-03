@@ -106,6 +106,7 @@ def smart_refresh():
     fetches = [
         ("fetch_2025_26_stats.py", "Player Stats (2025-26)"),
         ("fetch_goalie_stats.py", "Goalie Stats"),
+        ("fetch_betting_lines.py", "Betting Lines (ML, O/U)"),
     ]
 
     for script, desc in fetches:
@@ -114,7 +115,7 @@ def smart_refresh():
 
     print()
     print("=" * 80)
-    print(f"DATA REFRESH COMPLETE: {success_count}/{len(fetches)} successful")
+    print(f"DATA REFRESH COMPLETE: {success_count}/{len(fetches)+1} successful")
     print("=" * 80)
     print()
 
