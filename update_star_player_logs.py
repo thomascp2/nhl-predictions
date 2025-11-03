@@ -39,10 +39,10 @@ class StarPlayerLogUpdater:
 
         cursor = self.conn.cursor()
 
-        # Try to get from player_stats table
+        # Try to get from existing game logs first (most reliable)
         cursor.execute("""
             SELECT player_id
-            FROM player_stats
+            FROM player_game_logs
             WHERE player_name = ?
             LIMIT 1
         """, (player_name,))
