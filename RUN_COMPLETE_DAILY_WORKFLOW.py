@@ -87,37 +87,38 @@ def push_log_to_github(log_file):
         print("="*80 + "\n")
 
         # Add the log file
-        result = subprocess.run(["git", "add", log_file], capture_output=True, text=True, encoding='utf-8', errors='replace')
-        if result.stdout:
-            print(result.stdout, end='')
-        if result.stderr:
-            print(result.stderr, end='')
+        subprocess.run(f'git add "{log_file}"', shell=True, check=False)
 
         # Commit with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d %I:%M %p')
-        commit_msg = f"Workflow log - {timestamp}\n\nGenerated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
-        result = subprocess.run(["git", "commit", "-m", commit_msg], capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
+        commit_msg = f"Workflow log - {timestamp}"
+
+        result = subprocess.run(
+            f'git commit -m "{commit_msg}"',
+            shell=True,
+            capture_output=True,
+            text=True
+        )
         if result.stdout:
-            print(result.stdout, end='')
-        if result.stderr:
-            print(result.stderr, end='')
+            print(result.stdout)
 
         # Push to GitHub
-        result = subprocess.run(["git", "push"], capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
+        result = subprocess.run(
+            'git push',
+            shell=True,
+            capture_output=True,
+            text=True
+        )
         if result.stdout:
-            print(result.stdout, end='')
+            print(result.stdout)
         if result.stderr:
-            print(result.stderr, end='')
+            print(result.stderr)
 
         print(f"[OK] Log pushed to GitHub: {log_file}\n")
         print("="*80 + "\n")
         return True
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         print(f"[WARN] Failed to push log to GitHub: {e}\n")
-        if e.stdout:
-            print(e.stdout, end='')
-        if e.stderr:
-            print(e.stderr, end='')
         return False
 
 
@@ -280,6 +281,9 @@ def main():
         print("="*80)
         print()
 
+        # Push log to GitHub (do this BEFORE closing files so output gets logged)
+        push_log_to_github(log_file)
+
         return 0
 
     finally:
@@ -290,9 +294,6 @@ def main():
         # Close log files
         tee_out.close()
         tee_err.close()
-
-        # Push log to GitHub
-        push_log_to_github(log_file)
 
 
 if __name__ == "__main__":
