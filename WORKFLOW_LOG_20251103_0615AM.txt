@@ -1,0 +1,839 @@
+
+================================================================================
+COMPLETE DAILY NHL BETTING WORKFLOW
+================================================================================
+Date: 2025-11-03 06:15 AM
+Log File: WORKFLOW_LOG_20251103_0615AM.txt
+================================================================================
+
+This workflow runs BOTH strategies:
+  [1] Strategy 1: Stars-Only Filter (simplified)
+  [2] Strategy 2: Market vs Model (find +EV edges)
+
+================================================================================
+Current time: 2025-11-03 06:15:01
+Cutoff hour: 19:00
+Games have not started yet - predicting for today
+Target date: 2025-11-03
+
+Target date: 2025-11-03
+================================================================================
+
+================================================================================
+STEP 1/5: GENERATING PREDICTIONS
+================================================================================
+Running all 3 prediction models (Statistical, Ensemble, Goalie)...
+
+
+================================================================================
+Generate Predictions
+================================================================================
+
+[main bbc59f0] Auto-update picks - 2025-11-03 06:15 AM
+ 3 files changed, 93 insertions(+), 2 deletions(-)
+ create mode 100644 PICKS_2025-11-03_06-15AM.csv
+ create mode 100644 PICKS_2025-11-03_06-15AM.txt
+
+
+================================================================================
+SMART NHL PICKS GENERATOR
+================================================================================
+Target Date: 2025-11-03
+
+================================================================================
+SMART DATA REFRESH
+================================================================================
+Last data update: 2025-11-02 11:00 PM
+Data age: 7.2 hours
+
+[STALE] Data is stale (more than 2 hours old)
+Fetching fresh data from NHL API...
+
+  Fetching Game O/U Totals... (attempt 1/1)
+  [SUCCESS] Game O/U Totals updated
+  Fetching Player Stats (2025-26)... (attempt 1/2)
+  [SUCCESS] Player Stats (2025-26) updated
+  Fetching Goalie Stats... (attempt 1/2)
+  [SUCCESS] Goalie Stats updated
+  Fetching Betting Lines (ML, O/U)... (attempt 1/2)
+  [SUCCESS] Betting Lines (ML, O/U) updated
+
+================================================================================
+DATA REFRESH COMPLETE: 4/4 successful
+================================================================================
+
+[SUCCESS] All data updated - predictions will use fresh data
+
+================================================================================
+GENERATING PREDICTIONS
+================================================================================
+Generating predictions for 2025-11-03...
+Running statistical model...
+Running ensemble model...
+Generating Goalie Saves predictions...
+[OK] Goalie Saves predictions generated!
+Predictions generated! (3/3 models succeeded)
+
+Fetching T1-ELITE picks from database...
+Writing picks to PICKS_2025-11-03_06-15AM.txt...
+Writing picks to PICKS_2025-11-03_06-15AM.csv...
+CSV saved with 8 picks
+Writing picks to LATEST_PICKS.txt...
+Writing picks to LATEST_PICKS.csv...
+CSV saved with 8 picks
+
+Pushing to GitHub...
+Successfully pushed to GitHub!
+
+================================================================================
+ARCHIVING OLD PICKS
+================================================================================
+
+Scanning for old prediction files...
+[OK] No old files found. All files are recent!
+
+================================================================================
+DONE!
+================================================================================
+
+Found 8 T1-ELITE picks for today
+
+View picks online at:
+TXT: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt
+CSV: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.csv
+
+Timestamped:
+TXT: https://github.com/thomascp2/nhl-predictions/blob/main/PICKS_2025-11-03_06-15AM.txt
+CSV: https://github.com/thomascp2/nhl-predictions/blob/main/PICKS_2025-11-03_06-15AM.csv
+
+================================================================================
+GENERATING NHL PICKS (Smart Date Selection)
+================================================================================
+Started: 06:15 AM
+
+Determining target date...
+Target date: 2025-11-03
+
+
+================================================================================
+[SUCCESS] Picks generated!
+
+View picks:
+  - Local: LATEST_PICKS.txt
+  - GitHub: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt
+================================================================================
+
+
+================================================================================
+STEP 2/5: FETCHING PRIZEPICKS LINES
+================================================================================
+Getting current market lines from PrizePicks...
+
+
+================================================================================
+Fetch PrizePicks Lines
+================================================================================
+
+Fetching PrizePicks lines for: 2025-11-03
+Fetching current PrizePicks lines...
+[SUCCESS] Fetched lines for 134 players
+
+================================================================================
+PRIZEPICKS CURRENT LINES - 2025-11-03 06:15 AM
+================================================================================
+
+Aatu Raty (VAN)
+  goals           - Line: 0.5
+
+Adam Henrique (EDM)
+  goals           - Line: 0.5
+
+Adam Larsson (SEA)
+  blocked_shots   - Lines: 1.5, 2.5
+
+Alex Vlasic (CHI)
+  blocked_shots   - Line: 2.5
+
+Alexandre Texier (STL)
+  goals           - Line: 0.5
+
+Alexei Toropchenko (STL)
+  goals           - Line: 0.5
+
+Andre Burakovsky (CHI)
+  points          - Line: 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Andrew Mangiapane (EDM)
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  points          - Line: 0.5
+
+Anthony Mantha (PIT)
+  shots           - Lines: 1.5, 2.5, 3.5
+  points          - Line: 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Arshdeep Bains (VAN)
+  goals           - Line: 0.5
+
+Auston Matthews (TOR)
+  shots           - Lines: 2.5, 3.5, 4.5, 5.5, 6.5
+  points          - Lines: 0.5, 1.5, 2.5
+  goals           - Line: 1.5
+  assists         - Line: 1.5
+  pp_points       - Line: 0.5
+
+Ben Kindel (PIT)
+  goals           - Line: 0.5
+
+Berkly Catton (SEA)
+  points          - Lines: 0.5, 1.5
+  goals           - Line: 0.5
+
+Blake Lizotte (PIT)
+  goals           - Line: 0.5
+
+Bobby McMann (TOR)
+  shots           - Lines: 2.5, 3.5
+  points          - Lines: 0.5, 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+
+Brady Skjei (NSH)
+  shots           - Lines: 0.5, 2.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  points          - Line: 0.5
+  pp_points       - Line: 0.5
+
+Brandon Carlo (TOR)
+  blocked_shots   - Line: 2.5
+
+Brandon Montour (SEA)
+  shots           - Lines: 1.5, 3.5, 4.5
+  points          - Lines: 0.5, 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Brayden Schenn (STL)
+  points          - Lines: 0.5, 1.5
+  shots           - Line: 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Brock Boeser (VAN)
+  shots           - Lines: 1.5, 2.5, 3.5
+  points          - Line: 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Bryan Rust (PIT)
+  shots           - Lines: 1.5, 2.5, 3.5, 4.5
+  points          - Lines: 0.5, 1.5
+  assists         - Lines: 0.5, 1.5
+  goals           - Line: 0.5
+  pp_points       - Line: 0.5
+
+Cale Fleury (SEA)
+  goals           - Line: 0.5
+
+Calle Jarnkrok (TOR)
+  goals           - Line: 0.5
+
+Cam Fowler (STL)
+  points          - Lines: 0.5, 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Chandler Stephenson (SEA)
+  points          - Lines: 0.5, 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Colton Dach (CHI)
+  goals           - Line: 0.5
+
+Colton Parayko (STL)
+  blocked_shots   - Lines: 1.5, 2.5
+  shots           - Lines: 0.5, 2.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  points          - Line: 0.5
+
+Connor Bedard (CHI)
+  shots           - Lines: 2.5, 3.5, 4.5, 5.5
+  points          - Lines: 0.5, 1.5, 2.5
+  assists         - Line: 1.5
+  goals           - Line: 0.5
+  pp_points       - Line: 0.5
+
+Connor Dewar (PIT)
+  goals           - Line: 0.5
+
+Connor McDavid (EDM)
+  shots           - Lines: 2.5, 3.5, 4.5, 5.5
+  points          - Lines: 1.5, 2.5, 3.5
+  assists         - Lines: 0.5, 1.5, 2.5
+  goals           - Lines: 0.5, 1.5
+  pp_points       - Line: 1.5
+
+
+... and 104 more players
+================================================================================
+
+[SUCCESS] Saved 550 lines to database
+Lines saved for 2025-11-03! Use market_vs_model.py to compare with your predictions.
+
+================================================================================
+STEP 3/5: STRATEGY 1 - STARS FILTER
+================================================================================
+Filtering to 50 stars in favorable matchups...
+
+
+================================================================================
+Stars Filter
+================================================================================
+
+
+Fetching star picks for 2025-11-03...
+
+================================================================================
+FAVORABLE MATCHUPS ONLY
+================================================================================
+
+================================================================================
+STARS ONLY PICKS - Simplified Betting Strategy
+================================================================================
+
+Total Picks: 4
+Strategy: Only bet elite players in favorable situations
+
+--------------------------------------------------------------------------------
+
+PICK #1
+Player:   Connor McDavid (EDM vs STL)
+Prop:     POINTS - Line: 0.5
+Prob:     91.4% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-152 | Favorable
+Reason:   1.31 PPG
+--------------------------------------------------------------------------------
+
+PICK #2
+Player:   Leon Draisaitl (EDM vs STL)
+Prop:     POINTS - Line: 0.5
+Prob:     87.2% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-152 | Favorable
+Reason:   1.23 PPG
+--------------------------------------------------------------------------------
+
+PICK #3
+Player:   Connor Bedard (CHI vs SEA)
+Prop:     POINTS - Line: 0.5
+Prob:     79.4% | Tier: T2-STRONG
+Matchup:  O/U=5.5 | ML=128 | Favorable
+Reason:   1.25 PPG
+--------------------------------------------------------------------------------
+
+PICK #4
+Player:   Connor McDavid (EDM vs STL)
+Prop:     SHOTS - Line: 2.5
+Prob:     76.7% | Tier: T2-STRONG
+Matchup:  O/U=6.5 | ML=-152 | Favorable
+Reason:   3.2 SOG/G
+--------------------------------------------------------------------------------
+
+
+================================================================================
+ALL STARS PICKS (including 7 in unfavorable matchups)
+================================================================================
+
+================================================================================
+STARS ONLY PICKS - Simplified Betting Strategy
+================================================================================
+
+Total Picks: 11
+Strategy: Only bet elite players in favorable situations
+
+--------------------------------------------------------------------------------
+
+PICK #1
+Player:   Evgeni Malkin (PIT vs TOR)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=155 | Heavy underdog (+155)
+Reason:   1.38 PPG
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+PICK #2
+Player:   William Nylander (TOR vs PIT)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-188 | Heavy favorite (-188)
+Reason:   1.67 PPG
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+PICK #3
+Player:   John Tavares (TOR vs PIT)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-188 | Heavy favorite (-188)
+Reason:   1.33 PPG
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+PICK #4
+Player:   Matthew Knies (TOR vs PIT)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-188 | Heavy favorite (-188)
+Reason:   1.25 PPG
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+PICK #5
+Player:   Connor McDavid (EDM vs STL)
+Prop:     POINTS - Line: 0.5
+Prob:     91.4% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-152 | Favorable
+Reason:   1.31 PPG
+--------------------------------------------------------------------------------
+
+PICK #6
+Player:   Auston Matthews (TOR vs PIT)
+Prop:     SHOTS - Line: 2.5
+Prob:     90.0% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-188 | Heavy favorite (-188)
+Reason:   4.2 SOG/G
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+PICK #7
+Player:   Leon Draisaitl (EDM vs STL)
+Prop:     POINTS - Line: 0.5
+Prob:     87.2% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=-152 | Favorable
+Reason:   1.23 PPG
+--------------------------------------------------------------------------------
+
+PICK #8
+Player:   Sidney Crosby (PIT vs TOR)
+Prop:     POINTS - Line: 0.5
+Prob:     87.2% | Tier: T1-ELITE
+Matchup:  O/U=6.5 | ML=155 | Heavy underdog (+155)
+Reason:   1.23 PPG
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+PICK #9
+Player:   Connor Bedard (CHI vs SEA)
+Prop:     POINTS - Line: 0.5
+Prob:     79.4% | Tier: T2-STRONG
+Matchup:  O/U=5.5 | ML=128 | Favorable
+Reason:   1.25 PPG
+--------------------------------------------------------------------------------
+
+PICK #10
+Player:   Connor McDavid (EDM vs STL)
+Prop:     SHOTS - Line: 2.5
+Prob:     76.7% | Tier: T2-STRONG
+Matchup:  O/U=6.5 | ML=-152 | Favorable
+Reason:   3.2 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #11
+Player:   John Tavares (TOR vs PIT)
+Prop:     SHOTS - Line: 2.5
+Prob:     76.6% | Tier: T2-STRONG
+Matchup:  O/U=6.5 | ML=-188 | Heavy favorite (-188)
+Reason:   2.9 SOG/G
+WARNING:  Unfavorable matchup - consider skipping
+--------------------------------------------------------------------------------
+
+
+================================================================================
+SUMMARY
+================================================================================
+Total stars tracked: 50 (15 superstars, 18 elite, 17 young/volume)
+Stars with picks today: 9
+Favorable picks: 4
+Unfavorable picks: 7
+
+STRATEGY: Focus on favorable matchups only for best results.
+Criteria: O/U>=5.5, ML between -175 and +150, Tier T2-STRONG or better
+================================================================================
+
+
+================================================================================
+STEP 4/5: STRATEGY 2 - MARKET VS MODEL
+================================================================================
+Finding edges (where your model beats the market)...
+
+
+================================================================================
+Market vs Model
+================================================================================
+
+
+Market vs Model Edge Finder
+Target Date: 2025-11-03
+
+Fetching model predictions...
+Found 11 high-confidence predictions
+
+Fetching market lines (PrizePicks)...
+Found market lines for 134 players
+
+Calculating edges...
+
+================================================================================
+MARKET VS MODEL ANALYSIS - 2025-11-03 06:15 AM
+================================================================================
+
+Total predictions analyzed: 10
+Significant edges (>=5.0%): 10
+
+--------------------------------------------------------------------------------
+
+BET #1 - T1-ELITE (Edge: +47.5%)
+Player:  Evgeni Malkin (PIT vs TOR)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 95.0%
+  Reasoning:   1.38 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   0.5, 1.5
+  Best Match:  0.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +47.5%
+  Expected EV: $90.00 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #2 - T1-ELITE (Edge: +47.5%)
+Player:  John Tavares (TOR vs PIT)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 95.0%
+  Reasoning:   1.33 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   0.5, 1.5, 2.5
+  Best Match:  0.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +47.5%
+  Expected EV: $90.00 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #3 - T1-ELITE (Edge: +47.5%)
+Player:  Matthew Knies (TOR vs PIT)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 95.0%
+  Reasoning:   1.25 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   0.5, 1.5
+  Best Match:  0.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +47.5%
+  Expected EV: $90.00 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #4 - T1-ELITE (Edge: +43.9%)
+Player:  Connor McDavid (EDM vs STL)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 91.4%
+  Reasoning:   1.31 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   1.5, 2.5, 3.5
+  Best Match:  1.5 (CLOSEST)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +43.9%
+  Expected EV: $82.87 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+
+  [WARNING] Model line (0.5) differs from closest market line (1.5)
+            Edge calculation may be less accurate
+--------------------------------------------------------------------------------
+
+BET #5 - T1-ELITE (Edge: +42.5%)
+Player:  Auston Matthews (TOR vs PIT)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 90.0%
+  Reasoning:   4.2 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   2.5, 3.5, 4.5, 5.5, 6.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +42.5%
+  Expected EV: $80.02 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #6 - T1-ELITE (Edge: +39.7%)
+Player:  Leon Draisaitl (EDM vs STL)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 87.2%
+  Reasoning:   1.23 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   0.5, 1.5, 2.5
+  Best Match:  0.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +39.7%
+  Expected EV: $74.46 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #7 - T1-ELITE (Edge: +39.7%)
+Player:  Sidney Crosby (PIT vs TOR)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 87.2%
+  Reasoning:   1.23 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   0.5, 1.5, 2.5
+  Best Match:  0.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +39.7%
+  Expected EV: $74.46 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #8 - T2-STRONG (Edge: +31.9%)
+Player:  Connor Bedard (CHI vs SEA)
+Prop:    POINTS OVER 0.5
+
+YOUR MODEL:
+  Line:        0.5
+  Probability: 79.4%
+  Reasoning:   1.25 PPG
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   0.5, 1.5, 2.5
+  Best Match:  0.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +31.9%
+  Expected EV: $58.75 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #9 - T2-STRONG (Edge: +29.2%)
+Player:  Connor McDavid (EDM vs STL)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 76.7%
+  Reasoning:   3.2 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   2.5, 3.5, 4.5, 5.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +29.2%
+  Expected EV: $53.42 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #10 - T2-STRONG (Edge: +29.1%)
+Player:  John Tavares (TOR vs PIT)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 76.6%
+  Reasoning:   2.9 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   2.5, 3.5, 4.5, 5.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +29.1%
+  Expected EV: $53.18 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+================================================================================
+BETTING STRATEGY:
+  - Bet >=20% edges with larger stakes (these are rare!)
+  - Bet >=10% edges with standard stakes
+  - Consider 5-10% edges (small edge, lower stakes)
+  - Skip <5% edges (not enough margin over market)
+================================================================================
+
+
+================================================================================
+STEP 5/5: EXPORTING COMPREHENSIVE ANALYSIS
+================================================================================
+Creating complete CSV with all data...
+
+
+================================================================================
+Export Complete Analysis
+================================================================================
+
+
+================================================================================
+COMPREHENSIVE BETTING ANALYSIS EXPORT
+================================================================================
+
+Date: 2025-11-03
+Output: COMPLETE_ANALYSIS_20251103_0615AM.csv
+
+Fetching predictions...
+  Found 22 predictions for 50 stars
+Fetching betting lines...
+  Found 8 teams with betting data
+Fetching PrizePicks lines...
+  Found 134 players with PrizePicks lines
+
+Analyzing and exporting...
+
+================================================================================
+EXPORT COMPLETE
+================================================================================
+
+Total picks analyzed: 22
+  BET: 16
+  CONSIDER: 0
+  SKIP: 6
+
+File saved: COMPLETE_ANALYSIS_20251103_0615AM.csv
+================================================================================
+
+
+================================================================================
+WORKFLOW COMPLETE!
+================================================================================
+
+WHAT YOU HAVE NOW:
+
+  1. STARS PICKS (Strategy 1):
+     - 50 elite players only
+     - Favorable matchups only (O/U >=5.5, ML -175 to +150)
+     - High confidence (T2-STRONG or better)
+     - Result: ~3-8 picks
+
+  2. EDGE PICKS (Strategy 2):
+     - Where YOUR model beats the MARKET
+     - Positive expected value (+EV)
+     - Edge >=5% over market
+     - Result: ~0-10 picks
+
+================================================================================
+BETTING STRATEGY:
+================================================================================
+
+  TIER 1: Picks in BOTH lists (highest confidence)
+    -> Bet these with standard stakes
+
+  TIER 2: Edge picks >=10% (strong +EV)
+    -> Bet these even if not in stars list
+
+  TIER 3: Stars picks with favorable matchups
+    -> Bet these if no edge data available
+
+  SKIP: Edge picks <5% or stars picks in unfavorable matchups
+
+================================================================================
+FILES CREATED:
+================================================================================
+
+  - LATEST_PICKS.txt (T1-ELITE picks only)
+  - LATEST_PICKS.csv (T1-ELITE picks only)
+  - PICKS_2025-11-03_06-15AM.txt
+  - COMPLETE_ANALYSIS_20251103_0615AM.csv (ALL STARS + EDGES + MATCHUPS)
+  - WORKFLOW_LOG_20251103_0615AM.txt (Complete workflow log)
+
+================================================================================
+NEXT STEPS:
+================================================================================
+
+  1. Open COMPLETE_ANALYSIS CSV - contains ALL data:
+     - All stars picks (all tiers)
+     - Market edges (even the bad ones)
+     - Matchup data (O/U, ML, favorable/unfavorable)
+     - PrizePicks available lines
+     - Recommendations (BET/CONSIDER/SKIP)
+
+  2. Filter CSV by 'Recommendation' column:
+     - BET - HIGHEST CONFIDENCE = Bet these first
+     - BET - HUGE EDGE = Bet these (>=20% edge)
+     - BET - STRONG EDGE = Bet these (>=10% edge)
+
+  3. Cross-check with PrizePicks for current lines
+
+  4. Track results to validate edges
+
+================================================================================
+Finished: 06:15 AM
+================================================================================
+
+To https://github.com/thomascp2/nhl-predictions.git
+   372b39d..bbc59f0  main -> main
