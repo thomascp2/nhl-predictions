@@ -1,0 +1,9 @@
+Player,Team,Opponent,Prop Type,Line,Probability (%),Expected Value,Confidence Tier,Model,Reasoning
+Evgeni Malkin,PIT,TOR,POINTS,0.5,95.0,1.51,T1-ELITE,Statistical,1.38 PPG
+William Nylander,TOR,PIT,POINTS,0.5,95.0,2.01,T1-ELITE,Statistical,1.67 PPG
+John Tavares,TOR,PIT,POINTS,0.5,95.0,1.61,T1-ELITE,Statistical,1.33 PPG
+Matthew Knies,TOR,PIT,POINTS,0.5,95.0,1.51,T1-ELITE,Statistical,1.25 PPG
+Connor McDavid,EDM,STL,POINTS,0.5,91.4,1.43,T1-ELITE,Statistical,1.31 PPG
+Auston Matthews,TOR,PIT,SHOTS,2.5,90.0,5.13,T1-ELITE,Statistical,4.2 SOG/G
+Leon Draisaitl,EDM,STL,POINTS,0.5,87.2,1.34,T1-ELITE,Statistical,1.23 PPG
+Sidney Crosby,PIT,TOR,POINTS,0.5,87.2,1.34,T1-ELITE,Statistical,1.23 PPG
