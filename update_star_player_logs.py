@@ -118,25 +118,29 @@ class StarPlayerLogUpdater:
 
                 # Only include games after last update
                 if game_date > since_datetime:
+                    # Convert TOI from MM:SS to minutes (float)
+                    toi_str = game.get('toi', '00:00')
+                    toi_minutes = 0.0
+                    if ':' in toi_str:
+                        parts = toi_str.split(':')
+                        toi_minutes = float(parts[0]) + (float(parts[1]) / 60)
+
                     new_logs.append({
                         'player_id': player_id,
                         'player_name': player_name,
                         'game_id': game.get('gameId'),
                         'game_date': game_date_str,
+                        'season': '2024-25',
+                        'team': game.get('teamAbbrev'),
                         'opponent': game.get('opponentAbbrev'),
-                        'is_home': 1 if game.get('homeRoadFlag') == 'H' else 0,
+                        'home_away': 'H' if game.get('homeRoadFlag') == 'H' else 'A',
                         'goals': game.get('goals', 0),
                         'assists': game.get('assists', 0),
                         'points': game.get('points', 0),
                         'shots': game.get('shots', 0),
                         'plus_minus': game.get('plusMinus', 0),
-                        'pim': game.get('pim', 0),
-                        'toi': game.get('toi', '00:00'),
-                        'pp_goals': game.get('powerPlayGoals', 0),
-                        'pp_points': game.get('powerPlayPoints', 0),
-                        'sh_goals': game.get('shorthandedGoals', 0),
-                        'game_winning_goals': game.get('gameWinningGoals', 0),
-                        'ot_goals': game.get('otGoals', 0)
+                        'toi_minutes': toi_minutes,
+                        'powerplay_points': game.get('powerPlayPoints', 0)
                     })
 
             print(f"    Found {len(new_logs)} new games")
@@ -154,32 +158,8 @@ class StarPlayerLogUpdater:
 
         cursor = self.conn.cursor()
 
-        # Create table if not exists
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS player_game_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                player_id INTEGER,
-                player_name TEXT,
-                game_id TEXT,
-                game_date TEXT,
-                opponent TEXT,
-                is_home INTEGER,
-                goals INTEGER,
-                assists INTEGER,
-                points INTEGER,
-                shots INTEGER,
-                plus_minus INTEGER,
-                pim INTEGER,
-                toi TEXT,
-                pp_goals INTEGER,
-                pp_points INTEGER,
-                sh_goals INTEGER,
-                game_winning_goals INTEGER,
-                ot_goals INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(player_id, game_id)
-            )
-        """)
+        # Note: Table already exists with proper schema
+        # Don't recreate it - just insert into existing table
 
         # Insert logs
         inserted = 0
@@ -187,17 +167,14 @@ class StarPlayerLogUpdater:
             try:
                 cursor.execute("""
                     INSERT OR REPLACE INTO player_game_logs
-                    (player_id, player_name, game_id, game_date, opponent, is_home,
-                     goals, assists, points, shots, plus_minus, pim, toi,
-                     pp_goals, pp_points, sh_goals, game_winning_goals, ot_goals)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (player_id, player_name, game_id, game_date, season, team, opponent, home_away,
+                     goals, assists, points, shots, plus_minus, toi_minutes, powerplay_points)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     log['player_id'], log['player_name'], log['game_id'],
-                    log['game_date'], log['opponent'], log['is_home'],
+                    log['game_date'], log['season'], log['team'], log['opponent'], log['home_away'],
                     log['goals'], log['assists'], log['points'], log['shots'],
-                    log['plus_minus'], log['pim'], log['toi'],
-                    log['pp_goals'], log['pp_points'], log['sh_goals'],
-                    log['game_winning_goals'], log['ot_goals']
+                    log['plus_minus'], log['toi_minutes'], log['powerplay_points']
                 ))
                 inserted += 1
             except sqlite3.IntegrityError:
