@@ -86,16 +86,18 @@ def push_log_to_github(log_file):
         print("PUSHING LOG TO GITHUB")
         print("="*80 + "\n")
 
+        # Use full path to git executable
+        git_exe = r"C:\Program Files\Git\mingw64\bin\git.exe"
+
         # Add the log file
-        subprocess.run(f'git add "{log_file}"', shell=True, check=False)
+        subprocess.run([git_exe, "add", log_file], check=False)
 
         # Commit with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d %I:%M %p')
         commit_msg = f"Workflow log - {timestamp}"
 
         result = subprocess.run(
-            f'git commit -m "{commit_msg}"',
-            shell=True,
+            [git_exe, "commit", "-m", commit_msg],
             capture_output=True,
             text=True
         )
@@ -104,8 +106,7 @@ def push_log_to_github(log_file):
 
         # Push to GitHub
         result = subprocess.run(
-            'git push',
-            shell=True,
+            [git_exe, "push"],
             capture_output=True,
             text=True
         )
