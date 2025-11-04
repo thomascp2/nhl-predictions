@@ -1,0 +1,23 @@
+Player,Team,Opponent,Prop Type,Line,Probability (%),Expected Value,Confidence Tier,Model,Reasoning
+Leo Carlsson,ANA,FLA,POINTS,0.5,95.0,1.53,T1-ELITE,Statistical,1.45 PPG
+Nathan MacKinnon,COL,TBL,POINTS,0.5,95.0,1.53,T1-ELITE,Statistical,1.46 PPG
+Mark Scheifele,WPG,LAK,POINTS,0.5,95.0,1.71,T1-ELITE,Statistical,1.67 PPG
+Nick Suzuki,MTL,PHI,POINTS,0.5,95.0,1.58,T1-ELITE,Statistical,1.50 PPG
+Mark Stone,VGK,DET,POINTS,0.5,95.0,2.46,T1-ELITE,Statistical,2.17 PPG
+Jack Eichel,VGK,DET,POINTS,0.5,95.0,1.96,T1-ELITE,Statistical,1.73 PPG
+Cale Makar,COL,TBL,POINTS,0.5,92.7,1.45,T1-ELITE,Statistical,1.38 PPG
+Kyle Connor,WPG,LAK,POINTS,0.5,92.7,1.45,T1-ELITE,Statistical,1.42 PPG
+Mitch Marner,VGK,DET,POINTS,0.5,92.2,1.44,T1-ELITE,Statistical,1.27 PPG
+Dylan Larkin,DET,VGK,POINTS,0.5,91.0,1.42,T1-ELITE,Statistical,1.38 PPG
+Kirill Kaprizov,MIN,NSH,POINTS,0.5,89.8,1.40,T1-ELITE,Statistical,1.23 PPG
+Cutter Gauthier,ANA,FLA,SHOTS,2.5,89.3,4.96,T1-ELITE,Statistical,4.7 SOG/G
+Jack Eichel,VGK,DET,SHOTS,2.5,88.7,4.85,T1-ELITE,Statistical,4.3 SOG/G
+Martin Necas,COL,TBL,POINTS,0.5,88.7,1.37,T1-ELITE,Statistical,1.31 PPG
+Tage Thompson,BUF,Utah Mammoth,SHOTS,2.5,88.0,4.73,T1-ELITE,Statistical,4.5 SOG/G
+Shayne Gostisbehere,CAR,NYR,POINTS,0.5,86.5,1.33,T1-ELITE,Statistical,1.40 PPG
+Jason Robertson,DAL,EDM,SHOTS,2.5,86.4,4.46,T1-ELITE,Statistical,4.2 SOG/G
+David Pastrnak,BOS,NYI,POINTS,0.5,86.3,1.33,T1-ELITE,Statistical,1.21 PPG
+Nathan MacKinnon,COL,TBL,SHOTS,2.5,86.3,4.44,T1-ELITE,Statistical,4.2 SOG/G
+Cole Caufield,MTL,PHI,POINTS,0.5,85.6,1.31,T1-ELITE,Statistical,1.25 PPG
+Adrian Kempe,LAK,WPG,POINTS,0.5,85.4,1.31,T1-ELITE,Statistical,1.15 PPG
+Bo Horvat,NYI,BOS,POINTS,0.5,85.4,1.31,T1-ELITE,Statistical,1.08 PPG
