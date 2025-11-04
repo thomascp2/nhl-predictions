@@ -1,0 +1,832 @@
+
+================================================================================
+COMPLETE DAILY NHL BETTING WORKFLOW
+================================================================================
+Date: 2025-11-03 08:14 PM
+Log File: WORKFLOW_LOG_20251103_0814PM.txt
+================================================================================
+
+This workflow runs BOTH strategies:
+  [1] Strategy 1: Stars-Only Filter (simplified)
+  [2] Strategy 2: Market vs Model (find +EV edges)
+
+================================================================================
+Current time: 2025-11-03 20:14:03
+Cutoff hour: 19:00
+Games have started or will start soon - predicting for tomorrow
+Target date: 2025-11-04
+
+Target date: 2025-11-04
+================================================================================
+
+================================================================================
+STEP 1/5: GENERATING PREDICTIONS
+================================================================================
+Running all 3 prediction models (Statistical, Ensemble, Goalie)...
+
+
+================================================================================
+Generate Predictions
+================================================================================
+
+[main 14a9520] Auto-update picks - 2025-11-03 08:14 PM
+ 4 files changed, 428 insertions(+), 4 deletions(-)
+ create mode 100644 PICKS_2025-11-03_08-14PM.csv
+ create mode 100644 PICKS_2025-11-03_08-14PM.txt
+
+
+================================================================================
+SMART NHL PICKS GENERATOR
+================================================================================
+Target Date: 2025-11-04
+
+================================================================================
+SMART DATA REFRESH
+================================================================================
+Last data update: 2025-11-03 08:05 PM
+Data age: 0.1 hours
+
+[FRESH] Data is fresh (less than 2 hours old)
+Skipping data refresh - using cached data
+================================================================================
+================================================================================
+GENERATING PREDICTIONS
+================================================================================
+Generating predictions for 2025-11-04...
+Running statistical model...
+Running ensemble model...
+Generating Goalie Saves predictions...
+[OK] Goalie Saves predictions generated!
+Predictions generated! (3/3 models succeeded)
+
+Fetching T1-ELITE picks from database...
+Writing picks to PICKS_2025-11-03_08-14PM.txt...
+Writing picks to PICKS_2025-11-03_08-14PM.csv...
+CSV saved with 22 picks
+Writing picks to LATEST_PICKS.txt...
+Writing picks to LATEST_PICKS.csv...
+CSV saved with 22 picks
+
+Pushing to GitHub...
+Successfully pushed to GitHub!
+
+================================================================================
+ARCHIVING OLD PICKS
+================================================================================
+
+Scanning for old prediction files...
+[OK] No old files found. All files are recent!
+
+================================================================================
+DONE!
+================================================================================
+
+Found 22 T1-ELITE picks for today
+
+View picks online at:
+TXT: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt
+CSV: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.csv
+
+Timestamped:
+TXT: https://github.com/thomascp2/nhl-predictions/blob/main/PICKS_2025-11-03_08-14PM.txt
+CSV: https://github.com/thomascp2/nhl-predictions/blob/main/PICKS_2025-11-03_08-14PM.csv
+
+================================================================================
+GENERATING NHL PICKS (Smart Date Selection)
+================================================================================
+Started: 08:14 PM
+
+Determining target date...
+Target date: 2025-11-04
+
+
+================================================================================
+[SUCCESS] Picks generated!
+
+View picks:
+  - Local: LATEST_PICKS.txt
+  - GitHub: https://github.com/thomascp2/nhl-predictions/blob/main/LATEST_PICKS.txt
+================================================================================
+
+
+================================================================================
+STEP 2/5: FETCHING PRIZEPICKS LINES
+================================================================================
+Getting current market lines from PrizePicks...
+
+
+================================================================================
+Fetch PrizePicks Lines
+================================================================================
+
+Fetching PrizePicks lines for: 2025-11-04
+Fetching current PrizePicks lines...
+[SUCCESS] Fetched lines for 318 players
+
+================================================================================
+PRIZEPICKS CURRENT LINES - 2025-11-03 08:14 PM
+================================================================================
+
+A.J. Greer (FLA)
+  goals           - Line: 0.5
+
+Aaron Ekblad (FLA)
+  goals           - Line: 0.5
+
+Adam Boqvist (NYI)
+  goals           - Line: 0.5
+
+Adam Edstrom (NYR)
+  goals           - Line: 0.5
+
+Adam Erne (DAL)
+  goals           - Line: 0.5
+
+Adam Fox (NYR)
+  shots           - Lines: 1.5, 2.5
+  blocked_shots   - Line: 1.5
+  goals           - Line: 0.5
+  points          - Line: 0.5
+  pp_points       - Line: 0.5
+
+Adam Henrique (EDM)
+  goals           - Line: 0.5
+
+Adam Larsson (SEA)
+  blocked_shots   - Lines: 1.5, 2.5
+
+Adrian Kempe (LA)
+  goals           - Line: 0.5
+
+Alex DeBrincat (DET)
+  goals           - Line: 0.5
+
+Alex Iafallo (WPG)
+  goals           - Line: 0.5
+
+Alex Killorn (ANA)
+  goals           - Line: 0.5
+
+Alex Laferriere (LA)
+  goals           - Line: 0.5
+
+Alex Newhook (MTL)
+  goals           - Line: 0.5
+
+Alex Tuch (BUF)
+  shots           - Line: 2.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  points          - Line: 0.5
+  pp_points       - Line: 0.5
+
+Alex Turcotte (LA)
+  goals           - Line: 0.5
+
+Alex Vlasic (CHI)
+  blocked_shots   - Line: 2.5
+
+Alexander Holtz (VGK)
+  goals           - Line: 0.5
+
+Alexander Nikishin (CAR)
+  shots           - Lines: 1.5, 2.5, 3.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+
+Alexis Lafreniere (NYR)
+  shots           - Lines: 1.5, 2.5, 3.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  points          - Line: 0.5
+  pp_points       - Line: 0.5
+
+Anders Lee (NYI)
+  shots           - Lines: 1.5, 3.5, 4.5
+  goals           - Line: 0.5
+
+Andre Burakovsky (CHI)
+  points          - Line: 1.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  pp_points       - Line: 0.5
+
+Andrei Kuzmenko (LA)
+  goals           - Line: 0.5
+
+Andrei Svechnikov (CAR)
+  shots           - Lines: 1.5, 2.5, 3.5, 4.5
+  goals           - Line: 0.5
+  assists         - Line: 0.5
+  points          - Line: 0.5
+  pp_points       - Line: 0.5
+
+Andrew Copp (DET)
+  goals           - Line: 0.5
+
+Andrew Mangiapane (EDM)
+  goals           - Line: 0.5
+
+Anthony Cirelli (TB)
+  goals           - Line: 0.5
+
+Anthony Duclair (NYI)
+  goals           - Line: 0.5
+
+Anton Lundell (FLA)
+  goals           - Line: 0.5
+
+Anze Kopitar (LA)
+  goals           - Line: 0.5
+
+
+... and 288 more players
+================================================================================
+
+[SUCCESS] Saved 680 lines to database
+Lines saved for 2025-11-04! Use market_vs_model.py to compare with your predictions.
+
+================================================================================
+STEP 3/5: STRATEGY 1 - STARS FILTER
+================================================================================
+Filtering to 50 stars in favorable matchups...
+
+
+================================================================================
+Stars Filter
+================================================================================
+
+
+Fetching star picks for 2025-11-04...
+
+================================================================================
+FAVORABLE MATCHUPS ONLY
+================================================================================
+
+================================================================================
+STARS ONLY PICKS - Simplified Betting Strategy
+================================================================================
+
+Total Picks: 36
+Strategy: Only bet elite players in favorable situations
+
+--------------------------------------------------------------------------------
+
+PICK #1
+Player:   Leo Carlsson (ANA vs FLA)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.45 PPG
+--------------------------------------------------------------------------------
+
+PICK #2
+Player:   Nathan MacKinnon (COL vs TBL)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.46 PPG
+--------------------------------------------------------------------------------
+
+PICK #3
+Player:   Mark Scheifele (WPG vs LAK)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.67 PPG
+--------------------------------------------------------------------------------
+
+PICK #4
+Player:   Nick Suzuki (MTL vs PHI)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.50 PPG
+--------------------------------------------------------------------------------
+
+PICK #5
+Player:   Mark Stone (VGK vs DET)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   2.17 PPG
+--------------------------------------------------------------------------------
+
+PICK #6
+Player:   Jack Eichel (VGK vs DET)
+Prop:     POINTS - Line: 0.5
+Prob:     95.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.73 PPG
+--------------------------------------------------------------------------------
+
+PICK #7
+Player:   Cale Makar (COL vs TBL)
+Prop:     POINTS - Line: 0.5
+Prob:     92.7% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.38 PPG
+--------------------------------------------------------------------------------
+
+PICK #8
+Player:   Kyle Connor (WPG vs LAK)
+Prop:     POINTS - Line: 0.5
+Prob:     92.7% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.42 PPG
+--------------------------------------------------------------------------------
+
+PICK #9
+Player:   Mitch Marner (VGK vs DET)
+Prop:     POINTS - Line: 0.5
+Prob:     92.2% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.27 PPG
+--------------------------------------------------------------------------------
+
+PICK #10
+Player:   Dylan Larkin (DET vs VGK)
+Prop:     POINTS - Line: 0.5
+Prob:     91.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.38 PPG
+--------------------------------------------------------------------------------
+
+PICK #11
+Player:   Kirill Kaprizov (MIN vs NSH)
+Prop:     POINTS - Line: 0.5
+Prob:     89.8% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.23 PPG
+--------------------------------------------------------------------------------
+
+PICK #12
+Player:   Cutter Gauthier (ANA vs FLA)
+Prop:     SHOTS - Line: 2.5
+Prob:     89.3% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   4.7 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #13
+Player:   Jack Eichel (VGK vs DET)
+Prop:     SHOTS - Line: 2.5
+Prob:     88.7% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   4.3 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #14
+Player:   Tage Thompson (BUF vs Utah Mammoth)
+Prop:     SHOTS - Line: 2.5
+Prob:     88.0% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   4.5 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #15
+Player:   Jason Robertson (DAL vs EDM)
+Prop:     SHOTS - Line: 2.5
+Prob:     86.4% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   4.2 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #16
+Player:   David Pastrnak (BOS vs NYI)
+Prop:     POINTS - Line: 0.5
+Prob:     86.3% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.21 PPG
+--------------------------------------------------------------------------------
+
+PICK #17
+Player:   Nathan MacKinnon (COL vs TBL)
+Prop:     SHOTS - Line: 2.5
+Prob:     86.3% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   4.2 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #18
+Player:   Cole Caufield (MTL vs PHI)
+Prop:     POINTS - Line: 0.5
+Prob:     85.6% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.25 PPG
+--------------------------------------------------------------------------------
+
+PICK #19
+Player:   Adrian Kempe (LAK vs WPG)
+Prop:     POINTS - Line: 0.5
+Prob:     85.4% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.15 PPG
+--------------------------------------------------------------------------------
+
+PICK #20
+Player:   Bo Horvat (NYI vs BOS)
+Prop:     POINTS - Line: 0.5
+Prob:     85.4% | Tier: T1-ELITE
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.08 PPG
+--------------------------------------------------------------------------------
+
+PICK #21
+Player:   Matt Boldy (MIN vs NSH)
+Prop:     SHOTS - Line: 2.5
+Prob:     83.5% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.6 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #22
+Player:   Bo Horvat (NYI vs BOS)
+Prop:     SHOTS - Line: 2.5
+Prob:     82.8% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.3 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #23
+Player:   Kyle Connor (WPG vs LAK)
+Prop:     SHOTS - Line: 2.5
+Prob:     82.8% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.9 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #24
+Player:   Connor McDavid (EDM vs DAL)
+Prop:     POINTS - Line: 0.5
+Prob:     82.1% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.31 PPG
+--------------------------------------------------------------------------------
+
+PICK #25
+Player:   Troy Terry (ANA vs FLA)
+Prop:     POINTS - Line: 0.5
+Prob:     82.0% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.18 PPG
+--------------------------------------------------------------------------------
+
+PICK #26
+Player:   Mikko Rantanen (DAL vs EDM)
+Prop:     POINTS - Line: 0.5
+Prob:     81.2% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.17 PPG
+--------------------------------------------------------------------------------
+
+PICK #27
+Player:   Alex DeBrincat (DET vs VGK)
+Prop:     SHOTS - Line: 2.5
+Prob:     81.2% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.8 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #28
+Player:   David Pastrnak (BOS vs NYI)
+Prop:     SHOTS - Line: 2.5
+Prob:     80.7% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.5 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #29
+Player:   Kirill Kaprizov (MIN vs NSH)
+Prop:     SHOTS - Line: 2.5
+Prob:     79.8% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.3 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #30
+Player:   Alex DeBrincat (DET vs VGK)
+Prop:     POINTS - Line: 0.5
+Prob:     79.2% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.15 PPG
+--------------------------------------------------------------------------------
+
+PICK #31
+Player:   Leon Draisaitl (EDM vs DAL)
+Prop:     POINTS - Line: 0.5
+Prob:     78.5% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.23 PPG
+--------------------------------------------------------------------------------
+
+PICK #32
+Player:   Mark Stone (VGK vs DET)
+Prop:     SHOTS - Line: 2.5
+Prob:     77.6% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.2 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #33
+Player:   Adrian Kempe (LAK vs WPG)
+Prop:     SHOTS - Line: 2.5
+Prob:     77.4% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.2 SOG/G
+--------------------------------------------------------------------------------
+
+PICK #34
+Player:   Cutter Gauthier (ANA vs FLA)
+Prop:     POINTS - Line: 0.5
+Prob:     77.3% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.09 PPG
+--------------------------------------------------------------------------------
+
+PICK #35
+Player:   Matt Boldy (MIN vs NSH)
+Prop:     POINTS - Line: 0.5
+Prob:     76.7% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   1.00 PPG
+--------------------------------------------------------------------------------
+
+PICK #36
+Player:   Seth Jarvis (CAR vs NYR)
+Prop:     SHOTS - Line: 2.5
+Prob:     75.5% | Tier: T2-STRONG
+Matchup:  O/U=6.0 | ML=-110 | Favorable
+Reason:   3.6 SOG/G
+--------------------------------------------------------------------------------
+
+
+================================================================================
+SUMMARY
+================================================================================
+Total stars tracked: 50 (15 superstars, 18 elite, 17 young/volume)
+Stars with picks today: 25
+Favorable picks: 36
+Unfavorable picks: 0
+
+STRATEGY: Focus on favorable matchups only for best results.
+Criteria: O/U>=5.5, ML between -175 and +150, Tier T2-STRONG or better
+================================================================================
+
+
+================================================================================
+STEP 4/5: STRATEGY 2 - MARKET VS MODEL
+================================================================================
+Finding edges (where your model beats the market)...
+
+
+================================================================================
+Market vs Model
+================================================================================
+
+
+Market vs Model Edge Finder
+Target Date: 2025-11-04
+
+Fetching model predictions...
+Found 36 high-confidence predictions
+
+Fetching market lines (PrizePicks)...
+Found market lines for 318 players
+
+Calculating edges...
+
+================================================================================
+MARKET VS MODEL ANALYSIS - 2025-11-03 08:14 PM
+================================================================================
+
+Total predictions analyzed: 5
+Significant edges (>=5.0%): 5
+
+--------------------------------------------------------------------------------
+
+BET #1 - T1-ELITE (Edge: +40.5%)
+Player:  Tage Thompson (BUF vs Utah Mammoth)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 88.0%
+  Reasoning:   4.5 SOG/G
+
+MARKET (PrizePicks):
+  Line:        3.5
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +40.5%
+  Expected EV: $76.09 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+
+  [WARNING] Model line (2.5) differs from closest market line (3.5)
+            Edge calculation may be less accurate
+--------------------------------------------------------------------------------
+
+BET #2 - T1-ELITE (Edge: +38.9%)
+Player:  Jason Robertson (DAL vs EDM)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 86.4%
+  Reasoning:   4.2 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   2.5, 4.5, 5.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +38.9%
+  Expected EV: $72.84 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #3 - T2-STRONG (Edge: +35.3%)
+Player:  Bo Horvat (NYI vs BOS)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 82.8%
+  Reasoning:   3.3 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   2.5, 3.5, 4.5, 5.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +35.3%
+  Expected EV: $65.65 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #4 - T2-STRONG (Edge: +33.2%)
+Player:  David Pastrnak (BOS vs NYI)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 80.7%
+  Reasoning:   3.5 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   2.5, 4.5, 5.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +33.2%
+  Expected EV: $61.32 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+BET #5 - T2-STRONG (Edge: +28.0%)
+Player:  Seth Jarvis (CAR vs NYR)
+Prop:    SHOTS OVER 2.5
+
+YOUR MODEL:
+  Line:        2.5
+  Probability: 75.5%
+  Reasoning:   3.6 SOG/G
+
+MARKET (PrizePicks) - AVAILABLE LINES:
+  All Lines:   1.5, 2.5, 3.5, 4.5
+  Best Match:  2.5 (EXACT)
+  Probability: 47.5%
+  Multiplier:  2.0x
+
+EDGE ANALYSIS:
+  Your Edge:   +28.0%
+  Expected EV: $51.03 per $100 bet
+  Rating:      HUGE EDGE - MAX BET
+--------------------------------------------------------------------------------
+
+================================================================================
+BETTING STRATEGY:
+  - Bet >=20% edges with larger stakes (these are rare!)
+  - Bet >=10% edges with standard stakes
+  - Consider 5-10% edges (small edge, lower stakes)
+  - Skip <5% edges (not enough margin over market)
+================================================================================
+
+
+================================================================================
+STEP 5/5: EXPORTING COMPREHENSIVE ANALYSIS
+================================================================================
+Creating complete CSV with all data...
+
+
+================================================================================
+Export Complete Analysis
+================================================================================
+
+
+================================================================================
+COMPREHENSIVE BETTING ANALYSIS EXPORT
+================================================================================
+
+Date: 2025-11-04
+Output: COMPLETE_ANALYSIS_20251103_0814PM.csv
+
+Fetching predictions...
+  Found 68 predictions for 50 stars
+Fetching betting lines...
+  Found 20 teams with betting data
+Fetching PrizePicks lines...
+  Found 318 players with PrizePicks lines
+
+Analyzing and exporting...
+
+================================================================================
+EXPORT COMPLETE
+================================================================================
+
+Total picks analyzed: 68
+  BET: 32
+  CONSIDER: 0
+  SKIP: 36
+
+File saved: COMPLETE_ANALYSIS_20251103_0814PM.csv
+================================================================================
+
+
+================================================================================
+WORKFLOW COMPLETE!
+================================================================================
+
+WHAT YOU HAVE NOW:
+
+  1. STARS PICKS (Strategy 1):
+     - 50 elite players only
+     - Favorable matchups only (O/U >=5.5, ML -175 to +150)
+     - High confidence (T2-STRONG or better)
+     - Result: ~3-8 picks
+
+  2. EDGE PICKS (Strategy 2):
+     - Where YOUR model beats the MARKET
+     - Positive expected value (+EV)
+     - Edge >=5% over market
+     - Result: ~0-10 picks
+
+================================================================================
+BETTING STRATEGY:
+================================================================================
+
+  TIER 1: Picks in BOTH lists (highest confidence)
+    -> Bet these with standard stakes
+
+  TIER 2: Edge picks >=10% (strong +EV)
+    -> Bet these even if not in stars list
+
+  TIER 3: Stars picks with favorable matchups
+    -> Bet these if no edge data available
+
+  SKIP: Edge picks <5% or stars picks in unfavorable matchups
+
+================================================================================
+FILES CREATED:
+================================================================================
+
+  - LATEST_PICKS.txt (T1-ELITE picks only)
+  - LATEST_PICKS.csv (T1-ELITE picks only)
+  - PICKS_2025-11-03_08-14PM.txt
+  - COMPLETE_ANALYSIS_20251103_0814PM.csv (ALL STARS + EDGES + MATCHUPS)
+  - WORKFLOW_LOG_20251103_0814PM.txt (Complete workflow log)
+
+================================================================================
+NEXT STEPS:
+================================================================================
+
+  1. Open COMPLETE_ANALYSIS CSV - contains ALL data:
+     - All stars picks (all tiers)
+     - Market edges (even the bad ones)
+     - Matchup data (O/U, ML, favorable/unfavorable)
+     - PrizePicks available lines
+     - Recommendations (BET/CONSIDER/SKIP)
+
+  2. Filter CSV by 'Recommendation' column:
+     - BET - HIGHEST CONFIDENCE = Bet these first
+     - BET - HUGE EDGE = Bet these (>=20% edge)
+     - BET - STRONG EDGE = Bet these (>=10% edge)
+
+  3. Cross-check with PrizePicks for current lines
+
+  4. Track results to validate edges
+
+================================================================================
+Finished: 08:14 PM
+================================================================================
+
+To https://github.com/thomascp2/nhl-predictions.git
+   063cb54..14a9520  main -> main
