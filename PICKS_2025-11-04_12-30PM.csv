@@ -1,0 +1,4 @@
+Player,Team,Opponent,Prop Type,Line,Probability (%),Expected Value,Confidence Tier,Model,Reasoning
+Nathan MacKinnon,COL,TBL,POINTS,0.5,91.1,0.50,T1-ELITE,ensemble_v1,Stat:95.0% ML:81.9% Ensemble:91.1%
+Mark Stone,VGK,DET,POINTS,0.5,85.9,0.50,T1-ELITE,ensemble_v1,Stat:95.0% ML:64.6% Ensemble:85.9%
+Jack Eichel,VGK,DET,POINTS,0.5,85.1,0.50,T1-ELITE,ensemble_v1,Stat:95.0% ML:62.1% Ensemble:85.1%
